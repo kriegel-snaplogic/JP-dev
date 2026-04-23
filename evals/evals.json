@@ -1,0 +1,23 @@
+{
+  "skill_name": "latex-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need a technical document explaining how our new API authentication works using OAuth 2.0. Should be around 5-6 sections covering the flow, implementation, security considerations, and code examples. Make it detailed enough for developers to implement.",
+      "expected_output": "Technical document PDF with citations, clean formatting, proper code formatting, and references section. Should include table of contents since it's >3 sections.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Create a customer-facing proposal for Acme Corporation about modernizing their data integration infrastructure with SnapLogic. Include executive summary, current state analysis, proposed solution, timeline, and next steps. Make it look professional - this is going to the CIO.",
+      "expected_output": "Professionally branded PDF with SnapLogic logo, title page, management summary, table of contents, and contacts section. Should look polished and executive-ready.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Write up a quick internal status report for our Q2 platform work. Just 3 main sections: what we shipped, what's in progress, and blockers. Keep it brief, this is just for the team.",
+      "expected_output": "Simple internal document with minimal formatting, no TOC (only 3 sections), clean and readable. Should be quick to scan.",
+      "files": []
+    }
+  ]
+}
