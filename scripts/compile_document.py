@@ -120,6 +120,7 @@ class SnapLogicDocumentCompiler:
 \definecolor{snapJade}{RGB}{44,163,146}     % #2CA392 - Accent / highlights
 \definecolor{snapLinkBlue}{RGB}{0,56,153}   % #003899 - Hyperlinks / interactive
 \definecolor{snapOrange}{RGB}{249,127,110}  % #F97F6E - Warm accent / stats
+\definecolor{snapCamel}{RGB}{255,248,240}   % #FFF8F0 - Warm alternating row background
 \definecolor{snapLightGray}{RGB}{231,245,255}  % #E7F5FF - Backgrounds / zebra rows
 \definecolor{snapDarkGray}{RGB}{14,24,48}   % #0E1830 - Body text / secondary
 """
@@ -967,14 +968,14 @@ class SnapLogicDocumentCompiler:
                         latex.append(f'{" & ".join(row_formatted)} \\\\')
 
             else:  # 'simple' (default)
-                # Simple: Navy header, alternating rows
+                # Simple: Navy header, alternating rows (white/camel)
                 latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
                 latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
                 for i, row in enumerate(rows):
                     if i % 2 == 1:
-                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(row)} \\\\')
+                        latex.append(f'\\rowcolor{{snapCamel}}{" & ".join(row)} \\\\')
                     else:
                         latex.append(f'{" & ".join(row)} \\\\')
 
