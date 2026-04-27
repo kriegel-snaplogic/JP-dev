@@ -968,14 +968,14 @@ class SnapLogicDocumentCompiler:
                         latex.append(f'{" & ".join(row_formatted)} \\\\')
 
             else:  # 'simple' (default)
-                # Simple: Navy header, alternating rows (white/camel)
+                # Simple: Navy header, alternating rows (white/light gray)
                 latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
                 latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
                 for i, row in enumerate(rows):
                     if i % 2 == 1:
-                        latex.append(f'\\rowcolor{{snapCamel}}{" & ".join(row)} \\\\')
+                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(row)} \\\\')
                     else:
                         latex.append(f'{" & ".join(row)} \\\\')
 
