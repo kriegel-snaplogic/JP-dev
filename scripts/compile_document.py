@@ -423,8 +423,8 @@ class SnapLogicDocumentCompiler:
         # Step 6: Process markdown formatting (bold, italic)
         text = self._process_markdown_formatting(text)
 
-        # Step 7: Process cross-references (Section X, Figure Y)
-        text = self._process_cross_references(text)
+        # Step 7: Extract cross-references to placeholders (before escaping)
+        text = self._extract_cross_references(text)
 
         # Step 8: Escape LaTeX special characters (but preserve our @ markers)
         text = self._escape_latex_content(text)
@@ -447,8 +447,8 @@ class SnapLogicDocumentCompiler:
         # Step 14: Restore images
         text = self._restore_images(text, image_map)
 
-        # Step 15: Process cross-references (after all content is in place)
-        text = self._process_cross_references(text)
+        # Step 15: Restore cross-references (after all content is in place)
+        text = self._restore_cross_references(text)
 
         return text
 
@@ -904,12 +904,18 @@ class SnapLogicDocumentCompiler:
 
     def _restore_images(self, text: str, image_map: Dict) -> str:
         """Restore image placeholders with labels for cross-referencing"""
-        figure_counter = 0
+        # Sort placeholders by their position in the text to maintain document order
+        # Extract image number from placeholder: @IMAGE1@, @IMAGE2@, etc.
+        sorted_placeholders = sorted(image_map.keys(), key=lambda x: int(x.replace('@IMAGE', '').replace('@', '')))
 
-        for placeholder, image_data in image_map.items():
+        for placeholder in sorted_placeholders:
+            image_data = image_map[placeholder]
             path = image_data['path']
             caption = image_data.get('caption', '')
             width = image_data.get('width', '0.8')
+
+            # Extract figure number from placeholder (@IMAGE1@, @IMAGE2@, etc.)
+            fig_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
 
             latex = f"""
 \\begin{{figure}}[H]
@@ -917,9 +923,8 @@ class SnapLogicDocumentCompiler:
 \\includegraphics[width={width}\\textwidth]{{{path}}}
 """
             if caption and caption != '_':
-                figure_counter += 1
-                # Add label for cross-referencing: fig:1, fig:2, etc.
-                latex += f"\\caption{{{caption}}}\\label{{fig:{figure_counter}}}\n"
+                # Add caption with label matching placeholder number
+                latex += f"\\caption{{{caption}}}\\label{{fig:{fig_num}}}\n"
             latex += "\\end{figure}\n"
 
             text = text.replace(placeholder, latex)
@@ -967,28 +972,42 @@ class SnapLogicDocumentCompiler:
 
                 shutil.copy(source_path, dest_path)
 
-    def _process_cross_references(self, text: str) -> str:
-        """Convert text references to clickable cross-references"""
+    def _extract_cross_references(self, text: str) -> str:
+        """Extract cross-references to placeholders before LaTeX escaping"""
         # Figure references: "Figure X" where X is a number
-        # Use \ref{fig:X} to get the figure number, wrapped in \hyperref for black clickable text
-        def replace_figure_ref(match):
+        # Replace with placeholder @FIGREF:X@
+        def extract_figure_ref(match):
+            fig_num = match.group(1)
+            return f"@FIGREF:{fig_num}@"
+
+        text = re.sub(r'\bFigure (\d+)\b', extract_figure_ref, text)
+
+        # Section references: "Section X", "Section X.Y", "Section X.Y.Z"
+        # Replace with placeholder @SECREF:X.Y.Z@
+        def extract_section_ref(match):
+            section_num = match.group(1)
+            return f"@SECREF:{section_num}@"
+
+        text = re.sub(r'\bSection ([\d\.]+)\b', extract_section_ref, text)
+
+        return text
+
+    def _restore_cross_references(self, text: str) -> str:
+        """Restore cross-reference placeholders to LaTeX hyperlinks"""
+        # Figure references: @FIGREF:X@ -> clickable "Figure X" link
+        def restore_figure_ref(match):
             fig_num = match.group(1)
             return f"\\hyperref[fig:{fig_num}]{{Figure \\ref{{fig:{fig_num}}}}}"
 
-        text = re.sub(r'\bFigure (\d+)\b', replace_figure_ref, text)
+        text = re.sub(r'@FIGREF:(\d+)@', restore_figure_ref, text)
 
-        # Section references: "Section X", "Section X.Y", "Section X.Y.Z"
-        # LaTeX auto-numbers sections, so we use \ref{} with auto-generated labels
-        # Pattern matches Section followed by numbers with dots
-        def replace_section_ref(match):
+        # Section references: @SECREF:X.Y@ -> plain text for now
+        # (would need explicit section labels to make clickable)
+        def restore_section_ref(match):
             section_num = match.group(1)
-            # For simplicity, we'll just use \autoref or keep as is
-            # LaTeX doesn't have automatic section labels, so we can't make these clickable
-            # without adding explicit \label{} commands to each section
-            # For now, keep as plain text but could be enhanced
             return f"Section {section_num}"
 
-        text = re.sub(r'\bSection ([\d\.]+)\b', replace_section_ref, text)
+        text = re.sub(r'@SECREF:([\d\.]+)@', restore_section_ref, text)
 
         return text
 
