@@ -1272,20 +1272,76 @@ The system automatically converts text references into clickable hyperlinks:
 
 ### Special Characters
 
-Escape these characters if they appear in content:
+**CRITICAL: Do NOT escape special characters in the JSON input!**
 
-| Character | LaTeX Escape | JSON Escape |
-|-----------|-------------|-------------|
-| `&` | `\&` | `&` (no escape needed in JSON) |
-| `%` | `\%` | `%` |
-| `$` | `\$` | `$` |
-| `#` | `\#` | `#` |
-| `_` | `\_` | `_` |
-| `{` | `\{` | `{` |
-| `}` | `\}` | `}` |
-| `\` | `\textbackslash{}` | `\\` |
+The compilation script automatically handles ALL LaTeX escaping. If you pre-escape characters in your JSON content, they will be double-escaped and appear incorrectly in the PDF.
 
-**Best Practice:** The compilation script handles most escaping automatically. Only manually escape if you encounter LaTeX compilation errors.
+**❌ WRONG - Pre-escaped in JSON:**
+```json
+{
+  "content": "Use 40\\_70\\% reduction for cost savings"
+}
+```
+**Result in PDF:** `Use 40\_70\% reduction` (broken - shows escape codes)
+
+**✅ CORRECT - Plain text in JSON:**
+```json
+{
+  "content": "Use 40-70% reduction for cost savings"
+}
+```
+**Result in PDF:** `Use 40-70% reduction` (correct)
+
+**Special Characters - Automatic Escaping:**
+
+The compilation script automatically escapes these characters:
+
+| Character | Example in JSON | Renders in PDF | Notes |
+|-----------|----------------|----------------|-------|
+| `%` | `"181% ROI"` | `181% ROI` | Auto-escaped to `\%` |
+| `&` | `"R&D team"` | `R&D team` | Auto-escaped to `\&` |
+| `$` | `"$1.5M cost"` | `$1.5M cost` | Auto-escaped to `\$` |
+| `#` | `"Issue #42"` | `Issue #42` | Auto-escaped to `\#` |
+| `_` | `"file_name.txt"` | `file_name.txt` | Auto-escaped to `\_` |
+| `{` `}` | `"{data}"` | `{data}` | Auto-escaped to `\{` `\}` |
+| `\` | `"C:\Users"` | `C:\Users` | Auto-escaped to `\textbackslash{}` |
+| `~` | `"~250ms"` | `~250ms` | Auto-escaped to `\textasciitilde{}` |
+| `^` | `"2^8 = 256"` | `2^8 = 256` | Auto-escaped to `\textasciicircum{}` |
+
+**JSON String Escaping (Separate Concern):**
+
+You DO need to escape backslashes in JSON strings per JSON syntax rules:
+
+```json
+{
+  "content": "Windows path: C:\\Users\\Documents"
+}
+```
+
+This is JSON escaping (required by JSON format), NOT LaTeX escaping. The compilation script receives `C:\Users\Documents` and handles the LaTeX escaping automatically.
+
+**Common Double-Escaping Mistakes:**
+
+```json
+// ❌ WRONG - filename with LaTeX-escaped underscores
+"document (Airbus\_RFP\_Matrix.xlsx)"
+
+// ✅ CORRECT - plain text, compiler handles escaping
+"document (Airbus_RFP_Matrix.xlsx)"
+
+// ❌ WRONG - percentage with LaTeX escape
+"Migration saves 40–70\\% effort"
+
+// ✅ CORRECT - plain text percentage
+"Migration saves 40-70% effort"
+```
+
+**Summary for AI Agents:**
+
+1. **Write plain text in JSON** - Do not add LaTeX escapes like `\_`, `\%`, `\&`
+2. **Compilation handles all escaping** - The script converts `%` to `\%`, `_` to `\_`, etc.
+3. **Only escape for JSON syntax** - Backslashes in JSON strings: `\\` (JSON requirement, not LaTeX)
+4. **Never manually escape** - Unless you encounter a specific LaTeX compilation error (rare)
 
 ---
 
@@ -1300,6 +1356,7 @@ Escape these characters if they appear in content:
 | "ERROR: Landscape table has N columns (max 8 allowed)" | Too many columns in landscape table | Split into multiple tables or reduce columns |
 | "LaTeX Error: File 'image.png' not found" | Image path incorrect or file missing | Verify image path is absolute or relative to working directory |
 | "JSON decode error" | Invalid JSON syntax | Validate JSON with linter before compilation |
+| PDF shows `\_` or `\%` literally | Double-escaping: LaTeX escapes in JSON input | Remove LaTeX escapes from JSON - use plain text, compiler handles escaping |
 
 ### Debugging Failed Compilations
 
