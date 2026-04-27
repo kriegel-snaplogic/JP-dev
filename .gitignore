@@ -36,3 +36,4 @@ Thumbs.db
 /tmp/
 tests/output/
 *.pdf
+*.quality_report.json
