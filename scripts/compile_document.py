@@ -298,9 +298,9 @@ class SnapLogicDocumentCompiler:
         for subsection in section.get('subsections', []):
             parts.append(self._process_section(subsection, level=level+1))
 
-        # Handle legacy subsubsections key (for backwards compatibility)
+        # Handle subsubsections
         for subsubsection in section.get('subsubsections', []):
-            parts.append(self._process_section(subsubsection, level=level+2))
+            parts.append(self._process_section(subsubsection, level=level+1))
 
         return '\n\n'.join(parts)
 
