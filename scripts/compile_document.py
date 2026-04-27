@@ -869,7 +869,10 @@ class SnapLogicDocumentCompiler:
     def _restore_tables(self, text: str) -> str:
         """Restore table placeholders to LaTeX tables with labels"""
         # Updated pattern to capture table number
-        table_pattern = r'@TABLE:([^:]+):([^:]+):(\d+):(\d+)@(.*?)@TABLEEND:\3@'
+        # Style can contain colons and commas (e.g., "simple:first-bold,last-jade")
+        # Pattern: @TABLE:style:caption:id:num@content@TABLEEND:id@
+        # We need to match until we hit :digits: pattern (the id field)
+        table_pattern = r'@TABLE:(.+?):([^:]+):(\d+):(\d+)@(.*?)@TABLEEND:\3@'
 
         def restore_table(match):
             style, caption, table_id, table_num, table_md = match.groups()
