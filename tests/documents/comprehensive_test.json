@@ -14,25 +14,25 @@
       "subsections": [
         {
           "title": "Primary Subsection",
-          "content": "Subsections provide the first level of detail under main sections. They're ideal for breaking down major topics into manageable chunks.\n\n**Level 4 Header (Paragraph): Introduction to Deep Nesting**\n\nParagraph-level headers provide additional granularity without cluttering the table of contents. They appear in the document but not in the TOC.\n\n**Level 5 Header (Subparagraph): Finest Level of Detail**\n\nSubparagraphs represent the most granular level of organization, useful for very detailed technical specifications or procedural steps.",
+          "content": "Subsections provide the first level of detail under main sections. They're ideal for breaking down major topics into manageable chunks.\n\n**Level 4 Header (Paragraph): Introduction to Deep Nesting**\n\nParagraph-level headers provide additional granularity without cluttering the table of contents. They appear in the document but not in the TOC.\n\n*Level 5 Header (Subparagraph): Finest Level of Detail*\n\nSubparagraphs represent the most granular level of organization, useful for very detailed technical specifications or procedural steps.",
           "subsubsections": [
             {
               "title": "Tertiary Level Detail - First Example",
-              "content": "Subsubsections allow for three-level nesting, which is the recommended maximum for most documents. Going deeper can impact readability.\n\n**Level 4 Header (Paragraph): Practical Applications**\n\nAt this level, you might describe specific implementation details, configuration parameters, or technical specifications that don't warrant a full subsubsection.\n\n**Level 5 Header (Subparagraph): Edge Cases**\n\nThe finest level is reserved for exceptional cases, minor variations, or supplementary notes that enhance understanding without disrupting the main narrative flow."
+              "content": "Subsubsections allow for three-level nesting, which is the recommended maximum for most documents. Going deeper can impact readability.\n\n**Level 4 Header (Paragraph): Practical Applications**\n\nAt this level, you might describe specific implementation details, configuration parameters, or technical specifications that don't warrant a full subsubsection.\n\n*Level 5 Header (Subparagraph): Edge Cases*\n\nThe finest level is reserved for exceptional cases, minor variations, or supplementary notes that enhance understanding without disrupting the main narrative flow."
             },
             {
               "title": "Tertiary Level Detail - Second Example",
-              "content": "Multiple subsubsections at the same level demonstrate parallel organization, allowing readers to explore different aspects of a topic independently.\n\n**Level 4 Header (Paragraph): Implementation Guidelines**\n\nWhen structuring complex documents, use subsubsections sparingly to maintain reader focus and prevent excessive fragmentation.\n\n**Level 5 Header (Subparagraph): Document Flow**\n\nEach level should add meaningful organization without creating unnecessary hierarchy."
+              "content": "Multiple subsubsections at the same level demonstrate parallel organization, allowing readers to explore different aspects of a topic independently.\n\n**Level 4 Header (Paragraph): Implementation Guidelines**\n\nWhen structuring complex documents, use subsubsections sparingly to maintain reader focus and prevent excessive fragmentation.\n\n*Level 5 Header (Subparagraph): Document Flow*\n\nEach level should add meaningful organization without creating unnecessary hierarchy."
             },
             {
               "title": "Tertiary Level Detail - Third Example",
-              "content": "This third subsubsection completes the demonstration of level-3 headers in the table of contents.\n\n**Level 4 Header (Paragraph): Best Practices**\n\nThree parallel subsubsections provide good balance between detail and readability. More than five at one level can overwhelm readers.\n\n**Level 5 Header (Subparagraph): Accessibility Considerations**\n\nProper header hierarchy also improves document accessibility for screen readers and assistive technologies."
+              "content": "This third subsubsection completes the demonstration of level-3 headers in the table of contents.\n\n**Level 4 Header (Paragraph): Best Practices**\n\nThree parallel subsubsections provide good balance between detail and readability. More than five at one level can overwhelm readers.\n\n*Level 5 Header (Subparagraph): Accessibility Considerations*\n\nProper header hierarchy also improves document accessibility for screen readers and assistive technologies."
             }
           ]
         },
         {
           "title": "Secondary Subsection",
-          "content": "Additional subsections at the same level provide alternative perspectives or complementary information on the main topic.\n\n**Level 4 Header (Paragraph): Cross-Referencing**\n\nRefer to Section 1 for an overview, or see Section 4 for visual examples of these concepts in action.\n\n**Level 5 Header (Subparagraph): Navigation Tips**\n\nUse the table of contents to jump between sections quickly. All section numbers are clickable hyperlinks in the PDF."
+          "content": "Additional subsections at the same level provide alternative perspectives or complementary information on the main topic.\n\n**Level 4 Header (Paragraph): Cross-Referencing**\n\nRefer to Section 1 for an overview, or see Section 4 for visual examples of these concepts in action.\n\n*Level 5 Header (Subparagraph): Navigation Tips*\n\nUse the table of contents to jump between sections quickly. All section numbers are clickable hyperlinks in the PDF."
         }
       ]
     },
