@@ -42,7 +42,17 @@
       "subsections": [
         {
           "title": "Four-Level Numbered Lists",
-          "content": "Complete project hierarchy with maximum nesting depth:\n\n1. Phase One: Requirements\n   1. Business Requirements\n      1. Stakeholder interviews\n         1. Executive stakeholders\n         2. Department heads\n         3. End users\n         4. Technical staff\n      2. Requirements documentation\n         1. Functional requirements\n         2. Non-functional requirements\n         3. Acceptance criteria\n      3. Requirements validation\n         1. Review sessions\n         2. Approval workflow\n         3. Change management\n   2. Technical Requirements\n      1. Platform specifications\n         1. Operating system\n         2. Database version\n         3. Middleware components\n         4. Network requirements\n      2. Performance targets\n         1. Response time\n         2. Throughput\n         3. Concurrent users\n      3. Security requirements\n         1. Authentication\n         2. Authorization\n         3. Encryption\n2. Phase Two: Implementation\n   1. Development Sprint 1\n      1. Backend services\n         1. API endpoints\n         2. Database schema\n         3. Business logic\n      2. Frontend components\n         1. User interface\n         2. Navigation\n         3. Forms\n   2. Development Sprint 2\n      1. Integration testing\n         1. Unit tests\n         2. Integration tests\n         3. End-to-end tests\n      2. Performance optimization\n         1. Query tuning\n         2. Caching strategy\n         3. Load balancing\n\nFour levels provide excellent granularity for complex hierarchies."
+          "content": "Complete project hierarchy with maximum nesting depth demonstrates how ordered lists can organize complex, sequential information across multiple levels.",
+          "subsubsections": [
+            {
+              "title": "Requirements Phase Lists",
+              "content": "Example of a requirements gathering workflow:\n\n1. Phase One: Requirements\n   1. Business Requirements\n      1. Stakeholder interviews\n         1. Executive stakeholders\n         2. Department heads\n         3. End users\n         4. Technical staff\n      2. Requirements documentation\n         1. Functional requirements\n         2. Non-functional requirements\n         3. Acceptance criteria\n      3. Requirements validation\n         1. Review sessions\n         2. Approval workflow\n         3. Change management\n   2. Technical Requirements\n      1. Platform specifications\n         1. Operating system\n         2. Database version\n         3. Middleware components\n         4. Network requirements\n      2. Performance targets\n         1. Response time\n         2. Throughput\n         3. Concurrent users\n      3. Security requirements\n         1. Authentication\n         2. Authorization\n         3. Encryption"
+            },
+            {
+              "title": "Implementation Phase Lists",
+              "content": "Example of development sprint organization:\n\n1. Phase Two: Implementation\n   1. Development Sprint 1\n      1. Backend services\n         1. API endpoints\n         2. Database schema\n         3. Business logic\n      2. Frontend components\n         1. User interface\n         2. Navigation\n         3. Forms\n   2. Development Sprint 2\n      1. Integration testing\n         1. Unit tests\n         2. Integration tests\n         3. End-to-end tests\n      2. Performance optimization\n         1. Query tuning\n         2. Caching strategy\n         3. Load balancing\n\nFour levels provide excellent granularity for complex hierarchies."
+            }
+          ]
         },
         {
           "title": "Four-Level Bullet Lists",
@@ -60,7 +70,21 @@
       "subsections": [
         {
           "title": "Standard Tables",
-          "content": "Here's a comparison of integration approaches:\n\n| Approach | Complexity | Performance | Scalability | Cost |\n|----------|-----------|-------------|-------------|------|\n| Point-to-Point | Low | High | Poor | Low |\n| ESB | High | Medium | Good | High |\n| iPaaS | Medium | High | Excellent | Medium |\n| Custom API | Medium | High | Good | Medium |\n\n**Feature Comparison Table:**\n\n| Feature | Basic | Professional | Enterprise |\n|---------|-------|--------------|------------|\n| API Calls/Month | 10K | 100K | Unlimited |\n| Data Processing | 1GB | 100GB | Unlimited |\n| Support | Email | Email + Chat | 24/7 Phone |\n| SLA | 99% | 99.5% | 99.9% |\n| Custom Connectors | No | 5 | Unlimited |\n| Priority Queue | No | Yes | Yes |\n| Dedicated Resources | No | No | Yes |\n\n**Financial Summary Table with Totals Row:**\n\n| Quarter | Revenue | Expenses | Profit | Growth |\n|---------|---------|----------|--------|--------|\n| Q1 2026 | $1.2M | $800K | $400K | 15% |\n| Q2 2026 | $1.5M | $900K | $600K | 25% |\n| Q3 2026 | $1.8M | $950K | $850K | 20% |\n| Q4 2026 | $2.1M | $1.1M | $1.0M | 17% |\n| **Total** | **$6.6M** | **$3.75M** | **$2.85M** | **19%** |\n\n**Regional Performance with First Column Emphasis:**\n\n| **Region** | Customers | Revenue | Growth Rate | Market Share |\n|------------|-----------|---------|-------------|-------------|\n| **North America** | 450 | $3.2M | 22% | 35% |\n| **EMEA** | 380 | $2.8M | 18% | 28% |\n| **APAC** | 290 | $1.9M | 31% | 22% |\n| **LATAM** | 120 | $750K | 15% | 9% |\n| **Total** | **1,240** | **$8.65M** | **21%** | **24%** |\n\n**Priority Matrix with Last Column Highlight:**\n\n| Task | Owner | Due Date | Status | **Priority** |\n|------|-------|----------|--------|-------------|\n| API Migration | DevOps | 2026-05-15 | In Progress | **HIGH** |\n| Security Audit | InfoSec | 2026-05-01 | Not Started | **CRITICAL** |\n| Documentation Update | Tech Writers | 2026-04-30 | Complete | **MEDIUM** |\n| Performance Testing | QA Team | 2026-05-10 | In Progress | **HIGH** |\n| User Training | Customer Success | 2026-05-20 | Planned | **MEDIUM** |\n\nTables automatically format with professional styling, zebra striping, and bold emphasis for headers and totals."
+          "content": "Tables present structured data with automatic formatting, zebra striping, and column emphasis options.",
+          "subsubsections": [
+            {
+              "title": "Comparison Tables",
+              "content": "Integration approach comparison:\n\n| Approach | Complexity | Performance | Scalability | Cost |\n|----------|-----------|-------------|-------------|------|\n| Point-to-Point | Low | High | Poor | Low |\n| ESB | High | Medium | Good | High |\n| iPaaS | Medium | High | Excellent | Medium |\n| Custom API | Medium | High | Good | Medium |\n\n**Feature Comparison Table:**\n\n| Feature | Basic | Professional | Enterprise |\n|---------|-------|--------------|------------|\n| API Calls/Month | 10K | 100K | Unlimited |\n| Data Processing | 1GB | 100GB | Unlimited |\n| Support | Email | Email + Chat | 24/7 Phone |\n| SLA | 99% | 99.5% | 99.9% |\n| Custom Connectors | No | 5 | Unlimited |\n| Priority Queue | No | Yes | Yes |\n| Dedicated Resources | No | No | Yes |"
+            },
+            {
+              "title": "Financial Tables",
+              "content": "Tables with totals rows and emphasis:\n\n| Quarter | Revenue | Expenses | Profit | Growth |\n|---------|---------|----------|--------|--------|\n| Q1 2026 | $1.2M | $800K | $400K | 15% |\n| Q2 2026 | $1.5M | $900K | $600K | 25% |\n| Q3 2026 | $1.8M | $950K | $850K | 20% |\n| Q4 2026 | $2.1M | $1.1M | $1.0M | 17% |\n| **Total** | **$6.6M** | **$3.75M** | **$2.85M** | **19%** |"
+            },
+            {
+              "title": "Regional and Priority Tables",
+              "content": "**Regional Performance with First Column Emphasis:**\n\n| **Region** | Customers | Revenue | Growth Rate | Market Share |\n|------------|-----------|---------|-------------|-------------|\n| **North America** | 450 | $3.2M | 22% | 35% |\n| **EMEA** | 380 | $2.8M | 18% | 28% |\n| **APAC** | 290 | $1.9M | 31% | 22% |\n| **LATAM** | 120 | $750K | 15% | 9% |\n| **Total** | **1,240** | **$8.65M** | **21%** | **24%** |\n\n**Priority Matrix with Last Column Highlight:**\n\n| Task | Owner | Due Date | Status | **Priority** |\n|------|-------|----------|--------|-------------|\n| API Migration | DevOps | 2026-05-15 | In Progress | **HIGH** |\n| Security Audit | InfoSec | 2026-05-01 | Not Started | **CRITICAL** |\n| Documentation Update | Tech Writers | 2026-04-30 | Complete | **MEDIUM** |\n| Performance Testing | QA Team | 2026-05-10 | In Progress | **HIGH** |\n| User Training | Customer Success | 2026-05-20 | Planned | **MEDIUM** |"
+            }
+          ]
         },
         {
           "title": "Landscape Table",
@@ -74,7 +98,17 @@
       "subsections": [
         {
           "title": "Multiple Image Examples",
-          "content": "Documents can include multiple images with different sizes:\n\n[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logo-white.png:Alternative Logo (White):0.4]\n\n[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logomark-white.png:Logomark Variation:0.3]\n\nFigure 2 and Figure 3 demonstrate alternative logo variations for different backgrounds and contexts. The white logo works well on dark backgrounds, while the logomark is ideal for compact spaces.\n\n**Image Best Practices:**\n\n- Use descriptive captions for all figures\n- Reference figures in the text before they appear\n- Maintain consistent image sizing within sections\n- Use high-resolution images (300 DPI minimum)\n- Optimize file sizes for PDF generation\n\nProper image handling ensures professional document quality."
+          "content": "Documents can include multiple images with different sizes and contexts.",
+          "subsubsections": [
+            {
+              "title": "Logo Variations",
+              "content": "[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logo-white.png:Alternative Logo (White):0.4]\n\n[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logomark-white.png:Logomark Variation:0.3]\n\nFigure 2 and Figure 3 demonstrate alternative logo variations for different backgrounds and contexts. The white logo works well on dark backgrounds, while the logomark is ideal for compact spaces."
+            },
+            {
+              "title": "Image Best Practices",
+              "content": "Guidelines for professional image handling:\n\n- Use descriptive captions for all figures\n- Reference figures in the text before they appear\n- Maintain consistent image sizing within sections\n- Use high-resolution images (300 DPI minimum)\n- Optimize file sizes for PDF generation\n\nProper image handling ensures professional document quality."
+            }
+          ]
         }
       ]
     },
@@ -84,7 +118,17 @@
       "subsections": [
         {
           "title": "Standard Highlight Boxes",
-          "content": "Four standard box types are available:\n\n[BOX:info]\n**Information Box**\n\nUse info boxes for helpful context, background information, or explanatory notes that supplement the main content without being critical to understanding.\n[/BOX]\n\n[BOX:success]\n**Success Box**\n\nSuccess boxes highlight positive outcomes, completed tasks, best practices, or confirmed working configurations. They reassure readers that they're on the right track.\n[/BOX]\n\n[BOX:warning]\n**Warning Box**\n\nWarning boxes alert readers to potential issues, common mistakes, or situations requiring caution. Use them for important notices that could prevent problems.\n[/BOX]\n\n[BOX:note]\n**Note Box**\n\nNote boxes contain supplementary information, tips, or clarifications that enhance understanding but aren't essential to the main narrative flow.\n[/BOX]\n\nEach box type uses distinct SnapLogic brand colors for immediate visual recognition."
+          "content": "Four standard box types provide visual emphasis for different types of content.",
+          "subsubsections": [
+            {
+              "title": "Info and Success Boxes",
+              "content": "[BOX:info]\n**Information Box**\n\nUse info boxes for helpful context, background information, or explanatory notes that supplement the main content without being critical to understanding.\n[/BOX]\n\n[BOX:success]\n**Success Box**\n\nSuccess boxes highlight positive outcomes, completed tasks, best practices, or confirmed working configurations. They reassure readers that they're on the right track.\n[/BOX]"
+            },
+            {
+              "title": "Warning and Note Boxes",
+              "content": "[BOX:warning]\n**Warning Box**\n\nWarning boxes alert readers to potential issues, common mistakes, or situations requiring caution. Use them for important notices that could prevent problems.\n[/BOX]\n\n[BOX:note]\n**Note Box**\n\nNote boxes contain supplementary information, tips, or clarifications that enhance understanding but aren't essential to the main narrative flow.\n[/BOX]\n\nEach box type uses distinct SnapLogic brand colors for immediate visual recognition."
+            }
+          ]
         },
         {
           "title": "KPI and Feature Boxes",
