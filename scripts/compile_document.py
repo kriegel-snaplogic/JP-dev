@@ -904,29 +904,46 @@ class SnapLogicDocumentCompiler:
 
     def _restore_images(self, text: str, image_map: Dict) -> str:
         """Restore image placeholders with labels for cross-referencing"""
-        # Sort placeholders by their position in the text to maintain document order
-        # Extract image number from placeholder: @IMAGE1@, @IMAGE2@, etc.
-        sorted_placeholders = sorted(image_map.keys(), key=lambda x: int(x.replace('@IMAGE', '').replace('@', '')))
+        # Find placeholders in document order by searching the text
+        # This ensures labels match LaTeX's automatic figure numbering
+        placeholder_positions = []
+        for placeholder in image_map.keys():
+            pos = text.find(placeholder)
+            if pos != -1:
+                placeholder_positions.append((pos, placeholder))
 
-        for placeholder in sorted_placeholders:
+        # Sort by position in text
+        placeholder_positions.sort()
+
+        # Assign figure numbers sequentially for captioned figures only
+        figure_num = 0
+        replacements = {}
+
+        for pos, placeholder in placeholder_positions:
             image_data = image_map[placeholder]
             path = image_data['path']
             caption = image_data.get('caption', '')
             width = image_data.get('width', '0.8')
 
-            # Extract figure number from placeholder (@IMAGE1@, @IMAGE2@, etc.)
-            fig_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
+            # Sanitize path - replace spaces with underscores to match copied files
+            sanitized_path = path.replace(' ', '_')
 
             latex = f"""
 \\begin{{figure}}[H]
 \\centering
-\\includegraphics[width={width}\\textwidth]{{{path}}}
+\\includegraphics[width={width}\\textwidth]{{{sanitized_path}}}
 """
             if caption and caption != '_':
-                # Add caption with label matching placeholder number
-                latex += f"\\caption{{{caption}}}\\label{{fig:{fig_num}}}\n"
+                # Increment counter for captioned figures
+                figure_num += 1
+                # Add caption with label matching document order
+                latex += f"\\caption{{{caption}}}\\label{{fig:{figure_num}}}\n"
             latex += "\\end{figure}\n"
 
+            replacements[placeholder] = latex
+
+        # Apply all replacements
+        for placeholder, latex in replacements.items():
             text = text.replace(placeholder, latex)
 
         return text
@@ -965,10 +982,14 @@ class SnapLogicDocumentCompiler:
                 # Preserve directory structure in work_dir
                 # e.g., assets/citizen-integrator/image.png -> work_dir/assets/citizen-integrator/image.png
                 if not os.path.isabs(image_path):
-                    dest_path = Path(work_dir) / image_path
+                    # Replace spaces with underscores for LaTeX compatibility
+                    sanitized_path = image_path.replace(' ', '_')
+                    dest_path = Path(work_dir) / sanitized_path
                     dest_path.parent.mkdir(parents=True, exist_ok=True)
                 else:
-                    dest_path = Path(work_dir) / source_path.name
+                    # For absolute paths, sanitize just the filename
+                    sanitized_name = source_path.name.replace(' ', '_')
+                    dest_path = Path(work_dir) / sanitized_name
 
                 shutil.copy(source_path, dest_path)
 
