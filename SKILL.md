@@ -118,7 +118,8 @@ Support for deep document structure following IEEE/academic best practices:
 
 **Visual Styling:**
 - **Levels 1-3**: Large → large → normal size, colored (navy/blue), bold, numbered
-- **Levels 4-5**: Normal size, black, bold/italic, run-in style (inline with text), NOT numbered
+- **Level 4 (Paragraph)**: Normal size, black, **bold**, run-in style (inline with text), NOT numbered
+- **Level 5 (Subparagraph)**: Normal size, black, **italic**, run-in style (inline with text), NOT numbered
 
 **Markdown Format in Content:**
 ```

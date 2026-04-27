@@ -143,8 +143,12 @@ Choose the appropriate document type based on the use case:
 - **Level 1:** Section (appears in TOC, numbered)
 - **Level 2:** Subsection (appears in TOC, numbered)
 - **Level 3:** Subsubsection (appears in TOC, numbered)
-- **Level 4:** Paragraph header (NOT in TOC, NOT numbered, use `**Bold Text:**` syntax)
-- **Level 5:** Subparagraph header (NOT in TOC, NOT numbered, use `**Bold Text:**` syntax)
+- **Level 4:** Paragraph header (NOT in TOC, NOT numbered, renders as **bold**, use `**Bold Text:**` syntax)
+- **Level 5:** Subparagraph header (NOT in TOC, NOT numbered, renders as *italic*, use `*Italic Text:*` syntax)
+
+**Visual Rendering:**
+- Level 4 (`\paragraph`): Normal size, black, **bold**, run-in style
+- Level 5 (`\subparagraph`): Normal size, black, *italic*, run-in style
 
 **Best Practice:** Use 3-10 sections for optimal readability. Maximum 30 sections supported.
 
@@ -164,13 +168,17 @@ Choose the appropriate document type based on the use case:
 
 ### Headers (Levels 4-5)
 
-Levels 4-5 headers are NOT separate sections—they are inline bold text within content:
+Levels 4-5 headers are NOT separate sections—they are inline formatted text within content:
 
 ```json
 {
-  "content": "Some introduction text.\n\n**Level 4 Header (Paragraph): Implementation Details**\n\nDetails here.\n\n**Level 5 Header (Subparagraph): Edge Cases**\n\nMore specific details."
+  "content": "Some introduction text.\n\n**Level 4 Header (Paragraph): Implementation Details**\n\nDetails here. This renders as bold.\n\n*Level 5 Header (Subparagraph): Edge Cases*\n\nMore specific details. This renders as italic."
 }
 ```
+
+**Important Distinction:**
+- Level 4 uses `**bold markdown**` → renders as **bold** text
+- Level 5 uses `*italic markdown*` → renders as *italic* text
 
 ### Lists
 
