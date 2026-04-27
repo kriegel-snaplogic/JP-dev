@@ -153,13 +153,17 @@ class SnapLogicDocumentCompiler:
         num_sections = len(structure.get('sections', []))
         toc = "\\tableofcontents\\newpage" if num_sections >= 3 else ""
 
-        # LOF (List of Figures) only if images exist with captions
+        # LOF (List of Figures) - configurable via include_lof flag
+        # Auto-enabled if images exist AND not explicitly disabled
+        include_lof = structure.get('include_lof', True)  # Default: true
         has_figures = self._has_figures(structure)
-        lof = "\\listoffigures\\newpage" if has_figures else ""
+        lof = "\\listoffigures\\newpage" if (include_lof and has_figures) else ""
 
-        # LOT (List of Tables) only if tables exist with captions
+        # LOT (List of Tables) - configurable via include_lot flag
+        # Auto-enabled if tables exist AND not explicitly disabled
+        include_lot = structure.get('include_lot', True)  # Default: true
         has_tables = self._has_tables(structure)
-        lot = "\\listoftables\\newpage" if has_tables else ""
+        lot = "\\listoftables\\newpage" if (include_lot and has_tables) else ""
 
         main_content = self._generate_main_content(structure)
         next_steps = self._generate_next_steps(structure)
@@ -880,12 +884,10 @@ class SnapLogicDocumentCompiler:
                 if cells:
                     rows.append(cells)
 
-            # Generate LaTeX table
+            # Generate LaTeX table based on style
             num_cols = len(headers)
 
-            # Use wrapping p columns with equal widths (top-aligned, no paragraph indent)
-            # >{\setlength{\parindent}{0pt}} prevents indentation on first line of wrapped text
-            # p{width} top-aligns content and wraps text naturally
+            # Column specification (same for all styles)
             if num_cols > 0:
                 col_width = f'\\dimexpr\\linewidth/{num_cols}-2\\tabcolsep\\relax'
                 col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' for _ in range(num_cols)])
@@ -896,30 +898,85 @@ class SnapLogicDocumentCompiler:
             latex.append('\\begin{table}[h]')
             latex.append('\\centering')
 
-            # Always add caption and label for proper numbering
-            # If no explicit caption, use empty caption (LaTeX will still number it)
+            # Caption and label
             if caption and caption != '_':
                 latex.append(f'\\caption{{{caption}}}')
             else:
-                # Empty caption - table gets numbered but no caption text
                 latex.append(f'\\caption{{}}')
-
-            # Always add label for referencing
             latex.append(f'\\label{{tab:{table_num}}}')
             latex.append('\\renewcommand{\\arraystretch}{1.2}')
-            latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
 
-            # Headers with navy background
-            white_headers = ['\\textcolor{white}{\\textbf{' + h + '}}' for h in headers]
-            latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
-            latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
-
-            # Data rows with alternating colors
-            for i, row in enumerate(rows):
-                if i % 2 == 1:
-                    latex.append(f'\\rowcolor{{snapLightGray}} {" & ".join(row)} \\\\')
-                else:
+            # Style-specific rendering
+            if style == 'minimal':
+                # Minimal: No colors, horizontal rules only (booktabs style)
+                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                latex.append('\\toprule')
+                bold_headers = [f'\\textbf{{{h}}}' for h in headers]
+                latex.append(f'{" & ".join(bold_headers)} \\\\')
+                latex.append('\\midrule')
+                for row in rows:
                     latex.append(f'{" & ".join(row)} \\\\')
+                latex.append('\\bottomrule')
+
+            elif style.startswith('accent-'):
+                # Accent: Colored header (blue/jade/orange), white rows, single rule
+                accent_color = style.split('-')[1] if '-' in style else 'blue'
+                color_map = {'blue': 'snapBlue', 'jade': 'snapJade', 'orange': 'snapOrange', 'navy': 'snapNavy'}
+                latex_color = color_map.get(accent_color, 'snapBlue')
+
+                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(white_headers)} \\\\')
+                latex.append('\\arrayrulecolor{' + latex_color + '!30}\\midrule')
+                for row in rows:
+                    latex.append(f'{" & ".join(row)} \\\\')
+
+            elif style == 'bordered':
+                # Bordered: Light gray header, all cells have borders
+                latex.append(f'\\begin{{tabular}}{{|{"|".join(["p{" + col_width + "}" for _ in range(num_cols)])}|}}')
+                latex.append('\\hline')
+                gray_headers = [f'\\textcolor{{snapNavy}}{{\\textbf{{{h}}}}}' for h in headers]
+                latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(gray_headers)} \\\\')
+                latex.append('\\hline')
+                for row in rows:
+                    latex.append(f'{" & ".join(row)} \\\\')
+                    latex.append('\\hline')
+
+            elif style.startswith('status-'):
+                # Status: Row colors indicate semantic meaning
+                # Extract row colors from style (e.g., status-jade,orange,blue)
+                colors_str = style.split('-', 1)[1] if '-' in style else ''
+                row_colors = colors_str.split(',') if colors_str else []
+                color_map = {'blue': 'snapBlue!20', 'jade': 'snapJade!20', 'orange': 'snapOrange!20',
+                            'gray': 'snapLightGray', 'navy': 'snapNavy!20', 'white': 'white'}
+
+                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                # White header with navy text
+                navy_headers = [f'\\textcolor{{snapNavy}}{{\\textbf{{{h}}}}}' for h in headers]
+                latex.append(f'{" & ".join(navy_headers)} \\\\')
+                latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
+
+                for i, row in enumerate(rows):
+                    # First column bold for row labels
+                    row_formatted = [f'\\textbf{{{row[0]}}}'] + row[1:] if row else row
+                    # Apply color if specified
+                    if i < len(row_colors):
+                        latex_color = color_map.get(row_colors[i], 'white')
+                        latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(row_formatted)} \\\\')
+                    else:
+                        latex.append(f'{" & ".join(row_formatted)} \\\\')
+
+            else:  # 'simple' (default)
+                # Simple: Navy header, alternating rows
+                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
+                latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
+                for i, row in enumerate(rows):
+                    if i % 2 == 1:
+                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(row)} \\\\')
+                    else:
+                        latex.append(f'{" & ".join(row)} \\\\')
 
             latex.append('\\end{tabular}')
             latex.append('\\end{table}')

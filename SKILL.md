@@ -203,19 +203,77 @@ Support for professional tables with automatic numbering, captions, and cross-re
 - **Automatic numbering**: Tables numbered sequentially (Table 1, Table 2, etc.)
 - **Caption placement**: Appears ABOVE table (professional standard per Chicago/IEEE)
 - **Caption spacing**: 10pt space below caption (prevents cramped appearance)
-- **List of Tables**: Automatically generated when document contains tables
+- **List of Tables**: Automatically generated when document contains tables (configurable)
 - **Cross-references**: Reference with "Table N" in text (becomes clickable)
 - **Equal column widths**: Columns automatically sized to fit page width
 - **Text wrapping**: Multi-line text supported in cells with proper alignment
-- **Professional styling**: Navy header row, alternating row colors, clean rules
+- **Multiple styles**: 7 different table styles for different purposes
 
 **Caption Options:**
 - Descriptive caption: `[TABLE:simple:Platform Tier Comparison]`
 - Empty caption: `[TABLE:simple:_]` (still numbered, just no caption text)
 
 **Table Styles:**
-- `simple`: Standard table (equal column widths, auto-sized)
-- More styles may be added in future (landscape, compact, etc.)
+
+1. **simple** (default)
+   - Navy header with white text
+   - Alternating row colors (white/light gray)
+   - Use: General-purpose tables, comparison tables, data tables
+   - 80% of use cases
+
+2. **minimal**
+   - Horizontal rules only (booktabs style: toprule, midrule, bottomrule)
+   - No colored backgrounds
+   - Bold headers only
+   - Use: Technical specifications, academic docs, dense numeric data
+   - When: Color would be distracting
+
+3. **accent-blue**
+   - Blue header with white text
+   - White background rows
+   - Use: Informational tables, API endpoints, feature highlights
+   - Semantic: Information/neutral emphasis
+
+4. **accent-jade**
+   - Jade (green) header with white text
+   - White background rows
+   - Use: Recommended configurations, success metrics, best practices
+   - Semantic: Success/positive/recommended
+
+5. **accent-orange**
+   - Orange header with white text
+   - White background rows
+   - Use: Warning tables, critical maintenance, attention-needed items
+   - Semantic: Warning/urgent/cost data
+
+6. **bordered**
+   - Light gray header with navy text
+   - All cells have visible borders
+   - White background
+   - Use: Reference tables, error code lookups, API specs
+   - When: Clear cell boundaries aid scanning
+
+7. **status-[colors]**
+   - White header with navy text
+   - Row colors indicate semantic state
+   - First column bold for row labels
+   - Syntax: `status-jade,orange,blue` (comma-separated colors for each row)
+   - Colors: jade (success), orange (warning), blue (info), gray (neutral), white (default)
+   - Use: Project status, timeline tables, requirement tracking
+   - When: Each row has a semantic meaning
+
+**Style Selection Guide:**
+```
+| Need | Use Style | Example |
+|------|-----------|---------|
+| Default/general | simple | Feature comparison |
+| Technical specs | minimal | System requirements |
+| Information | accent-blue | API endpoints |
+| Recommended | accent-jade | Best practices |
+| Warnings | accent-orange | Maintenance windows |
+| Reference/lookup | bordered | Error codes |
+| Status tracking | status-[colors] | Task progress |
+```
 
 **Cell Text Formatting:**
 - Top-aligned cells (standard for professional documents)
@@ -655,11 +713,29 @@ Build a JSON structure representing the document:
 - **Sections:** Aim for 5-10 sections for most documents. Maximum 30 supported.
 - **Section content:** Each section should be self-contained and focused. Use `\\n\\n` for paragraph breaks.
 - **Images:** Use `[IMAGE:path:caption:width]` syntax to embed images in content. Images are copied automatically.
-- **List of Figures:** Automatically generated when images are present. Appears after Table of Contents.
+- **Tables:** Use `[TABLE:style:caption]...[/TABLE]` syntax to embed tables. See Table Styles section for available styles.
+- **List of Figures (LOF):** Automatically generated when images are present (configurable via `include_lof: false`)
+- **List of Tables (LOT):** Automatically generated when tables are present (configurable via `include_lot: false`)
 - **Management summary:** 2-3 paragraphs highlighting key points (general docs only).
 - **Abstract:** Brief technical overview (technical docs only).
 - **Next steps:** Concrete, actionable items.
 - **Citations:** Only for technical documents. Keys reference `bibliography/references.bib`.
+
+**Optional Configuration Flags:**
+```json
+{
+  "title": "My Document",
+  "include_lof": false,   // Set to false to disable List of Figures (default: true)
+  "include_lot": false,   // Set to false to disable List of Tables (default: true)
+  ...
+}
+```
+
+**When to disable LOF/LOT:**
+- Documents with only 1-2 figures/tables (not worth a full page)
+- Internal documents where lists add unnecessary formality
+- Documents where page count must be minimized
+- Keep enabled (default) for professional/customer-facing documents with 3+ figures/tables
 
 ### Step 4: Handle Images and Customer Logos
 
