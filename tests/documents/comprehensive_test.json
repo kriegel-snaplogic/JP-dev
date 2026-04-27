@@ -1,0 +1,131 @@
+{
+  "title": "SnapLogic Enterprise Integration Platform",
+  "subtitle": "Comprehensive Feature Demonstration & Technical Validation",
+  "author": "SnapLogic Solutions Engineering",
+  "date": "April 27, 2026",
+  "version": "1.0",
+  "customer_name": "Acme Corporation",
+  "customer_logo": "/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logo-blue.png",
+  "management_summary": "This comprehensive document demonstrates all features of the SnapLogic document generation system. It includes advanced formatting, nested structures, visual elements, and cross-references to validate the complete document compilation pipeline.\n\n**Key Performance Indicators:**\n\n\\kpibox{snapBlue}{Active Integrations}{2,847}\n\\kpibox{snapJade}{Data Processing}{15TB/day}\n\\kpibox{snapOrange}{API Calls}{124M/month}\n\\kpibox{snapNavy}{Uptime}{99.97\\%}\n\nThis document serves as both a feature showcase and a validation suite for the LaTeX compilation system, ensuring all components render correctly in production environments.",
+  "sections": [
+    {
+      "title": "Multi-Level Header Hierarchy",
+      "content": "This section demonstrates the complete header hierarchy available in the document system, spanning five levels of depth from main sections down to fine-grained subparagraphs.\n\nEach level serves a specific purpose in document organization and should be used appropriately to maintain readability and logical flow.",
+      "subsections": [
+        {
+          "title": "Primary Subsection",
+          "content": "Subsections provide the first level of detail under main sections. They're ideal for breaking down major topics into manageable chunks.\n\n**Level 4 Header (Paragraph): Introduction to Deep Nesting**\n\nParagraph-level headers provide additional granularity without cluttering the table of contents. They appear in the document but not in the TOC.\n\n**Level 5 Header (Subparagraph): Finest Level of Detail**\n\nSubparagraphs represent the most granular level of organization, useful for very detailed technical specifications or procedural steps.",
+          "subsubsections": [
+            {
+              "title": "Tertiary Level Detail - First Example",
+              "content": "Subsubsections allow for three-level nesting, which is the recommended maximum for most documents. Going deeper can impact readability.\n\n**Level 4 Header (Paragraph): Practical Applications**\n\nAt this level, you might describe specific implementation details, configuration parameters, or technical specifications that don't warrant a full subsubsection.\n\n**Level 5 Header (Subparagraph): Edge Cases**\n\nThe finest level is reserved for exceptional cases, minor variations, or supplementary notes that enhance understanding without disrupting the main narrative flow."
+            },
+            {
+              "title": "Tertiary Level Detail - Second Example",
+              "content": "Multiple subsubsections at the same level demonstrate parallel organization, allowing readers to explore different aspects of a topic independently.\n\n**Level 4 Header (Paragraph): Implementation Guidelines**\n\nWhen structuring complex documents, use subsubsections sparingly to maintain reader focus and prevent excessive fragmentation.\n\n**Level 5 Header (Subparagraph): Document Flow**\n\nEach level should add meaningful organization without creating unnecessary hierarchy."
+            },
+            {
+              "title": "Tertiary Level Detail - Third Example",
+              "content": "This third subsubsection completes the demonstration of level-3 headers in the table of contents.\n\n**Level 4 Header (Paragraph): Best Practices**\n\nThree parallel subsubsections provide good balance between detail and readability. More than five at one level can overwhelm readers.\n\n**Level 5 Header (Subparagraph): Accessibility Considerations**\n\nProper header hierarchy also improves document accessibility for screen readers and assistive technologies."
+            }
+          ]
+        },
+        {
+          "title": "Secondary Subsection",
+          "content": "Additional subsections at the same level provide alternative perspectives or complementary information on the main topic.\n\n**Level 4 Header (Paragraph): Cross-Referencing**\n\nRefer to Section 1 for an overview, or see Section 4 for visual examples of these concepts in action.\n\n**Level 5 Header (Subparagraph): Navigation Tips**\n\nUse the table of contents to jump between sections quickly. All section numbers are clickable hyperlinks in the PDF."
+        }
+      ]
+    },
+    {
+      "title": "Comprehensive List Formatting",
+      "content": "Lists are essential for presenting structured information. This section demonstrates all supported list types, nesting levels, and combinations.",
+      "subsections": [
+        {
+          "title": "Four-Level Numbered Lists",
+          "content": "Complete project hierarchy with maximum nesting depth:\n\n1. Phase One: Requirements\n   1. Business Requirements\n      1. Stakeholder interviews\n         1. Executive stakeholders\n         2. Department heads\n         3. End users\n         4. Technical staff\n      2. Requirements documentation\n         1. Functional requirements\n         2. Non-functional requirements\n         3. Acceptance criteria\n      3. Requirements validation\n         1. Review sessions\n         2. Approval workflow\n         3. Change management\n   2. Technical Requirements\n      1. Platform specifications\n         1. Operating system\n         2. Database version\n         3. Middleware components\n         4. Network requirements\n      2. Performance targets\n         1. Response time\n         2. Throughput\n         3. Concurrent users\n      3. Security requirements\n         1. Authentication\n         2. Authorization\n         3. Encryption\n2. Phase Two: Implementation\n   1. Development Sprint 1\n      1. Backend services\n         1. API endpoints\n         2. Database schema\n         3. Business logic\n      2. Frontend components\n         1. User interface\n         2. Navigation\n         3. Forms\n   2. Development Sprint 2\n      1. Integration testing\n         1. Unit tests\n         2. Integration tests\n         3. End-to-end tests\n      2. Performance optimization\n         1. Query tuning\n         2. Caching strategy\n         3. Load balancing\n\nFour levels provide excellent granularity for complex hierarchies."
+        },
+        {
+          "title": "Four-Level Bullet Lists",
+          "content": "System architecture components with deep nesting:\n\n- Application Layer\n  - Frontend Services\n    - Web Application\n      - React components\n      - Redux state management\n      - React Router\n      - Axios API client\n    - Mobile Application\n      - Native iOS\n      - Native Android\n      - React Native shared code\n      - Push notification service\n  - Backend Services\n    - API Gateway\n      - Request routing\n      - Rate limiting\n      - Authentication middleware\n      - Response caching\n    - Microservices\n      - User service\n      - Payment service\n      - Notification service\n      - Analytics service\n- Data Layer\n  - Relational Databases\n    - PostgreSQL Primary\n      - User data\n      - Transaction records\n      - Audit logs\n      - Configuration tables\n    - PostgreSQL Replica\n      - Read-only queries\n      - Reporting\n      - Analytics\n  - NoSQL Databases\n    - Redis Cache\n      - Session data\n      - API responses\n      - Real-time data\n      - Queue messages\n    - MongoDB\n      - Document storage\n      - Unstructured data\n      - Archive data\n\nBullet lists work well for non-sequential information."
+        },
+        {
+          "title": "Mixed List Types",
+          "content": "Lists can alternate between numbered and bullet formats:\n\n**Example 1: Bullet to Numbered**\n\n- Deployment Checklist\n  1. Pre-deployment verification\n  2. Database backup\n  3. Deploy to staging\n  4. Run smoke tests\n- Configuration Management\n  1. Update environment variables\n  2. Verify SSL certificates\n  3. Configure load balancer\n  4. Test failover\n- Post-Deployment\n  1. Monitor logs\n  2. Check metrics\n  3. Verify health endpoints\n  4. Document changes\n\n**Example 2: Numbered to Bullet (Simple)**\n\n1. System Requirements\n   - Hardware specifications\n   - Operating system\n   - Network connectivity\n   - Storage capacity\n2. Software Dependencies\n   - Runtime environment\n   - Database drivers\n   - Third-party libraries\n   - Development tools\n3. Installation Steps\n   - Download packages\n   - Install dependencies\n   - Configure settings\n   - Start services\n\n**Example 3: Numbered to Bullet (Deep Nesting)**\n\n1. Project Planning\n   - Stakeholder Analysis\n     1. Identify key stakeholders\n     2. Assess influence and interest\n     3. Develop engagement strategy\n   - Resource Planning\n     1. Budget allocation\n        - Personnel costs\n        - Infrastructure costs\n        - Software licenses\n     2. Timeline estimation\n        - Critical path analysis\n        - Buffer allocation\n        - Milestone definition\n2. Execution Phase\n   - Development Tasks\n     1. Backend implementation\n        - API design\n        - Database schema\n        - Business logic\n     2. Frontend implementation\n        - UI components\n        - State management\n        - Routing\n   - Quality Assurance\n     1. Testing strategy\n        - Unit testing\n        - Integration testing\n        - User acceptance testing\n     2. Bug tracking\n        - Issue categorization\n        - Priority assignment\n        - Resolution workflow\n\nMixed lists provide flexibility for complex procedures with varying organizational needs."
+        }
+      ]
+    },
+    {
+      "title": "Table Formatting and Layouts",
+      "content": "Tables present structured data in a scannable format. This section demonstrates various table styles and a landscape-oriented full-page table.",
+      "subsections": [
+        {
+          "title": "Standard Tables",
+          "content": "Here's a comparison of integration approaches:\n\n| Approach | Complexity | Performance | Scalability | Cost |\n|----------|-----------|-------------|-------------|------|\n| Point-to-Point | Low | High | Poor | Low |\n| ESB | High | Medium | Good | High |\n| iPaaS | Medium | High | Excellent | Medium |\n| Custom API | Medium | High | Good | Medium |\n\n**Feature Comparison Table:**\n\n| Feature | Basic | Professional | Enterprise |\n|---------|-------|--------------|------------|\n| API Calls/Month | 10K | 100K | Unlimited |\n| Data Processing | 1GB | 100GB | Unlimited |\n| Support | Email | Email + Chat | 24/7 Phone |\n| SLA | 99% | 99.5% | 99.9% |\n| Custom Connectors | No | 5 | Unlimited |\n| Priority Queue | No | Yes | Yes |\n| Dedicated Resources | No | No | Yes |\n\n**Financial Summary Table with Totals Row:**\n\n| Quarter | Revenue | Expenses | Profit | Growth |\n|---------|---------|----------|--------|--------|\n| Q1 2026 | $1.2M | $800K | $400K | 15% |\n| Q2 2026 | $1.5M | $900K | $600K | 25% |\n| Q3 2026 | $1.8M | $950K | $850K | 20% |\n| Q4 2026 | $2.1M | $1.1M | $1.0M | 17% |\n| **Total** | **$6.6M** | **$3.75M** | **$2.85M** | **19%** |\n\n**Regional Performance with First Column Emphasis:**\n\n| **Region** | Customers | Revenue | Growth Rate | Market Share |\n|------------|-----------|---------|-------------|-------------|\n| **North America** | 450 | $3.2M | 22% | 35% |\n| **EMEA** | 380 | $2.8M | 18% | 28% |\n| **APAC** | 290 | $1.9M | 31% | 22% |\n| **LATAM** | 120 | $750K | 15% | 9% |\n| **Total** | **1,240** | **$8.65M** | **21%** | **24%** |\n\n**Priority Matrix with Last Column Highlight:**\n\n| Task | Owner | Due Date | Status | **Priority** |\n|------|-------|----------|--------|-------------|\n| API Migration | DevOps | 2026-05-15 | In Progress | **HIGH** |\n| Security Audit | InfoSec | 2026-05-01 | Not Started | **CRITICAL** |\n| Documentation Update | Tech Writers | 2026-04-30 | Complete | **MEDIUM** |\n| Performance Testing | QA Team | 2026-05-10 | In Progress | **HIGH** |\n| User Training | Customer Success | 2026-05-20 | Planned | **MEDIUM** |\n\nTables automatically format with professional styling, zebra striping, and bold emphasis for headers and totals."
+        },
+        {
+          "title": "Landscape Table",
+          "content": "For wide tables with many columns, use landscape orientation:\n\n[LANDSCAPE]\n\n**Complete Integration Matrix**\n\n| Source System | Target System | Protocol | Frequency | Data Volume | Error Rate | Avg Latency | Last Run | Status | Owner | Notes |\n|--------------|---------------|----------|-----------|-------------|------------|-------------|----------|--------|-------|-------|\n| Salesforce | SAP | REST API | Real-time | 2.5GB/day | 0.02% | 145ms | 2026-04-27 08:00 | Active | IT Ops | Production |\n| SAP | Snowflake | JDBC | Hourly | 15GB/day | 0.01% | 2.3s | 2026-04-27 07:00 | Active | Data Team | Batch |\n| Workday | Active Directory | LDAP | Daily | 500MB/day | 0.05% | 890ms | 2026-04-27 02:00 | Active | HR Tech | Nightly |\n| Marketo | Salesforce | REST API | 15 min | 1.2GB/day | 0.03% | 320ms | 2026-04-27 07:45 | Active | Marketing | Real-time |\n| NetSuite | PostgreSQL | REST API | Hourly | 8GB/day | 0.01% | 1.8s | 2026-04-27 07:00 | Active | Finance | Batch |\n| ServiceNow | Slack | Webhook | Real-time | 200MB/day | 0.04% | 95ms | 2026-04-27 08:00 | Active | Support | Notifications |\n\n[/LANDSCAPE]\n\nLandscape tables provide space for detailed data matrices."
+        }
+      ]
+    },
+    {
+      "title": "Images and Cross-References",
+      "content": "Visual elements enhance understanding and break up text-heavy sections. This section demonstrates image embedding and cross-referencing.\n\n[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logo-blue.png:SnapLogic Platform Architecture:0.5]\n\nAs shown in Figure 1, the SnapLogic platform provides a unified interface for enterprise integration. The architecture supports both cloud and on-premises deployments.\n\n**Cross-Referencing Examples:**\n\n- Refer to Section 1 for header hierarchy guidelines\n- See Section 2 for list formatting best practices  \n- Review Section 3 for table layout options\n- Check Figure 1 above for the platform architecture\n- Consult Appendix A for additional technical specifications\n- Reference Appendix B for troubleshooting guides\n\nCross-references create clickable navigation within the PDF document.",
+      "subsections": [
+        {
+          "title": "Multiple Image Examples",
+          "content": "Documents can include multiple images with different sizes:\n\n[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logo-white.png:Alternative Logo (White):0.4]\n\n[IMAGE:/Users/konstantinriegel/.claude/skills/latex-docs/assets/logos/snaplogic-logomark-white.png:Logomark Variation:0.3]\n\nFigure 2 and Figure 3 demonstrate alternative logo variations for different backgrounds and contexts. The white logo works well on dark backgrounds, while the logomark is ideal for compact spaces.\n\n**Image Best Practices:**\n\n- Use descriptive captions for all figures\n- Reference figures in the text before they appear\n- Maintain consistent image sizing within sections\n- Use high-resolution images (300 DPI minimum)\n- Optimize file sizes for PDF generation\n\nProper image handling ensures professional document quality."
+        }
+      ]
+    },
+    {
+      "title": "Highlight Boxes and Visual Elements",
+      "content": "Highlight boxes draw attention to important information and break up dense text sections. This section demonstrates all available box types.",
+      "subsections": [
+        {
+          "title": "Standard Highlight Boxes",
+          "content": "Four standard box types are available:\n\n[BOX:info]\n**Information Box**\n\nUse info boxes for helpful context, background information, or explanatory notes that supplement the main content without being critical to understanding.\n[/BOX]\n\n[BOX:success]\n**Success Box**\n\nSuccess boxes highlight positive outcomes, completed tasks, best practices, or confirmed working configurations. They reassure readers that they're on the right track.\n[/BOX]\n\n[BOX:warning]\n**Warning Box**\n\nWarning boxes alert readers to potential issues, common mistakes, or situations requiring caution. Use them for important notices that could prevent problems.\n[/BOX]\n\n[BOX:note]\n**Note Box**\n\nNote boxes contain supplementary information, tips, or clarifications that enhance understanding but aren't essential to the main narrative flow.\n[/BOX]\n\nEach box type uses distinct SnapLogic brand colors for immediate visual recognition."
+        },
+        {
+          "title": "KPI and Feature Boxes",
+          "content": "KPI boxes display metrics prominently:\n\n\\kpibox{snapBlue}{Pipelines}{1,245}\n\\kpibox{snapJade}{Connectors}{650+}\n\\kpibox{snapOrange}{Customers}{1,200+}\n\\kpibox{snapNavy}{Countries}{65}\n\nFeature boxes present capabilities in a structured format:\n\n\\featurebox{snapBlue}{Real-Time Processing}{Stream data with sub-second latency for time-critical integrations and event-driven architectures.}\n\\featurebox{snapJade}{Pre-Built Connectors}{Access 650+ pre-built connectors for SaaS, databases, APIs, and enterprise applications.}\n\\featurebox{snapOrange}{Visual Development}{Build integrations using drag-and-drop interface with no coding required for most use cases.}\n\nBadge boxes inline status indicators: \\badgebox{snapBlue}{PRODUCTION} \\badgebox{snapJade}{ACTIVE} \\badgebox{snapOrange}{BETA}\n\nThese visual elements enhance scannability and highlight key information."
+        }
+      ]
+    }
+  ],
+  "next_steps": [
+    "Review this comprehensive test document for formatting accuracy",
+    "Validate all list nesting levels render correctly (4 levels deep)",
+    "Verify table formatting in both portrait and landscape orientations",
+    "Confirm image embedding and figure numbering works properly",
+    "Check all cross-references are clickable and navigate correctly",
+    "Validate all highlight box types display with correct brand colors",
+    "Test KPI, feature, and badge boxes render as expected",
+    "Verify appendix sections appear after main content",
+    "Confirm table of contents includes all section levels (1-3)",
+    "Validate list of figures includes all embedded images"
+  ],
+  "contacts": [
+    {
+      "name": "Jean-Claude",
+      "role": "Advisor to the CEO, AI Team Lead, Chief LaTeX Architect",
+      "email": "jean-claude@snaplogic.com"
+    }
+  ],
+  "links": {
+    "documentation": "https://docs-snaplogic.atlassian.net/",
+    "academy": "https://academy.snaplogic.com/",
+    "community": "https://community.snaplogic.com/",
+    "homepage": "https://www.snaplogic.com/"
+  },
+  "appendix": [
+    {
+      "title": "Appendix A: Technical Specifications",
+      "content": "**System Requirements**\n\nMinimum hardware and software specifications for deployment:\n\n- **Operating System:** Linux (RHEL 8+, Ubuntu 20.04+), Windows Server 2019+, macOS 12+\n- **CPU:** 8 cores minimum, 16 cores recommended\n- **RAM:** 16GB minimum, 32GB recommended for production\n- **Storage:** 500GB SSD minimum, 1TB recommended\n- **Network:** 1Gbps minimum, 10Gbps for high-volume environments\n\n**Supported Protocols**\n\n| Protocol | Version | Purpose | Port |\n|----------|---------|---------|------|\n| HTTPS | TLS 1.2+ | API Communication | 443 |\n| JDBC | 4.2+ | Database Connectivity | Various |\n| LDAP/LDAPS | v3 | Directory Services | 389/636 |\n| SFTP | SSH-2 | File Transfer | 22 |\n| AMQP | 0.9.1 | Message Queuing | 5672 |\n\n**Performance Benchmarks**\n\nTested performance metrics under standard load:\n\n- API throughput: 10,000 requests/second\n- Data processing: 1TB/hour for batch operations\n- Concurrent pipelines: 500+ simultaneous executions\n- Latency: <100ms for simple transformations\n- Uptime: 99.97% measured over 12 months\n\nAll benchmarks conducted on recommended hardware configuration."
+    },
+    {
+      "title": "Appendix B: Troubleshooting Guide",
+      "content": "**Common Issues and Solutions**\n\n[BOX:warning]\n**Connection Timeouts**\n\nSymptom: Integration pipelines fail with timeout errors.\n\nSolution:\n1. Verify network connectivity between systems\n2. Check firewall rules allow required ports\n3. Increase timeout values in snap configuration\n4. Review target system performance and capacity\n[/BOX]\n\n**Error Code Reference**\n\n| Code | Description | Action |\n|------|-------------|--------|\n| ERR-001 | Authentication failed | Verify credentials |\n| ERR-002 | Connection timeout | Check network |\n| ERR-003 | Data validation failed | Review input format |\n| ERR-004 | Rate limit exceeded | Reduce frequency |\n| ERR-005 | Insufficient permissions | Update access rights |\n\n**Diagnostic Checklist**\n\nWhen troubleshooting integration issues:\n\n1. Check system status\n   - Verify all services are running\n   - Review system health dashboard\n   - Check resource utilization (CPU, memory, disk)\n2. Review logs\n   - Application logs for errors\n   - System logs for infrastructure issues\n   - Network logs for connectivity problems\n3. Test connectivity\n   - Ping target systems\n   - Verify DNS resolution\n   - Test authentication independently\n4. Validate data\n   - Check input data format\n   - Verify schema compatibility\n   - Test with minimal dataset\n\n[BOX:info]\n**Support Resources**\n\nFor additional assistance:\n- Email: support@snaplogic.com\n- Phone: +1-888-494-1570\n- Community: community.snaplogic.com\n- Documentation: docs-snaplogic.atlassian.net\n[/BOX]"
+    }
+  ]
+}

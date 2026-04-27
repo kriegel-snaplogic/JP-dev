@@ -34,3 +34,5 @@ Thumbs.db
 
 # Test outputs
 /tmp/
+tests/output/
+*.pdf
