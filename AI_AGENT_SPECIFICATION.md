@@ -348,6 +348,527 @@ For wide tables (7-8 columns), use landscape orientation:
 
 This resolves to: `/Users/konstantinriegel/.claude/skills/latex-docs/assets/diagrams/architecture.png`
 
+---
+
+## 🤖 AI Agent Image Preparation Guide
+
+**This section is specifically for AI agents preparing document content with images.**
+
+### Decision Tree: How to Handle Images
+
+```
+START: I need to include an image in the document
+│
+├─ Does the image already exist?
+│  │
+│  ├─ YES: Is it in the skill's assets directory?
+│  │  │
+│  │  ├─ YES: ✅ Use relative path
+│  │  │      Example: "assets/diagrams/workflow.png"
+│  │  │
+│  │  └─ NO: Is it a temporary file?
+│  │     │
+│  │     ├─ YES: ✅ Use absolute path
+│  │     │      Example: "/tmp/generated_chart_12345.png"
+│  │     │
+│  │     └─ NO: Should I copy it to assets first?
+│  │            │
+│  │            ├─ YES (reusable): Copy to assets/, use relative path
+│  │            └─ NO (one-time): ✅ Use absolute path
+│  │
+│  └─ NO: I need to generate/download the image
+│     │
+│     ├─ Is it reusable across documents?
+│     │  │
+│     │  ├─ YES: Generate → Save to assets/ → Use relative path
+│     │  │      Example: Generate chart → assets/charts/revenue_2026.png
+│     │  │
+│     │  └─ NO: Generate → Save to /tmp/ → Use absolute path
+│     │         Example: Generate chart → /tmp/chart_abc123.png
+│     │
+│     └─ Do I need to fetch from URL?
+│        │
+│        ├─ Download image → Determine if reusable → Choose path type
+│        └─ Verify format (PNG/JPG/PDF only, NO SVG)
+```
+
+### Step-by-Step Workflow for AI Agents
+
+#### Scenario 1: Using Existing Images from Assets
+
+**When:** Images already exist in the skill's asset directory
+
+```python
+from pathlib import Path
+
+# 1. Define skill directory
+skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+assets_dir = skill_dir / "assets"
+
+# 2. Verify image exists
+image_path = assets_dir / "diagrams" / "architecture.png"
+if not image_path.exists():
+    raise FileNotFoundError(f"Asset not found: {image_path}")
+
+# 3. Build relative path for JSON (relative to skill_dir)
+relative_path = image_path.relative_to(skill_dir)
+# Result: "assets/diagrams/architecture.png"
+
+# 4. Create content with relative path
+content = f"""
+Our system architecture is shown below:
+
+[IMAGE:{relative_path}:System Architecture Diagram:0.8]
+
+As shown in Figure 1, the system consists of three main layers.
+"""
+
+# 5. Add to document structure
+document = {
+    "title": "Architecture Overview",
+    "version": "1.0",
+    "sections": [
+        {
+            "title": "System Design",
+            "content": content
+        }
+    ]
+}
+```
+
+#### Scenario 2: Generating Images Dynamically
+
+**When:** Creating charts, graphs, or visualizations programmatically
+
+```python
+import tempfile
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# 1. Generate the image
+def generate_chart():
+    """Generate a sample chart and return path"""
+    # Create chart
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3, 4], [10, 20, 25, 30])
+    ax.set_title("Revenue Growth")
+    ax.set_xlabel("Quarter")
+    ax.set_ylabel("Revenue ($M)")
+    
+    # Save to temporary file
+    temp_file = tempfile.NamedTemporaryFile(
+        suffix='.png',
+        delete=False,
+        dir='/tmp'
+    )
+    fig.savefig(temp_file.name, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    
+    return temp_file.name
+
+# 2. Generate and get absolute path
+chart_path = generate_chart()
+# Result: "/tmp/tmpxyz123.png"
+
+# 3. Verify file was created
+if not Path(chart_path).exists():
+    raise FileNotFoundError(f"Generated image not found: {chart_path}")
+
+# 4. Use absolute path in content
+content = f"""
+Revenue trends for 2026:
+
+[IMAGE:{chart_path}:Revenue Growth by Quarter:0.7]
+
+Figure 1 shows consistent growth across all quarters.
+"""
+
+# 5. Add to document
+document = {
+    "title": "Q4 2026 Report",
+    "version": "1.0",
+    "sections": [
+        {
+            "title": "Financial Performance",
+            "content": content
+        }
+    ]
+}
+
+# Note: Temporary file will be copied during compilation,
+# so it's safe to clean up after PDF generation
+```
+
+#### Scenario 3: Downloading Images from URLs
+
+**When:** Fetching logos, diagrams, or screenshots from web sources
+
+```python
+import requests
+from pathlib import Path
+import tempfile
+
+def download_image(url: str, save_to_assets: bool = False) -> str:
+    """
+    Download image from URL and return path for use in document.
+    
+    Args:
+        url: Image URL to download
+        save_to_assets: If True, save to assets/ (reusable).
+                       If False, save to /tmp/ (one-time use)
+    
+    Returns:
+        Path to downloaded image (str)
+    """
+    # Download image
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    
+    # Determine file extension
+    content_type = response.headers.get('content-type', '')
+    if 'png' in content_type:
+        ext = '.png'
+    elif 'jpeg' in content_type or 'jpg' in content_type:
+        ext = '.jpg'
+    elif 'pdf' in content_type:
+        ext = '.pdf'
+    else:
+        raise ValueError(f"Unsupported image format: {content_type}")
+    
+    if save_to_assets:
+        # Save to assets directory (reusable)
+        skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+        assets_dir = skill_dir / "assets" / "downloaded"
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create safe filename from URL
+        filename = url.split('/')[-1].replace(' ', '_')
+        if not filename.endswith(ext):
+            filename += ext
+        
+        save_path = assets_dir / filename
+        save_path.write_bytes(response.content)
+        
+        # Return relative path
+        return str(save_path.relative_to(skill_dir))
+    else:
+        # Save to temp directory (one-time use)
+        temp_file = tempfile.NamedTemporaryFile(
+            suffix=ext,
+            delete=False,
+            dir='/tmp'
+        )
+        temp_file.write(response.content)
+        temp_file.close()
+        
+        # Return absolute path
+        return temp_file.name
+
+# Example: Download customer logo (reusable)
+logo_url = "https://example.com/acme-logo.png"
+logo_path = download_image(logo_url, save_to_assets=True)
+# Result: "assets/downloaded/acme-logo.png"
+
+# Example: Download one-time screenshot
+screenshot_url = "https://example.com/temp-screenshot.png"
+screenshot_path = download_image(screenshot_url, save_to_assets=False)
+# Result: "/tmp/tmpxyz456.png"
+
+# Use in document
+document = {
+    "title": "Customer Overview",
+    "customer_logo": logo_path,  # Can use for customer_logo field
+    "sections": [
+        {
+            "title": "Product Screenshot",
+            "content": f"[IMAGE:{screenshot_path}:Product Interface:0.8]"
+        }
+    ]
+}
+```
+
+#### Scenario 4: Converting SVG to PNG
+
+**When:** You have SVG images that need conversion (LaTeX doesn't support SVG)
+
+```python
+import subprocess
+from pathlib import Path
+
+def convert_svg_to_png(svg_path: str, output_path: str = None, dpi: int = 300) -> str:
+    """
+    Convert SVG to PNG for LaTeX compatibility.
+    
+    Requires: ImageMagick installed (brew install imagemagick)
+    
+    Args:
+        svg_path: Path to SVG file
+        output_path: Where to save PNG (default: same name, .png extension)
+        dpi: Resolution for conversion (default 300 for print quality)
+    
+    Returns:
+        Path to generated PNG file
+    """
+    svg_path = Path(svg_path)
+    
+    if not svg_path.exists():
+        raise FileNotFoundError(f"SVG not found: {svg_path}")
+    
+    # Determine output path
+    if output_path is None:
+        output_path = svg_path.with_suffix('.png')
+    else:
+        output_path = Path(output_path)
+    
+    # Convert using ImageMagick
+    result = subprocess.run([
+        'convert',
+        '-density', str(dpi),
+        '-background', 'white',
+        '-alpha', 'remove',
+        str(svg_path),
+        str(output_path)
+    ], capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        raise RuntimeError(f"SVG conversion failed: {result.stderr}")
+    
+    if not output_path.exists():
+        raise RuntimeError(f"PNG was not created: {output_path}")
+    
+    return str(output_path)
+
+# Example usage
+svg_file = "/Users/konstantinriegel/.claude/skills/latex-docs/assets/diagrams/workflow.svg"
+png_file = convert_svg_to_png(svg_file)
+# Result: "/Users/konstantinriegel/.claude/skills/latex-docs/assets/diagrams/workflow.png"
+
+# Use converted PNG in document
+content = f"[IMAGE:assets/diagrams/workflow.png:Workflow Diagram:0.8]"
+```
+
+#### Scenario 5: Multiple Images in Sequence
+
+**When:** Adding multiple images to a single section
+
+```python
+from pathlib import Path
+
+skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+
+# Define multiple images with their metadata
+images = [
+    {
+        "path": "assets/screenshots/step1.png",
+        "caption": "Step 1: Login Screen",
+        "width": 0.6
+    },
+    {
+        "path": "assets/screenshots/step2.png",
+        "caption": "Step 2: Dashboard",
+        "width": 0.6
+    },
+    {
+        "path": "assets/screenshots/step3.png",
+        "caption": "Step 3: Configuration",
+        "width": 0.6
+    }
+]
+
+# Verify all images exist
+for img in images:
+    img_path = skill_dir / img["path"]
+    if not img_path.exists():
+        raise FileNotFoundError(f"Image missing: {img_path}")
+
+# Build content with image references
+content_parts = ["Follow these steps to configure the system:\n\n"]
+
+for idx, img in enumerate(images, start=1):
+    content_parts.append(
+        f"**Step {idx}:** {img['caption'].split(':')[1].strip()}\n\n"
+        f"[IMAGE:{img['path']}:{img['caption']}:{img['width']}]\n\n"
+        f"As shown in Figure {idx}, ...\n\n"
+    )
+
+content = "".join(content_parts)
+
+# Add to document
+document = {
+    "title": "Setup Guide",
+    "version": "1.0",
+    "sections": [
+        {
+            "title": "Configuration Steps",
+            "content": content
+        }
+    ]
+}
+```
+
+### Common Pitfalls and Solutions
+
+#### ❌ Pitfall 1: Using Relative Paths Without Skill Directory Context
+
+```python
+# WRONG - This assumes current working directory
+content = "[IMAGE:diagram.png:My Diagram:0.7]"
+# This will fail because compilation happens in /tmp/
+```
+
+```python
+# CORRECT - Use relative to skill directory OR absolute
+content = "[IMAGE:assets/diagrams/diagram.png:My Diagram:0.7]"
+# or
+content = "[IMAGE:/full/path/to/diagram.png:My Diagram:0.7]"
+```
+
+#### ❌ Pitfall 2: Not Verifying Image Exists Before Compilation
+
+```python
+# WRONG - Assume image exists
+document = {
+    "sections": [
+        {"title": "Overview", "content": "[IMAGE:missing.png:Oops:0.7]"}
+    ]
+}
+# Compilation will fail with cryptic LaTeX error
+```
+
+```python
+# CORRECT - Verify first
+from pathlib import Path
+
+def verify_image(path: str, skill_dir: Path) -> bool:
+    """Verify image exists before adding to document"""
+    if Path(path).is_absolute():
+        return Path(path).exists()
+    else:
+        return (skill_dir / path).exists()
+
+skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+image_path = "assets/diagram.png"
+
+if verify_image(image_path, skill_dir):
+    content = f"[IMAGE:{image_path}:My Diagram:0.7]"
+else:
+    raise FileNotFoundError(f"Image not found: {image_path}")
+```
+
+#### ❌ Pitfall 3: Using SVG Files Directly
+
+```python
+# WRONG - SVG not supported
+content = "[IMAGE:diagram.svg:Architecture:0.8]"
+# LaTeX will fail to render
+```
+
+```python
+# CORRECT - Convert SVG to PNG first
+svg_path = "assets/diagram.svg"
+png_path = svg_path.replace('.svg', '.png')
+
+if not Path(png_path).exists():
+    convert_svg_to_png(svg_path, png_path)
+
+content = f"[IMAGE:{png_path}:Architecture:0.8]"
+```
+
+#### ❌ Pitfall 4: Forgetting to Reference Images in Text
+
+```python
+# WRONG - Image appears but no text reference
+content = """
+System architecture overview.
+
+[IMAGE:assets/arch.png:System Architecture:0.8]
+
+The system consists of three layers.
+"""
+# Image numbered but not referenced - looks unprofessional
+```
+
+```python
+# CORRECT - Always reference figures
+content = """
+System architecture overview is shown in Figure 1.
+
+[IMAGE:assets/arch.png:System Architecture:0.8]
+
+As illustrated in Figure 1, the system consists of three layers.
+"""
+```
+
+### Validation Checklist for AI Agents
+
+Before adding images to a document, verify:
+
+```python
+def validate_image_for_document(image_path: str, skill_dir: Path) -> dict:
+    """
+    Validate image is ready for document compilation.
+    
+    Returns dict with: {"valid": bool, "errors": list, "warnings": list}
+    """
+    errors = []
+    warnings = []
+    
+    # Resolve path
+    if Path(image_path).is_absolute():
+        full_path = Path(image_path)
+    else:
+        full_path = skill_dir / image_path
+    
+    # Check 1: File exists
+    if not full_path.exists():
+        errors.append(f"File not found: {full_path}")
+        return {"valid": False, "errors": errors, "warnings": warnings}
+    
+    # Check 2: File is readable
+    if not full_path.is_file():
+        errors.append(f"Not a file: {full_path}")
+    
+    # Check 3: Supported format
+    supported_formats = ['.png', '.jpg', '.jpeg', '.pdf']
+    if full_path.suffix.lower() not in supported_formats:
+        if full_path.suffix.lower() == '.svg':
+            errors.append(f"SVG not supported. Convert to PNG first: {full_path}")
+        else:
+            errors.append(f"Unsupported format {full_path.suffix}. Use PNG, JPG, or PDF.")
+    
+    # Check 4: File size (warn if > 5MB)
+    file_size_mb = full_path.stat().st_size / (1024 * 1024)
+    if file_size_mb > 5:
+        warnings.append(f"Large file ({file_size_mb:.1f}MB). Consider resizing: {full_path}")
+    
+    # Check 5: Spaces in filename (auto-converted, but warn)
+    if ' ' in full_path.name:
+        warnings.append(f"Filename contains spaces. Will be converted to underscores: {full_path.name}")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "warnings": warnings
+    }
+
+# Example usage
+skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+result = validate_image_for_document("assets/diagram.png", skill_dir)
+
+if not result["valid"]:
+    print("❌ Image validation failed:")
+    for error in result["errors"]:
+        print(f"  - {error}")
+else:
+    print("✅ Image validation passed")
+    if result["warnings"]:
+        print("⚠️  Warnings:")
+        for warning in result["warnings"]:
+            print(f"  - {warning}")
+```
+
+---
+
 **Spaces in Filenames:**
 - **CRITICAL:** The compilation script automatically replaces spaces with underscores
 - If your file is named `my diagram.png`, reference it as `my diagram.png` in JSON
