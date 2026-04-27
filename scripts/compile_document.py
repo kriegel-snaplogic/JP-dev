@@ -877,6 +877,11 @@ class SnapLogicDocumentCompiler:
         def restore_table(match):
             style, caption, table_id, table_num, table_md = match.groups()
 
+            # Check for landscape prefix
+            is_landscape = style.startswith('landscape-')
+            if is_landscape:
+                style = style.replace('landscape-', '', 1)
+
             # Parse style and emphasis options
             # Format: "simple:first-bold,last-jade,total-row" or just "simple"
             style_parts = style.split(':')
@@ -911,16 +916,73 @@ class SnapLogicDocumentCompiler:
             # Generate LaTeX table based on style
             num_cols = len(headers)
 
-            # Column specification (same for all styles)
+            # Validate landscape table constraints
+            if is_landscape:
+                if num_cols > 10:
+                    return f"ERROR: Landscape table has {num_cols} columns (max 10 allowed)"
+                if len(rows) > 25:
+                    return f"ERROR: Landscape table has {len(rows)} rows (max 25 allowed)"
+
+            # Column specification - use full available width
             if num_cols > 0:
-                col_width = f'\\dimexpr\\linewidth/{num_cols}-2\\tabcolsep\\relax'
-                col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' for _ in range(num_cols)])
+                if is_landscape:
+                    # Landscape: tabularx with full \linewidth and smart column widths
+                    use_tabularx = True
+                    table_width = '\\linewidth'
+
+                    # Calculate actual content width needs by scanning all cells
+                    max_lengths = []
+                    for col_idx in range(num_cols):
+                        # Check header length
+                        header_len = len(headers[col_idx]) if col_idx < len(headers) else 0
+                        # Check all row cell lengths
+                        cell_lengths = [len(row[col_idx]) if col_idx < len(row) else 0 for row in rows]
+                        # Take the maximum
+                        max_len = max([header_len] + cell_lengths)
+                        max_lengths.append(max_len)
+
+                    # Convert character counts to relative widths
+                    # Add padding multiplier since character count != visual width
+                    # (fonts, spacing, wrapping all affect real width needs)
+                    widths = []
+                    for max_len in max_lengths:
+                        if max_len < 6:
+                            widths.append(0.5)  # Minimum for very tiny (%, ID)
+                        elif max_len < 10:
+                            widths.append(0.7)  # Short content
+                        elif max_len < 14:
+                            widths.append(1.0)  # Medium
+                        elif max_len < 18:
+                            widths.append(1.4)  # Longer content needs more room
+                        else:
+                            widths.append(1.6)  # Extra width for long content
+
+                    total_width = sum(widths)
+                    # Normalize so they sum to num_cols (required by tabularx)
+                    normalized = [w * num_cols / total_width for w in widths]
+
+                    # Build column spec with proportional X columns + raggedright to prevent hyphenation
+                    col_spec = ''.join([f'>{{\\hsize={n:.2f}\\hsize\\raggedright\\arraybackslash\\setlength{{\\parindent}}{{0pt}}}}X' for n in normalized])
+                else:
+                    # Portrait: use \linewidth (current text width)
+                    use_tabularx = False
+                    col_width = f'\\dimexpr\\linewidth/{num_cols}-2\\tabcolsep\\relax'
+                    col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' for _ in range(num_cols)])
             else:
+                use_tabularx = False
                 col_spec = 'l'
 
             latex = []
-            latex.append('\\begin{table}[h]')
-            latex.append('\\centering')
+
+            # Start landscape environment if needed
+            if is_landscape:
+                latex.append('\\begin{landscape}')
+                # For landscape, use full page width with minimal margins
+                latex.append('\\begin{table}[h]')
+                # No centering for landscape - use full width
+            else:
+                latex.append('\\begin{table}[h]')
+                latex.append('\\centering')
 
             # Caption and label
             if caption and caption != '_':
@@ -945,7 +1007,10 @@ class SnapLogicDocumentCompiler:
             # Style-specific rendering
             if base_style == 'minimal':
                 # Minimal: No colors, horizontal rules only (booktabs style)
-                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                if use_tabularx:
+                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                else:
+                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 latex.append('\\toprule')
                 bold_headers = [f'\\textbf{{{h}}}' for h in headers]
                 latex.append(f'{" & ".join(bold_headers)} \\\\')
@@ -960,7 +1025,10 @@ class SnapLogicDocumentCompiler:
                 color_map = {'blue': 'snapBlue', 'jade': 'snapJade', 'orange': 'snapOrange', 'navy': 'snapNavy'}
                 latex_color = color_map.get(accent_color, 'snapBlue')
 
-                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                if use_tabularx:
+                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                else:
+                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(white_headers)} \\\\')
                 latex.append('\\arrayrulecolor{' + latex_color + '!30}\\midrule')
@@ -969,7 +1037,11 @@ class SnapLogicDocumentCompiler:
 
             elif style == 'bordered':
                 # Bordered: Light gray header, all cells have borders
-                latex.append(f'\\begin{{tabular}}{{|{"|".join(["p{" + col_width + "}" for _ in range(num_cols)])}|}}')
+                if use_tabularx:
+                    # For tabularx with borders, we need a different approach
+                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{|{"||".join(["X" for _ in range(num_cols)])}|}}')
+                else:
+                    latex.append(f'\\begin{{tabular}}{{|{"|".join(["p{" + col_width + "}" for _ in range(num_cols)])}|}}')
                 latex.append('\\hline')
                 gray_headers = [f'\\textcolor{{snapNavy}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(gray_headers)} \\\\')
@@ -986,7 +1058,10 @@ class SnapLogicDocumentCompiler:
                 color_map = {'blue': 'snapBlue!20', 'jade': 'snapJade!20', 'orange': 'snapOrange!20',
                             'gray': 'snapLightGray', 'navy': 'snapNavy!20', 'white': 'white'}
 
-                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                if use_tabularx:
+                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                else:
+                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 # White header with navy text
                 navy_headers = [f'\\textcolor{{snapNavy}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'{" & ".join(navy_headers)} \\\\')
@@ -1004,7 +1079,10 @@ class SnapLogicDocumentCompiler:
 
             else:  # 'simple' (default)
                 # Simple: Navy header, alternating rows (white/light gray) with optional emphasis
-                latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                if use_tabularx:
+                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                else:
+                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
                 latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
@@ -1045,8 +1123,15 @@ class SnapLogicDocumentCompiler:
                     else:
                         latex.append(f'{" & ".join(formatted_cells)} \\\\')
 
-            latex.append('\\end{tabular}')
+            if use_tabularx:
+                latex.append('\\end{tabularx}')
+            else:
+                latex.append('\\end{tabular}')
             latex.append('\\end{table}')
+
+            # End landscape environment if needed
+            if is_landscape:
+                latex.append('\\end{landscape}')
 
             return '\n'.join(latex)
 
