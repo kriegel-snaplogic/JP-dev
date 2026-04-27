@@ -868,6 +868,20 @@ class SnapLogicDocumentCompiler:
         def restore_table(match):
             style, caption, table_id, table_num, table_md = match.groups()
 
+            # Parse style and emphasis options
+            # Format: "simple:first-bold,last-jade,total-row" or just "simple"
+            style_parts = style.split(':')
+            base_style = style_parts[0]
+            emphasis_opts = style_parts[1].split(',') if len(style_parts) > 1 else []
+
+            # Parse emphasis options
+            first_bold = 'first-bold' in emphasis_opts
+            last_color = None
+            for opt in emphasis_opts:
+                if opt.startswith('last-'):
+                    last_color = opt.split('-')[1]  # jade, orange, blue, navy
+            total_row = 'total-row' in emphasis_opts
+
             # Parse markdown table
             lines = [l.strip() for l in table_md.strip().split('\n') if l.strip()]
             if len(lines) < 2:
@@ -907,8 +921,20 @@ class SnapLogicDocumentCompiler:
             latex.append(f'\\label{{tab:{table_num}}}')
             latex.append('\\renewcommand{\\arraystretch}{1.2}')
 
+            # Helper function to format cell with emphasis
+            def format_cell(cell_text, is_first_col=False, is_last_col=False, is_total_row=False):
+                formatted = cell_text
+                # First column bold
+                if is_first_col and first_bold:
+                    formatted = f'\\textbf{{{formatted}}}'
+                # Last column with color background (applied at row level)
+                # Total row makes everything bold
+                if is_total_row:
+                    formatted = f'\\textbf{{{formatted}}}'
+                return formatted
+
             # Style-specific rendering
-            if style == 'minimal':
+            if base_style == 'minimal':
                 # Minimal: No colors, horizontal rules only (booktabs style)
                 latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 latex.append('\\toprule')
@@ -968,16 +994,47 @@ class SnapLogicDocumentCompiler:
                         latex.append(f'{" & ".join(row_formatted)} \\\\')
 
             else:  # 'simple' (default)
-                # Simple: Navy header, alternating rows (white/light gray)
+                # Simple: Navy header, alternating rows (white/light gray) with optional emphasis
                 latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
                 white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
                 latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
                 latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
+
+                # Color map for last column emphasis
+                last_col_colors = {
+                    'jade': 'snapJade!20',
+                    'orange': 'snapOrange!20',
+                    'blue': 'snapBlue!20',
+                    'navy': 'snapNavy!20'
+                }
+
                 for i, row in enumerate(rows):
-                    if i % 2 == 1:
-                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(row)} \\\\')
+                    is_last_row = (i == len(rows) - 1)
+                    is_total = is_last_row and total_row
+
+                    # Format cells with emphasis
+                    formatted_cells = []
+                    for j, cell in enumerate(row):
+                        is_first = (j == 0)
+                        is_last = (j == len(row) - 1)
+                        formatted = format_cell(cell, is_first, is_last, is_total)
+
+                        # Add cellcolor for last column if specified
+                        if is_last and last_color and not is_total:
+                            latex_color = last_col_colors.get(last_color, 'snapBlue!20')
+                            formatted = f'\\cellcolor{{{latex_color}}}{formatted}'
+
+                        formatted_cells.append(formatted)
+
+                    # Row rendering with appropriate background
+                    if is_total:
+                        # Total row: Navy background with white text
+                        white_cells = [f'\\textcolor{{white}}{{{c}}}' for c in formatted_cells]
+                        latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_cells)} \\\\')
+                    elif i % 2 == 1:
+                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
                     else:
-                        latex.append(f'{" & ".join(row)} \\\\')
+                        latex.append(f'{" & ".join(formatted_cells)} \\\\')
 
             latex.append('\\end{tabular}')
             latex.append('\\end{table}')
