@@ -25,6 +25,10 @@ class SnapLogicDocumentCompiler:
         self.skill_dir = Path(skill_dir)
         self.templates_dir = self.skill_dir / "templates"
         self.assets_dir = self.skill_dir / "assets"
+        # Global counters to ensure unique placeholders across all sections
+        self.image_counter = 0
+        self.global_image_map = {}
+        self.table_counter = 0
 
     def compile(self, input_json: str, output_pdf: str, doc_type: str = "general",
                 font_size: str = "11pt", paper_size: str = "letterpaper",
@@ -52,6 +56,11 @@ class SnapLogicDocumentCompiler:
         work_dir = tempfile.mkdtemp(prefix='snaplogic_doc_')
 
         try:
+            # Reset global state for new compilation
+            self.image_counter = 0
+            self.global_image_map = {}
+            self.table_counter = 0
+
             # Generate LaTeX content
             latex_content = self._generate_latex(structure, doc_type, font_size,
                                                  paper_size, color_scheme, title_page_style)
@@ -148,6 +157,10 @@ class SnapLogicDocumentCompiler:
         has_figures = self._has_figures(structure)
         lof = "\\listoffigures\\newpage" if has_figures else ""
 
+        # LOT (List of Tables) only if tables exist with captions
+        has_tables = self._has_tables(structure)
+        lot = "\\listoftables\\newpage" if has_tables else ""
+
         main_content = self._generate_main_content(structure)
         next_steps = self._generate_next_steps(structure)
         contacts = self._generate_contacts(structure)
@@ -157,6 +170,29 @@ class SnapLogicDocumentCompiler:
         author = self._escape_latex(structure.get('author', ''))
         date = self._escape_latex(structure.get('date', ''))
         version = structure.get('version', '1.0')
+
+        # Generate headers/footers based on document type
+        if doc_type == "technical":
+            # Technical: Document title in header left, page number in header right, metadata in footer center
+            header_content = r'''\fancyhead[L]{\small\textit{''' + title + r'''}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}'''
+            footer_content = r'''\fancyfoot[C]{\footnotesize ''' + date + r''' | Version ''' + version + r'''}
+\renewcommand{\footrulewidth}{0pt}'''
+        elif doc_type == "internal":
+            # Internal: Minimal header with title and page number
+            header_content = r'''\fancyhead[L]{\small''' + title + r'''}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}'''
+            footer_content = r'''\fancyfoot[C]{\footnotesize ''' + date + r'''}
+\renewcommand{\footrulewidth}{0pt}'''
+        else:  # general/customer-facing
+            # Customer-facing: Clean footer only with page numbers and metadata
+            header_content = r'''\renewcommand{\headrulewidth}{0pt}'''
+            footer_content = r'''\fancyfoot[L]{\footnotesize ''' + date + r'''}
+\fancyfoot[C]{\footnotesize Page \thepage\ of \pageref{LastPage}}
+\fancyfoot[R]{\footnotesize Version ''' + version + r'''}
+\renewcommand{\footrulewidth}{0pt}'''
 
         replacements = {
             '{{DOC_TYPE}}': doc_type,
@@ -172,14 +208,15 @@ class SnapLogicDocumentCompiler:
             '{{TITLE}}': title,
             '{{AUTHOR}}': author,
             '{{DATE}}': date,
-            '{{HEADER_CONTENT}}': '',
-            '{{FOOTER_CONTENT}}': '',
+            '{{HEADER_CONTENT}}': header_content,
+            '{{FOOTER_CONTENT}}': footer_content,
             '{{HEADER_LEFT}}': title,
             '{{FOOTER_RIGHT}}': f'Page \\thepage\\ of \\pageref{{LastPage}}',
             '{{TITLE_PAGE_CONTENT}}': '',
             '{{TITLE_PAGE}}': title_page,
             '{{TOC_SECTION}}': toc,
             '{{LOF_SECTION}}': lof,
+            '{{LOT_SECTION}}': lot,
             '{{ABSTRACT_SECTION}}': abstract,
             '{{MAIN_CONTENT}}': main_content,
             '{{NEXT_STEPS}}': next_steps,
@@ -277,6 +314,16 @@ class SnapLogicDocumentCompiler:
         # Look for [IMAGE:path:caption:width] where caption is not empty or _
         matches = re.findall(r'\[IMAGE:[^:]+:([^:]*)', content_str)
         return any(caption and caption != '_' for caption in matches)
+
+    def _has_tables(self, structure: Dict[str, Any]) -> bool:
+        """Check if document contains any tables with captions"""
+        content_str = json.dumps(structure)
+        # Look for wrapped tables [TABLE:style:caption] where caption is not _
+        wrapped_matches = re.findall(r'\[TABLE:[^:]+:([^\]]+)\]', content_str)
+        has_wrapped = any(caption and caption != '_' for caption in wrapped_matches)
+        # Unwrapped markdown tables get automatic captions during processing
+        has_unwrapped = bool(re.search(r'\|[^\n]+\|', content_str))
+        return has_wrapped or has_unwrapped
 
     def _generate_abstract(self, structure: Dict[str, Any]) -> str:
         """Generate management summary or abstract"""
@@ -454,20 +501,22 @@ class SnapLogicDocumentCompiler:
 
     def _extract_images(self, text: str) -> Tuple[str, Dict]:
         """Extract [IMAGE:path:caption:width] tags and replace with placeholders"""
+        # Use global counter and map to ensure unique placeholders across all sections
         image_map = {}
-        counter = 0
 
         def replace_image(match):
-            nonlocal counter
-            counter += 1
-            placeholder = f"@IMAGE{counter}@"
+            self.image_counter += 1
+            placeholder = f"@IMAGE{self.image_counter}@"
 
             groups = match.groups()
-            image_map[placeholder] = {
+            image_data = {
                 'path': groups[0] if len(groups) > 0 else '',
                 'caption': groups[1] if len(groups) > 1 and groups[1] else '',
                 'width': groups[2] if len(groups) > 2 and groups[2] else '0.8'
             }
+            image_map[placeholder] = image_data
+            # Also store in global map for restoration phase
+            self.global_image_map[placeholder] = image_data
             return placeholder
 
         pattern = r'\[IMAGE:([^:]+):([^:]*):?([^\]]*)\]'
@@ -520,27 +569,20 @@ class SnapLogicDocumentCompiler:
         return text
 
     def _process_tables(self, text: str) -> str:
-        """Process markdown tables"""
+        """Process markdown tables with global counter for labeling"""
         # Convert \\n to actual newlines for regex
         text = text.replace('\\n', '\n')
 
-        # Auto-wrap unwrapped markdown tables
-        unwrapped_pattern = r'(\|[^\n]+\|\n\|[-:\s|]+\|\n(?:\|[^\n]+\|\n?)+)'
-
-        def wrap_table(match):
-            table_content = match.group(1).strip()
-            table_id = abs(hash(table_content)) % 100000
-            return f'@TABLE:simple:_:{table_id}@\n{table_content}\n@TABLEEND:{table_id}@'
-
-        text = re.sub(unwrapped_pattern, wrap_table, text, flags=re.MULTILINE)
-
-        # Process wrapped tables: [TABLE:style:caption]...table...[/TABLE]
+        # Only process explicitly wrapped tables: [TABLE:style:caption]...table...[/TABLE]
+        # Unwrapped markdown tables will render as inline tables without numbering
         table_pattern = r'\[TABLE:([^:]+):([^\]]+)\](.*?)\[/TABLE\]'
 
         def replace_table(match):
+            self.table_counter += 1
             style, caption, table_md = match.groups()
             table_id = abs(hash(f"{style}{caption}{table_md}")) % 100000
-            return f"@TABLE:{style}:{caption}:{table_id}@{table_md.strip()}@TABLEEND:{table_id}@"
+            # Include table number in placeholder for labeling
+            return f"@TABLE:{style}:{caption}:{table_id}:{self.table_counter}@{table_md.strip()}@TABLEEND:{table_id}@"
 
         text = re.sub(table_pattern, replace_table, text, flags=re.DOTALL)
 
@@ -814,11 +856,12 @@ class SnapLogicDocumentCompiler:
         return text
 
     def _restore_tables(self, text: str) -> str:
-        """Restore table placeholders to LaTeX tables"""
-        table_pattern = r'@TABLE:([^:]+):([^:]+):(\d+)@(.*?)@TABLEEND:\3@'
+        """Restore table placeholders to LaTeX tables with labels"""
+        # Updated pattern to capture table number
+        table_pattern = r'@TABLE:([^:]+):([^:]+):(\d+):(\d+)@(.*?)@TABLEEND:\3@'
 
         def restore_table(match):
-            style, caption, table_id, table_md = match.groups()
+            style, caption, table_id, table_num, table_md = match.groups()
 
             # Parse markdown table
             lines = [l.strip() for l in table_md.strip().split('\n') if l.strip()]
@@ -840,20 +883,31 @@ class SnapLogicDocumentCompiler:
             # Generate LaTeX table
             num_cols = len(headers)
 
-            # Use wrapping p columns with equal widths
+            # Use wrapping p columns with equal widths (top-aligned, no paragraph indent)
+            # >{\setlength{\parindent}{0pt}} prevents indentation on first line of wrapped text
+            # p{width} top-aligns content and wraps text naturally
             if num_cols > 0:
                 col_width = f'\\dimexpr\\linewidth/{num_cols}-2\\tabcolsep\\relax'
-                col_spec = ''.join([f'p{{{col_width}}}' for _ in range(num_cols)])
+                col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' for _ in range(num_cols)])
             else:
                 col_spec = 'l'
 
             latex = []
             latex.append('\\begin{table}[h]')
             latex.append('\\centering')
+
+            # Always add caption and label for proper numbering
+            # If no explicit caption, use empty caption (LaTeX will still number it)
             if caption and caption != '_':
                 latex.append(f'\\caption{{{caption}}}')
+            else:
+                # Empty caption - table gets numbered but no caption text
+                latex.append(f'\\caption{{}}')
+
+            # Always add label for referencing
+            latex.append(f'\\label{{tab:{table_num}}}')
             latex.append('\\renewcommand{\\arraystretch}{1.2}')
-            latex.append(f'\\begin{{tabular}}{{@{{}}>{{\\ }}>{{\\ }}{col_spec}<{{\\ }}<{{\\ }}@{{}}}}')
+            latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
 
             # Headers with navy background
             white_headers = ['\\textcolor{white}{\\textbf{' + h + '}}' for h in headers]
@@ -904,17 +958,33 @@ class SnapLogicDocumentCompiler:
 
     def _restore_images(self, text: str, image_map: Dict) -> str:
         """Restore image placeholders with labels for cross-referencing"""
-        # Use placeholder numbers for labels to match text references
-        # Placeholders are numbered during extraction in JSON order: @IMAGE1@, @IMAGE2@, etc.
-        # Text references like "Figure 5 shows" expect fig:5 to be the 5th image in JSON
+        # Create bidirectional mapping between JSON order and document order:
+        # - Text says "Figure X" referring to JSON image #X
+        # - But images appear in document at different positions
+        # - So we need: text "Figure X" -> label fig:X -> but label fig:X is on the image at its JSON position
 
+        # Find all placeholders in document order
+        placeholder_positions = []
+        for placeholder in image_map.keys():
+            pos = text.find(placeholder)
+            if pos != -1:
+                placeholder_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
+                placeholder_positions.append((pos, placeholder, placeholder_num))
+
+        # Sort by position in document
+        placeholder_positions.sort()
+
+        # Create mapping from JSON order to document order
+        # json_to_doc[json_num] = document_order_num
+        json_to_doc = {}
+        for doc_order, (pos, placeholder, json_num) in enumerate(placeholder_positions, start=1):
+            json_to_doc[json_num] = doc_order
+
+        # Replace all placeholders
         for placeholder, image_data in image_map.items():
             path = image_data['path']
             caption = image_data.get('caption', '')
             width = image_data.get('width', '0.8')
-
-            # Extract placeholder number: @IMAGE5@ -> 5
-            placeholder_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
 
             # Sanitize path - replace spaces with underscores to match copied files
             sanitized_path = path.replace(' ', '_')
@@ -925,8 +995,14 @@ class SnapLogicDocumentCompiler:
 \\includegraphics[width={width}\\textwidth]{{{sanitized_path}}}
 """
             if caption and caption != '_':
-                # Label matches placeholder number, which matches JSON order
-                latex += f"\\caption{{{caption}}}\\label{{fig:{placeholder_num}}}\n"
+                # Get JSON number and document order for this placeholder
+                json_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
+                doc_order = json_to_doc.get(json_num, json_num)
+
+                # Use JSON number for label so text references match
+                # BUT: LaTeX will auto-number based on document order
+                # So we need label to match what text says (JSON number)
+                latex += f"\\caption{{{caption}}}\\label{{fig:{json_num}}}\n"
             latex += "\\end{figure}\n"
 
             text = text.replace(placeholder, latex)
@@ -986,7 +1062,15 @@ class SnapLogicDocumentCompiler:
             fig_num = match.group(1)
             return f"@FIGREF:{fig_num}@"
 
-        text = re.sub(r'\bFigure (\d+)\b', extract_figure_ref, text)
+        text = re.sub(r'\bFigure\s+(\d+)\b', extract_figure_ref, text)
+
+        # Table references: "Table X" where X is a number
+        # Replace with placeholder @TABREF:X@
+        def extract_table_ref(match):
+            tab_num = match.group(1)
+            return f"@TABREF:{tab_num}@"
+
+        text = re.sub(r'\bTable\s+(\d+)\b', extract_table_ref, text)
 
         # Section references: "Section X", "Section X.Y", "Section X.Y.Z"
         # Replace with placeholder @SECREF:X.Y.Z@
@@ -994,26 +1078,34 @@ class SnapLogicDocumentCompiler:
             section_num = match.group(1)
             return f"@SECREF:{section_num}@"
 
-        text = re.sub(r'\bSection ([\d\.]+)\b', extract_section_ref, text)
+        text = re.sub(r'\bSection\s+([\d\.]+)\b', extract_section_ref, text)
 
         return text
 
     def _restore_cross_references(self, text: str) -> str:
-        """Restore cross-reference placeholders to LaTeX hyperlinks"""
-        # Figure references: @FIGREF:X@ -> clickable "Figure X" link
-        # Use literal number from text, not \ref{}, because \ref would return
-        # LaTeX's auto-generated number which may differ from our label number
+        """Restore cross-reference placeholders to proper LaTeX \ref commands"""
+        # Figure references: @FIGREF:X@ -> Figure~\ref{fig:X}
+        # LaTeX will auto-number based on figure order and hyperref makes it clickable
+        # Using ~ for non-breaking space (standard LaTeX practice)
         def restore_figure_ref(match):
             fig_num = match.group(1)
-            return f"\\hyperref[fig:{fig_num}]{{Figure {fig_num}}}"
+            return f"Figure~\\ref{{fig:{fig_num}}}"
 
         text = re.sub(r'@FIGREF:(\d+)@', restore_figure_ref, text)
 
-        # Section references: @SECREF:X.Y@ -> plain text for now
-        # (would need explicit section labels to make clickable)
+        # Table references: @TABREF:X@ -> Table~\ref{tab:X}
+        # LaTeX will auto-number based on table order and hyperref makes it clickable
+        def restore_table_ref(match):
+            tab_num = match.group(1)
+            return f"Table~\\ref{{tab:{tab_num}}}"
+
+        text = re.sub(r'@TABREF:(\d+)@', restore_table_ref, text)
+
+        # Section references: @SECREF:X.Y@ -> Section~\ref{sec:X.Y}
+        # Sections get auto-labeled by our section generation code
         def restore_section_ref(match):
             section_num = match.group(1)
-            return f"Section {section_num}"
+            return f"Section~\\ref{{sec:{section_num}}}"
 
         text = re.sub(r'@SECREF:([\d\.]+)@', restore_section_ref, text)
 

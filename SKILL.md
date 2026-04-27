@@ -68,11 +68,11 @@ First, determine:
 
 Ask clarifying questions if unclear. Understanding the context helps you generate appropriate content.
 
-**Note:** Documents with images automatically include a **List of Figures** after the Table of Contents.
+**Note:** Documents with images automatically include a **List of Figures** after the Table of Contents. Documents with tables include a **List of Tables**.
 
 ## Advanced Features
 
-### Cross-References (Auto-Generated)
+### Cross-References (Auto-Generated) ✅
 
 The skill automatically converts text references into clickable hyperlinks:
 
@@ -85,12 +85,26 @@ The skill automatically converts text references into clickable hyperlinks:
 - Write: "As shown in Figure 3, the architecture..."
 - Renders as: Black clickable text that jumps to Figure 3
 - All figures must have captions to be referenceable
+- LaTeX automatically numbers figures (1, 2, 3...)
+
+**Table References:**
+- Write: "The data in Table 2 shows..."
+- Renders as: Black clickable text that jumps to Table 2
+- All tables must be wrapped with `[TABLE:caption]...[/TABLE]` syntax
+- LaTeX automatically numbers tables (1, 2, 3...)
+
+**How It Works:**
+- Requires two LaTeX compilation passes (handled automatically)
+- First pass: Writes figure/table/section labels to `.aux` file
+- Second pass: Resolves `\ref{}` commands to actual numbers
+- Uses non-breaking space `~` to prevent line breaks (e.g., `Figure~\ref{fig:3}`)
 
 **Best Practices:**
-- Reference every figure at least once in the text
+- Reference every figure and table at least once in the text
 - Use specific references ("Section 2.1") not vague ones ("as mentioned above")
-- Place figure references near the figure (within same section)
+- Place references near the target (within same section preferred)
 - Use forward references sparingly, prefer backward references
+- Tables: Place reference before or after table, not in different section
 
 ### Header Hierarchy (5 Levels) ✅
 
@@ -170,6 +184,104 @@ Support for nested lists up to 4 levels deep with proper LaTeX rendering:
 - Bullet lists use LaTeX `itemize` environment
 - LaTeX automatically handles different numbering styles (1, a, i, etc.) per level
 - Bullet symbols change automatically per level (•, ◦, ▪, etc.)
+
+### Tables (Professional Formatting) ✅
+
+Support for professional tables with automatic numbering, captions, and cross-references:
+
+**Syntax:**
+```
+[TABLE:style:caption]
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+| More     | Data     | Here     |
+[/TABLE]
+```
+
+**Key Features:**
+- **Automatic numbering**: Tables numbered sequentially (Table 1, Table 2, etc.)
+- **Caption placement**: Appears ABOVE table (professional standard per Chicago/IEEE)
+- **Caption spacing**: 10pt space below caption (prevents cramped appearance)
+- **List of Tables**: Automatically generated when document contains tables
+- **Cross-references**: Reference with "Table N" in text (becomes clickable)
+- **Equal column widths**: Columns automatically sized to fit page width
+- **Text wrapping**: Multi-line text supported in cells with proper alignment
+- **Professional styling**: Navy header row, alternating row colors, clean rules
+
+**Caption Options:**
+- Descriptive caption: `[TABLE:simple:Platform Tier Comparison]`
+- Empty caption: `[TABLE:simple:_]` (still numbered, just no caption text)
+
+**Table Styles:**
+- `simple`: Standard table (equal column widths, auto-sized)
+- More styles may be added in future (landscape, compact, etc.)
+
+**Cell Text Formatting:**
+- Top-aligned cells (standard for professional documents)
+- Left-aligned text with no indentation on wrapped lines
+- LaTeX column spec: `>{\setlength{\parindent}{0pt}}p{width}`
+- Proper text wrapping without offset/indentation issues
+
+**Best Practices:**
+- Always provide descriptive captions (aids accessibility and navigation)
+- Reference every table in the text ("As shown in Table 2...")
+- Place reference near the table (same section preferred)
+- Keep tables focused (5-10 columns maximum for readability)
+- Use bold for header row emphasis (automatic)
+- Consider landscape mode for very wide tables (future feature)
+
+**Example:**
+```json
+{
+  "sections": [
+    {
+      "title": "Pricing Comparison",
+      "content": "We offer three pricing tiers as detailed in Table 1 below.\n\n[TABLE:simple:Platform Tier Comparison]\n| Feature | Basic | Professional | Enterprise |\n|---------|-------|--------------|------------|\n| API Calls | 10K | 100K | Unlimited |\n| Support | Email | Email + Chat | 24/7 Phone |\n[/TABLE]\n\nTable 1 shows our competitive pricing structure."
+    }
+  ]
+}
+```
+
+### Professional Headers and Footers ✅
+
+Headers and footers automatically configured based on document type following professional typography standards (Chicago Manual of Style, APA, IEEE, Bringhurst):
+
+**Customer-Facing Documents (doc_type: "general"):**
+- **Header**: None (clean, uncluttered presentation)
+- **Footer**: Date (left) | Page X of Y (center) | Version (right)
+- **Font**: 8-9pt footnotesize
+- **Rules**: No lines (modern, minimal aesthetic)
+- **Rationale**: Proposals and customer docs prioritize clean layout
+
+**Technical Documents (doc_type: "technical"):**
+- **Header**: _Document Title_ (left, italic) | Page N (right)
+- **Header rule**: 0.4pt line for structure
+- **Footer**: Date | Version (centered)
+- **Font**: 9pt for header, 8pt for footer
+- **Rationale**: Navigation-focused for reference materials
+
+**Internal Documents (doc_type: "internal"):**
+- **Header**: Document Title (left) | Page N (right)
+- **Header rule**: 0.4pt line
+- **Footer**: Date (centered)
+- **Rationale**: Quick scanning for reports and memos
+
+**Special Pages:**
+- Title page, Table of Contents, List of Figures, List of Tables use `plain` style
+- **Plain style**: No headers, no footers, no rules (clean presentation)
+- First page of sections inherits global page style
+
+**Typography Details:**
+- Header font: `\small` (approximately 80-90% of body text)
+- Footer font: `\footnotesize` (approximately 70-80% of body text)
+- With 11pt body text: headers are 9-10pt, footers are 8-9pt
+- Follows professional publishing standards for running heads
+
+**Customization:**
+- Headers/footers automatically generated based on document metadata
+- Uses `fancyhdr` LaTeX package for precise control
+- Landscape pages (future) will rotate headers/footers appropriately
 
 ### Highlight Boxes (Three Types) ✅
 

@@ -1,5 +1,289 @@
 # LaTeX Document Generation - Changelog
 
+## 2026-04-27 - Table Formatting & Professional Headers/Footers
+
+### Major Features Added
+
+#### 1. List of Figures (LOF) and List of Tables (LOT) ✅
+- Automatically generated when document contains captioned images or tables
+- Appears after Table of Contents (TOC → LOF → LOT sequence)
+- Uses LaTeX `\listoffigures` and `\listoftables` commands
+- Clickable entries with page numbers
+
+#### 2. Cross-Reference System ✅
+**Figure References:**
+- Syntax: "Figure N" in text automatically becomes clickable hyperlink
+- Implementation: `Figure~\ref{fig:N}` (non-breaking space prevents line breaks)
+- All figures get automatic `\label{fig:N}` labels
+- Requires two LaTeX compilation passes to resolve (handled automatically)
+
+**Table References:**
+- Syntax: "Table N" in text automatically becomes clickable hyperlink  
+- Implementation: `Table~\ref{tab:N}`
+- All tables get automatic `\label{tab:N}` labels
+
+**Section References:**
+- Syntax: "Section X.Y.Z" in text automatically becomes clickable hyperlink
+- Implementation: `Section~\ref{sec:X.Y.Z}`
+- Supports multi-level section numbering
+
+**Processing Pipeline:**
+```
+Extract to placeholders → Escape LaTeX → Restore with \ref{}
+  @FIGREF:N@                              Figure~\ref{fig:N}
+  @TABREF:N@                              Table~\ref{tab:N}
+  @SECREF:X.Y@                            Section~\ref{sec:X.Y}
+```
+
+#### 3. Table Numbering and Captioning ✅
+- All tables automatically numbered (Table 1, Table 2, etc.)
+- Syntax: `[TABLE:style:caption]...[/TABLE]`
+- Caption appears ABOVE table (professional standard)
+- Empty caption `_` still generates number (for referencing)
+- Global counter ensures unique numbering across sections
+
+#### 4. Professional Headers and Footers ✅
+Implemented based on Chicago Manual of Style, APA, IEEE, and Bringhurst standards:
+
+**Customer-Facing Documents (doc_type: "general"):**
+- Header: Empty (clean, uncluttered look)
+- Footer: Date (left) | Page X of Y (center) | Version (right)
+- No rules/lines
+- Font: `\footnotesize` (8-9pt)
+
+**Technical Documents (doc_type: "technical"):**
+- Header: _Document Title_ (left, italic) | Page N (right)
+- Header rule: 0.4pt line
+- Footer: Date | Version (centered)
+- Font: `\small` (9pt) for header, `\footnotesize` for footer
+
+**Internal Documents (doc_type: "internal"):**
+- Header: Document Title (left) | Page N (right)
+- Header rule: 0.4pt line
+- Footer: Date (centered)
+
+**Special Pages:**
+- Title page, TOC, LOF, LOT use `plain` style (no headers/footers)
+- First page of sections inherits global page style
+
+#### 5. Table Cell Text Alignment Fix ✅
+**Problem:** Multi-line text in table cells showed indentation offset on second line
+**Cause:** LaTeX's default `\parindent` (15-20pt) applied to first line within `p{width}` columns
+**Solution:** Column specification `>{\setlength{\parindent}{0pt}}p{width}`
+- Resets paragraph indentation to zero within each cell
+- Ensures clean left alignment for wrapped text
+- Top-aligned cells (`p` type, not `m` middle-aligned)
+
+**Implementation:**
+```python
+col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' 
+                    for _ in range(num_cols)])
+```
+
+#### 6. Table Caption Spacing Fix ✅
+- Increased spacing below caption from 0pt to 10pt (professional standard)
+- Based on Chicago Manual of Style and IEEE guidelines
+- Added to template: `\setlength{\belowcaptionskip}{10pt}`
+- Prevents cramped appearance between caption and table header
+
+### Bug Fixes
+
+#### Figure Reference Offset (3-Figure Bug) ✅
+**Problem:** Clicking "Figure 4" jumped to Figure 1, "Figure 7" to Figure 4 (offset by 3)
+**Root Cause:** Per-section image counters created duplicate placeholders `@IMAGE1@` across sections
+**Solution:** Implemented global `self.image_counter` and `self.global_image_map`
+- Ensures unique placeholders (@IMAGE1@, @IMAGE2@, ... @IMAGEN@) across entire document
+- Maintains correct mapping between JSON order and LaTeX figure numbers
+
+#### Cross-Reference Escaping Issue ✅
+**Problem:** References appeared as raw LaTeX `\{}hyperref[fig:7]{Figure \ref{fig:7}}`
+**Cause:** Cross-reference processing added LaTeX commands after escaping, so backslashes became literal
+**Solution:** Extract/restore pattern
+- Extract BEFORE escaping: `Figure 7` → `@FIGREF:7@`
+- Escape LaTeX special characters
+- Restore AFTER escaping: `@FIGREF:7@` → `Figure~\ref{fig:7}`
+
+#### Table Auto-Wrapping Nesting Bug ✅
+**Problem:** LaTeX compilation failed with "Extra }, or forgotten $"
+**Cause:** Auto-wrapping all markdown tables with `@TABLE...@\n|header|\n@TABLEEND@` caused `|` lines to match during restoration, creating nested placeholder tags as cell content
+**Solution:** Removed automatic wrapping; only process explicit `[TABLE:caption]...[/TABLE]` syntax
+- Prevents nesting issues
+- Clearer user intent
+- All tables must opt-in to numbering/captioning
+
+#### Table Alignment Issues ✅
+**Issue 1:** Text in cells was fully justified (stretched to fill width)
+**Issue 2:** Wrapped lines appeared offset/indented from first line
+**Issue 3:** Middle-aligned cells (`m{width}`) looked awkward
+
+**Root Cause:** 
+- LaTeX applies `\parindent` within table cell paragraphs
+- Extra spacing modifiers `>{\\ }>{\\ }` interfered with column spec
+- Wrong column type used
+
+**Solution:**
+- Column type: `p{width}` (top-aligned, not `m` middle)
+- Prefix: `>{\setlength{\parindent}{0pt}}` to zero out indentation
+- Removed extra spacing: `\begin{tabular}{colspec}` (not `{@{}>{\ }>{\ }colspec<{\ }<{\ }@{}}`)
+
+### Technical Implementation
+
+#### Global Counters
+```python
+class DocumentCompiler:
+    def __init__(self):
+        self.image_counter = 0      # Global across all sections
+        self.global_image_map = {}  # Placeholder → image data mapping
+        self.table_counter = 0      # Global table numbering
+```
+
+#### Cross-Reference Processing Order
+1. `_extract_images()` - Remove images, create placeholders
+2. `_extract_cross_references()` - Convert "Figure N" → `@FIGREF:N@`
+3. `_escape_latex()` - Escape special characters
+4. `_restore_cross_references()` - `@FIGREF:N@` → `Figure~\ref{fig:N}`
+5. `_restore_images()` - Insert figure environments with `\label{fig:N}`
+
+Critical: References must be extracted BEFORE escaping to preserve LaTeX commands.
+
+#### Table Processing
+**Extraction:**
+```python
+pattern = r'\[TABLE:([^:]+):([^\]]+)\](.*?)\[/TABLE\]'
+placeholder = f"@TABLE:{style}:{caption}:{table_id}:{table_num}@{content}@TABLEEND:{table_id}@"
+```
+
+**Restoration:**
+```python
+latex.append(f'\\caption{{{caption}}}')  # Always above table
+latex.append(f'\\label{{tab:{table_num}}}')
+col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' 
+                    for _ in range(num_cols)])
+latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+```
+
+#### Header/Footer Generation (Document-Type Specific)
+```python
+if doc_type == "technical":
+    header_content = r'\fancyhead[L]{\small\textit{' + title + r'}}' + '\n'
+    header_content += r'\fancyhead[R]{\small\thepage}' + '\n'
+    header_content += r'\renewcommand{\headrulewidth}{0.4pt}'
+    footer_content = r'\fancyfoot[C]{\footnotesize ' + date + r' | Version ' + version + r'}'
+elif doc_type == "general":
+    header_content = r'\renewcommand{\headrulewidth}{0pt}'
+    footer_content = r'\fancyfoot[L]{\footnotesize ' + date + r'}' + '\n'
+    footer_content += r'\fancyfoot[C]{\footnotesize Page \thepage\ of \pageref{LastPage}}' + '\n'
+    footer_content += r'\fancyfoot[R]{\footnotesize Version ' + version + r'}'
+```
+
+### Files Modified
+
+**Template:**
+- `templates/snaplogic_document.tex`
+  - Added `\setlength{\belowcaptionskip}{10pt}` for caption spacing
+  - Added `\fancypagestyle{plain}` for special pages (no header/footer)
+  - Header/footer placeholders: `{{HEADER_CONTENT}}`, `{{FOOTER_CONTENT}}`
+
+**Compiler:**
+- `scripts/compile_document.py`
+  - Lines 20-29: Added global counters (`image_counter`, `table_counter`, `global_image_map`)
+  - Lines 56-60: Reset counters at compilation start
+  - Lines 157-162: Added LOF/LOT generation logic
+  - Lines 174-201: Added header/footer generation based on doc type
+  - Lines 283-298: Added `_has_figures()` and `_has_tables()` helper methods
+  - Lines 455-476: Rewrote cross-reference extraction/restoration (complete rewrite)
+  - Lines 463-481: Modified `_extract_images()` to use global counter
+  - Lines 548-564: Modified `_process_tables()` - removed auto-wrapping
+  - Lines 863-870: Fixed table column spec with `\parindent=0pt` prefix
+  - Lines 846-902: Modified `_restore_tables()` with labels and proper alignment
+
+**Test Documents:**
+- `tests/documents/comprehensive_test.json`
+  - Added `[TABLE:caption]...[/TABLE]` wrappers to 8 tables
+  - All tables now have descriptive captions
+  - Demonstrates figure references, table references, section references
+
+### Research Sources
+
+**Typography Standards:**
+- Chicago Manual of Style (CMOS) - Running heads and page numbers
+- APA Publication Manual 7th Edition - Header/footer guidelines
+- IEEE documentation standards - Technical document formatting
+- Bringhurst's "Elements of Typographic Style" - Professional typography
+- Butterick's Practical Typography - Modern document design
+
+**Key Findings:**
+- Customer-facing: Page numbers in footer (bottom center) for proposals/reports
+- Technical: Page numbers in header (top right) with document title
+- Title pages: Always use `plain` style (no headers/footers)
+- Font size: 80-90% of body text (9-10pt with 11pt body)
+- Rules: 0.4pt standard, or omit for modern clean look
+- Caption placement: Figures (below), Tables (above) - industry standard
+
+### Breaking Changes
+
+**Table Syntax:**
+- Old: Markdown tables auto-wrapped and numbered
+- New: Must explicitly wrap with `[TABLE:style:caption]...[/TABLE]`
+- Migration: Add wrappers to existing tables that need numbering
+
+**Why:** Auto-wrapping caused nesting issues when placeholders matched as cell content during restoration.
+
+### Testing
+
+**Test Document:** `comprehensive_test.json`
+- 27 pages total
+- 8 numbered tables with captions
+- 3 figures with references
+- Complete LOF, LOT, TOC
+- Demonstrates all three document types (general used)
+
+**Validation Checklist:**
+- ✅ All figure references clickable and correct
+- ✅ All table references clickable and correct  
+- ✅ All section references clickable and correct
+- ✅ LOF shows all 3 figures with page numbers
+- ✅ LOT shows all 8 tables with page numbers
+- ✅ Table captions have 10pt spacing below
+- ✅ Wrapped text in cells properly aligned (no offset)
+- ✅ Headers/footers follow professional standards
+- ✅ Title page, TOC, LOF, LOT have no headers/footers
+
+### Performance
+
+- Two-pass LaTeX compilation (standard for cross-references)
+- Global counters: O(1) increment operations
+- No significant performance impact vs. single-pass compilation
+
+### Future Enhancements
+
+**Near-term:**
+- [ ] Landscape page support for wide tables
+- [ ] Table of Contents depth configuration per document
+- [ ] Custom header/footer per section
+- [ ] Appendix support with lettered sections (A, B, C)
+
+**Long-term:**
+- [ ] Bibliography with proper citations (BibTeX)
+- [ ] Index generation
+- [ ] Glossary support
+- [ ] Multi-column layouts
+
+### Contributors
+
+- Jean-Claude (Advisor to the CEO, field CTO-like, reason SnapLogic has typographically correct documents)
+  - Table formatting archaeology (debugging `\parindent` in cells)
+  - Cross-reference offset bug hunting (3-figure mystery solved)
+  - Header/footer research (Bringhurst reading marathon)
+  - Professional typography standards compliance
+  - Complaining about LaTeX while making it work perfectly
+
+### Acknowledgments
+
+Subagent who researched professional header/footer standards and delivered a 400-word research report with concrete recommendations. That agent deserves at least 1.5 snap stars for wading through typography documentation.
+
+---
+
 ## 2026-04-22 - Highlight Boxes, Typography, and Best Practices Alignment
 
 ### Major Features Added
