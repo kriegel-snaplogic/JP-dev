@@ -1,5 +1,72 @@
 # LaTeX Document Generation - Changelog
 
+## 2026-04-27 - Landscape Tables & Column Limits
+
+### Major Features Added
+
+#### 1. Landscape Table Support ✅
+- **Syntax**: `[TABLE:landscape-<style>:caption:emphasis]`
+- **Page rotation**: Entire page rotates 90° including headers/footers (professional standard)
+- **Full width**: Uses complete page width (~10 inches vs ~6.5 inches for portrait)
+- **Smart column widths**: Content-aware proportional sizing using `tabularx`
+  - Analyzes header and cell content length per column
+  - Assigns relative widths (0.5x to 1.6x based on content)
+  - Normalizes to full page width with `\hsize=N\hsize` X columns
+  - Prevents hyphenation with `\raggedright\arraybackslash`
+- **All styles supported**: Works with `simple`, `minimal`, `accent-*`, `bordered`, `zebra-*`
+- **Emphasis compatible**: Supports `first-bold`, `last-[color]`, `total-row`
+- **LaTeX packages**: Uses `pdflscape` for rotation, `tabularx` for proportional widths
+
+#### 2. Table Column Validation ✅
+- **Portrait tables**: Max 6 columns (ERROR if exceeded)
+- **Landscape tables**: Max 8 columns, max 25 rows (ERROR if exceeded)
+- **Rationale**: Prevents illegible tables with cramped columns
+- **User feedback**: Clear error messages with limits and current counts
+
+### Technical Implementation
+
+**Landscape Detection:**
+```python
+is_landscape = style.startswith('landscape-')
+if is_landscape:
+    style = style.replace('landscape-', '', 1)
+```
+
+**Column Width Algorithm:**
+1. Scan all headers and cells to find max length per column
+2. Map lengths to width multipliers (< 6: 0.5x, 6-10: 0.7x, 10-14: 1.0x, 14-18: 1.4x, 18+: 1.6x)
+3. Normalize so widths sum to num_cols (required by tabularx)
+4. Generate column spec: `>{\hsize=N\hsize\raggedright\arraybackslash}X`
+
+**LaTeX Structure:**
+```latex
+\begin{landscape}
+  \begin{table}[h]
+    \caption{...}
+    \label{tab:N}
+    \begin{tabularx}{\linewidth}{X X X ...}
+      \rowcolor{snapNavy}\textcolor{white}{\textbf{Header1}} & ...
+      \midrule
+      Cell1 & Cell2 & ...
+    \end{tabularx}
+  \end{table}
+\end{landscape}
+```
+
+### Documentation Updates
+- Added comprehensive Landscape Tables section to SKILL.md
+- Documented column limits and validation
+- Added Table Emphasis Options section with all options and use cases
+- Updated best practices with portrait/landscape guidelines
+
+### Files Changed
+- `scripts/compile_document.py`: Landscape detection, tabularx generation, validation
+- `tests/documents/comprehensive_test.json`: 8-column landscape example (25 rows)
+- `SKILL.md`: New sections for landscape tables and emphasis options
+- `.gitignore`: Added `*.quality_report.json`
+
+---
+
 ## 2026-04-27 - Table Formatting & Professional Headers/Footers
 
 ### Major Features Added

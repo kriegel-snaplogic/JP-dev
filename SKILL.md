@@ -275,6 +275,41 @@ Support for professional tables with automatic numbering, captions, and cross-re
 | Status tracking | status-[colors] | Task progress |
 ```
 
+**Table Emphasis Options:**
+
+Add optional emphasis to any table style using colon-separated syntax:
+
+```
+[TABLE:style:caption:emphasis-options]
+```
+
+Available emphasis options:
+- **first-bold**: Makes first column text bold (for row labels/identifiers)
+- **last-jade**: Highlights last column with jade/green background (success/recommended)
+- **last-orange**: Highlights last column with orange background (warning/urgent)
+- **last-blue**: Highlights last column with blue background (information)
+- **last-navy**: Highlights last column with navy background (emphasis)
+- **total-row**: Styles the last row as a total/summary (bold + light background)
+
+Combine multiple options with commas:
+```
+[TABLE:simple:Regional Performance:first-bold,last-jade,total-row]
+```
+
+**Use Cases:**
+- `first-bold`: Region names, product SKUs, task names, person names
+- `last-jade`: Recommended options, success metrics, owner columns
+- `last-orange`: Priority levels, warning indicators, cost columns
+- `last-blue`: Status indicators, information columns
+- `total-row`: Sum rows, aggregate rows, summary rows
+
+**Example:**
+```json
+{
+  "content": "[TABLE:simple:Sales by Region:first-bold,last-jade,total-row]\n| Region | Q1 | Q2 | Q3 | Q4 | Owner |\n|--------|----|----|----|----|-------|\n| North America | $2.1M | $2.4M | $2.8M | $3.1M | Alice |\n| EMEA | $1.5M | $1.7M | $1.9M | $2.2M | Bob |\n| Total | $3.6M | $4.1M | $4.7M | $5.3M | - |\n[/TABLE]"
+}
+```
+
 **Cell Text Formatting:**
 - Top-aligned cells (standard for professional documents)
 - Left-aligned text with no indentation on wrapped lines
@@ -285,9 +320,9 @@ Support for professional tables with automatic numbering, captions, and cross-re
 - Always provide descriptive captions (aids accessibility and navigation)
 - Reference every table in the text ("As shown in Table 2...")
 - Place reference near the table (same section preferred)
-- Keep tables focused (5-10 columns maximum for readability)
+- **Portrait tables:** Max 6 columns for optimal readability
+- **Landscape tables:** Use for 7-8 column tables (see Landscape Tables section below)
 - Use bold for header row emphasis (automatic)
-- Consider landscape mode for very wide tables (future feature)
 
 **Example:**
 ```json
@@ -300,6 +335,70 @@ Support for professional tables with automatic numbering, captions, and cross-re
   ]
 }
 ```
+
+### Landscape Tables (Wide Data) ✅
+
+For tables with 7-8 columns, use landscape orientation to maximize horizontal space. Landscape tables rotate the **entire page** (table + headers + footers) following professional documentation best practices.
+
+**Syntax:**
+```
+[TABLE:landscape-<style>:Caption:emphasis-options]
+```
+
+**Key Features:**
+- **Page rotation**: Entire page rotates 90° (headers/footers included)
+- **Full width**: Uses complete page width (~10 inches instead of ~6.5 inches)
+- **Smart column widths**: Analyzes cell content and assigns proportional column widths
+- **All styles supported**: Works with `simple`, `minimal`, `accent-*`, `bordered`, `zebra-*`
+- **Column limits**: Max 8 columns, max 25 rows
+- **Emphasis options**: Supports `first-bold`, `last-[color]`, `total-row`
+
+**When to Use Landscape:**
+- ✅ Tables with 7-8 columns (portrait limit is 6)
+- ✅ Integration matrices, system comparisons, detailed specifications
+- ✅ Data that requires many attributes per row
+- ✅ When column headers are descriptive (not cramped abbreviations)
+
+**Why Full-Page Rotation:**
+- Standard for professional technical documentation (Microsoft, AWS, Salesforce)
+- Maintains consistent page geometry and visual hierarchy
+- Headers/footers remain in proper position relative to page edges
+- Better for printed documents and physical presentations
+- Clearer signal to reader: "turn page to read"
+
+**Validation:**
+- **Portrait tables**: Max 6 columns (ERROR if exceeded)
+- **Landscape tables**: Max 8 columns, max 25 rows (ERROR if exceeded)
+
+**Column Width Algorithm:**
+1. Scans all headers and cell content to find longest text per column
+2. Assigns relative widths based on content length:
+   - Very short (< 6 chars): 0.5x width (IDs, percentages)
+   - Short (6-10 chars): 0.7x width
+   - Medium (10-14 chars): 1.0x width
+   - Long (14-18 chars): 1.4x width
+   - Very long (18+ chars): 1.6x width
+3. Normalizes widths to sum to page width using `tabularx` X columns
+4. Prevents hyphenation with `\raggedright\arraybackslash`
+
+**Example:**
+```json
+{
+  "sections": [
+    {
+      "title": "System Integration Matrix",
+      "content": "The following table shows all active integrations:\n\n[TABLE:landscape-simple:Complete Integration Matrix:first-bold,last-jade]\n| Source System | Target System | Protocol | Frequency | Volume/Day | Error % | Status | Owner |\n|--------------|---------------|----------|-----------|------------|---------|--------|-------|\n| Salesforce | SAP | REST API | Real-time | 2.5GB | 0.02% | Active | IT Ops |\n| SAP | Snowflake | JDBC | Hourly | 15GB | 0.01% | Active | Data Team |\n| Workday | Active Directory | LDAP | Daily | 500MB | 0.05% | Active | HR Tech |\n[/TABLE]\n\nTable 1 demonstrates landscape orientation for wide data matrices."
+    }
+  ]
+}
+```
+
+**Technical Implementation:**
+- Uses LaTeX `pdflscape` package for page rotation
+- Wraps table in `\begin{landscape}...\end{landscape}` environment
+- Uses `tabularx` instead of `tabular` for proportional column widths
+- Column spec: `>{\hsize=N\hsize\raggedright\arraybackslash}X` for each column
+- Works seamlessly with all existing table styles and emphasis options
 
 ### Professional Headers and Footers ✅
 
