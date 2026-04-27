@@ -858,7 +858,7 @@ class SnapLogicDocumentCompiler:
             width = image_data.get('width', '0.8')
 
             latex = f"""
-\\begin{{figure}}[h]
+\\begin{{figure}}[H]
 \\centering
 \\includegraphics[width={width}\\textwidth]{{{path}}}
 """
