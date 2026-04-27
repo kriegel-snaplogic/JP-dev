@@ -316,14 +316,145 @@ For wide tables (7-8 columns), use landscape orientation:
 [IMAGE:diagram.png:System Architecture:0.7]
 [IMAGE:/tmp/chart.png:_:0.5]
 [IMAGE:assets/logo.png:Company Logo]
+[IMAGE:assets/citizen-integrator/screenshot.png:Pipeline Designer Interface:0.95]
 ```
 
-**Best Practices:**
-- Use PNG for logos/diagrams (best quality)
-- Use JPG for photos (smaller file size)
-- Avoid SVG (LaTeX compatibility issues)
-- Keep width between 0.3 and 0.9
+#### How Image Paths Work
+
+**Absolute Paths:**
+- Use full filesystem paths: `/tmp/chart.png` or `/Users/username/documents/diagram.png`
+- The compilation script copies the image file to the working directory using **just the filename**
+- Example: `/tmp/my_diagram.png` → copied to working directory as `my_diagram.png`
+- **Use absolute paths for:** Temporary files, images outside the skill directory
+
+**Relative Paths:**
+- Resolved relative to the **skill directory** (`/Users/konstantinriegel/.claude/skills/latex-docs/`)
+- The compilation script copies the image preserving the directory structure
+- Example: `assets/logos/logo.png` → copied to working directory as `assets/logos/logo.png`
+- **Use relative paths for:** Images stored within the skill's asset directory structure
+
+**Path Resolution Examples:**
+
+```json
+{
+  "sections": [
+    {
+      "title": "Architecture",
+      "content": "[IMAGE:assets/diagrams/architecture.png:System Architecture:0.8]"
+    }
+  ]
+}
+```
+
+This resolves to: `/Users/konstantinriegel/.claude/skills/latex-docs/assets/diagrams/architecture.png`
+
+**Spaces in Filenames:**
+- **CRITICAL:** The compilation script automatically replaces spaces with underscores
+- If your file is named `my diagram.png`, reference it as `my diagram.png` in JSON
+- The script converts it to `my_diagram.png` for LaTeX compatibility
+- **Recommendation:** Avoid spaces in filenames to prevent confusion
+
+#### Image File Preparation Workflow
+
+When preparing images for AI agents to use:
+
+1. **Store images in the skill's asset directory:**
+   ```bash
+   /Users/konstantinriegel/.claude/skills/latex-docs/assets/
+   ├── diagrams/
+   ├── screenshots/
+   ├── logos/
+   └── customer-specific/
+   ```
+
+2. **Use relative paths in JSON:**
+   ```json
+   {
+     "content": "[IMAGE:assets/diagrams/workflow.png:Workflow Diagram:0.7]"
+   }
+   ```
+
+3. **For dynamic/temporary images, use absolute paths:**
+   ```json
+   {
+     "content": "[IMAGE:/tmp/generated_chart.png:Performance Chart:0.6]"
+   }
+   ```
+
+4. **Verify image exists before compilation:**
+   ```python
+   from pathlib import Path
+   
+   skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+   image_path = skill_dir / "assets" / "diagrams" / "workflow.png"
+   
+   if not image_path.exists():
+       raise FileNotFoundError(f"Image not found: {image_path}")
+   ```
+
+#### Image Automatic Numbering and Cross-References
+
+**How It Works:**
+- Images are automatically numbered in the order they appear in the JSON structure (1, 2, 3...)
+- Each image gets a LaTeX label `\label{fig:N}` where N is the JSON order number
+- Text references like "Figure 3" are converted to clickable hyperlinks
+- LaTeX automatically generates "List of Figures" with all captions
+
+**Example with Cross-References:**
+
+```json
+{
+  "sections": [
+    {
+      "title": "System Overview",
+      "content": "Our platform architecture is shown in Figure 1.\n\n[IMAGE:assets/architecture.png:Platform Architecture:0.8]\n\nAs you can see in Figure 1, the system consists of three layers."
+    },
+    {
+      "title": "User Interface",
+      "content": "The dashboard design is illustrated in Figure 2.\n\n[IMAGE:assets/dashboard.png:Dashboard Screenshot:0.7]\n\nFigure 2 demonstrates the clean, modern interface."
+    }
+  ]
+}
+```
+
+**Important:** The figure number in your text must match the order images appear in the JSON, not the section they're in.
+
+#### Best Practices
+
+**File Formats:**
+- ✅ **PNG**: Best for logos, diagrams, screenshots (lossless, supports transparency)
+- ✅ **JPG**: Best for photos (smaller file size, lossy compression)
+- ✅ **PDF**: Vector graphics (scales without pixelation)
+- ❌ **SVG**: NOT supported by LaTeX - convert to PNG first using `convert image.svg image.png`
+
+**Image Quality:**
+- Use **300 DPI minimum** for printed documents
+- Keep file sizes under **5MB** per image (resize large images before embedding)
+- Test images open correctly before adding to JSON
+
+**Width Guidelines:**
+- `0.3` - Small inline images, icons
+- `0.5` - Medium images, side-by-side comparisons
+- `0.7` - Standard diagrams and screenshots
+- `0.8` - Default, works well for most content
+- `0.9` - Large images that need detail
+- `1.0` - Full page width (use sparingly)
+
+**Content Integration:**
 - Reference every figure in the text ("As shown in Figure 1...")
+- Place image reference **before** or **right after** the image tag in content
+- Use descriptive captions that explain what the image shows
+- Avoid generic captions like "Image 1" or "Screenshot"
+
+**Directory Organization:**
+```
+assets/
+├── logos/              # Company and product logos
+├── diagrams/           # Architecture and flow diagrams
+├── screenshots/        # UI screenshots and screen captures
+├── charts/             # Data visualizations and graphs
+└── customer-specific/  # Customer-provided images
+```
 
 ### Highlight Boxes
 
@@ -805,14 +936,63 @@ result = subprocess.run([
 ### Issue: "Images not appearing in PDF"
 
 **Possible causes:**
-- Incorrect file path
-- SVG format (not supported)
-- File permissions
+- Incorrect file path (relative path not resolved correctly)
+- SVG format (not supported by LaTeX)
+- File permissions (file not readable)
+- Image file doesn't exist at specified path
+- Spaces in filename not handled correctly
+
+**Debugging Steps:**
+
+1. **Verify file exists:**
+   ```bash
+   ls -la /path/to/image.png
+   # or for relative paths
+   ls -la /Users/konstantinriegel/.claude/skills/latex-docs/assets/diagram.png
+   ```
+
+2. **Check compilation log:**
+   - On error, working directory is preserved: `/tmp/snaplogic_doc_*/`
+   - Read `document.log` for LaTeX errors
+   - Look for: `File 'image.png' not found`
+
+3. **Test path resolution:**
+   ```python
+   from pathlib import Path
+   
+   skill_dir = Path("/Users/konstantinriegel/.claude/skills/latex-docs")
+   
+   # For relative path
+   image_path = skill_dir / "assets" / "diagram.png"
+   print(f"Resolved to: {image_path}")
+   print(f"Exists: {image_path.exists()}")
+   
+   # For absolute path
+   image_path = Path("/tmp/chart.png")
+   print(f"Exists: {image_path.exists()}")
+   ```
 
 **Solutions:**
-- Use absolute paths: `/full/path/to/image.png`
-- Convert SVG to PNG: `convert image.svg image.png`
-- Verify file is readable: `ls -la /path/to/image.png`
+
+- **Use absolute paths for temporary files:** `/tmp/generated_chart.png`
+- **Use relative paths for skill assets:** `assets/diagrams/workflow.png`
+- **Convert SVG to PNG:** `convert image.svg image.png` (requires ImageMagick)
+- **Check file permissions:** `chmod 644 /path/to/image.png`
+- **Verify spaces in filename:** If file is `my image.png`, reference as `my image.png` (script auto-converts to `my_image.png`)
+- **Test image opens:** `open /path/to/image.png` (macOS) or `xdg-open /path/to/image.png` (Linux)
+
+**Common Path Mistakes:**
+
+```json
+// ❌ WRONG - relative to current directory (compilation happens in /tmp/)
+{"content": "[IMAGE:diagram.png:My Diagram:0.7]"}
+
+// ✅ CORRECT - relative to skill directory
+{"content": "[IMAGE:assets/diagrams/diagram.png:My Diagram:0.7]"}
+
+// ✅ CORRECT - absolute path
+{"content": "[IMAGE:/tmp/diagram.png:My Diagram:0.7]"}
+```
 
 ### Issue: "Table formatting looks wrong"
 
