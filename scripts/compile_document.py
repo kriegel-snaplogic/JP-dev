@@ -144,6 +144,10 @@ class SnapLogicDocumentCompiler:
         num_sections = len(structure.get('sections', []))
         toc = "\\tableofcontents\\newpage" if num_sections >= 3 else ""
 
+        # LOF (List of Figures) only if images exist with captions
+        has_figures = self._has_figures(structure)
+        lof = "\\listoffigures\\newpage" if has_figures else ""
+
         main_content = self._generate_main_content(structure)
         next_steps = self._generate_next_steps(structure)
         contacts = self._generate_contacts(structure)
@@ -175,7 +179,7 @@ class SnapLogicDocumentCompiler:
             '{{TITLE_PAGE_CONTENT}}': '',
             '{{TITLE_PAGE}}': title_page,
             '{{TOC_SECTION}}': toc,
-            '{{LOF_SECTION}}': '',  # List of figures - add if needed
+            '{{LOF_SECTION}}': lof,
             '{{ABSTRACT_SECTION}}': abstract,
             '{{MAIN_CONTENT}}': main_content,
             '{{NEXT_STEPS}}': next_steps,
@@ -266,6 +270,13 @@ class SnapLogicDocumentCompiler:
             ])
 
         return '\n'.join(content)
+
+    def _has_figures(self, structure: Dict[str, Any]) -> bool:
+        """Check if document contains any images with captions"""
+        content_str = json.dumps(structure)
+        # Look for [IMAGE:path:caption:width] where caption is not empty or _
+        matches = re.findall(r'\[IMAGE:[^:]+:([^:]*)', content_str)
+        return any(caption and caption != '_' for caption in matches)
 
     def _generate_abstract(self, structure: Dict[str, Any]) -> str:
         """Generate management summary or abstract"""
@@ -435,6 +446,9 @@ class SnapLogicDocumentCompiler:
 
         # Step 14: Restore images
         text = self._restore_images(text, image_map)
+
+        # Step 15: Process cross-references (after all content is in place)
+        text = self._process_cross_references(text)
 
         return text
 
@@ -889,7 +903,9 @@ class SnapLogicDocumentCompiler:
         return text
 
     def _restore_images(self, text: str, image_map: Dict) -> str:
-        """Restore image placeholders"""
+        """Restore image placeholders with labels for cross-referencing"""
+        figure_counter = 0
+
         for placeholder, image_data in image_map.items():
             path = image_data['path']
             caption = image_data.get('caption', '')
@@ -901,7 +917,9 @@ class SnapLogicDocumentCompiler:
 \\includegraphics[width={width}\\textwidth]{{{path}}}
 """
             if caption and caption != '_':
-                latex += f"\\caption{{{caption}}}\n"
+                figure_counter += 1
+                # Add label for cross-referencing: fig:1, fig:2, etc.
+                latex += f"\\caption{{{caption}}}\\label{{fig:{figure_counter}}}\n"
             latex += "\\end{figure}\n"
 
             text = text.replace(placeholder, latex)
@@ -948,6 +966,31 @@ class SnapLogicDocumentCompiler:
                     dest_path = Path(work_dir) / source_path.name
 
                 shutil.copy(source_path, dest_path)
+
+    def _process_cross_references(self, text: str) -> str:
+        """Convert text references to clickable cross-references"""
+        # Figure references: "Figure X" where X is a number
+        # Use \ref{fig:X} to get the figure number, wrapped in \hyperref for black clickable text
+        def replace_figure_ref(match):
+            fig_num = match.group(1)
+            return f"\\hyperref[fig:{fig_num}]{{Figure \\ref{{fig:{fig_num}}}}}"
+
+        text = re.sub(r'\bFigure (\d+)\b', replace_figure_ref, text)
+
+        # Section references: "Section X", "Section X.Y", "Section X.Y.Z"
+        # LaTeX auto-numbers sections, so we use \ref{} with auto-generated labels
+        # Pattern matches Section followed by numbers with dots
+        def replace_section_ref(match):
+            section_num = match.group(1)
+            # For simplicity, we'll just use \autoref or keep as is
+            # LaTeX doesn't have automatic section labels, so we can't make these clickable
+            # without adding explicit \label{} commands to each section
+            # For now, keep as plain text but could be enhanced
+            return f"Section {section_num}"
+
+        text = re.sub(r'\bSection ([\d\.]+)\b', replace_section_ref, text)
+
+        return text
 
     def _compile_latex(self, work_dir: str) -> Path:
         """Run pdflatex to compile document"""
