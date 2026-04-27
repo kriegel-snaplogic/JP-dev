@@ -578,16 +578,22 @@ class SnapLogicDocumentCompiler:
         # Convert \\n to actual newlines for regex
         text = text.replace('\\n', '\n')
 
-        # Only process explicitly wrapped tables: [TABLE:style:caption]...table...[/TABLE]
+        # Only process explicitly wrapped tables: [TABLE:style:caption] or [TABLE:style:caption:emphasis]
         # Unwrapped markdown tables will render as inline tables without numbering
-        table_pattern = r'\[TABLE:([^:]+):([^\]]+)\](.*?)\[/TABLE\]'
+        # Pattern handles optional third field for emphasis options
+        table_pattern = r'\[TABLE:([^:]+):([^:\]]+)(?::([^\]]+))?\](.*?)\[/TABLE\]'
 
         def replace_table(match):
             self.table_counter += 1
-            style, caption, table_md = match.groups()
+            style, caption, emphasis, table_md = match.groups()
+            # Combine style and emphasis if present
+            if emphasis:
+                full_style = f"{style}:{emphasis}"
+            else:
+                full_style = style
             table_id = abs(hash(f"{style}{caption}{table_md}")) % 100000
             # Include table number in placeholder for labeling
-            return f"@TABLE:{style}:{caption}:{table_id}:{self.table_counter}@{table_md.strip()}@TABLEEND:{table_id}@"
+            return f"@TABLE:{full_style}:{caption}:{table_id}:{self.table_counter}@{table_md.strip()}@TABLEEND:{table_id}@"
 
         text = re.sub(table_pattern, replace_table, text, flags=re.DOTALL)
 
