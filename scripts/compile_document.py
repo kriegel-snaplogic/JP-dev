@@ -28,7 +28,7 @@ class SnapLogicDocumentCompiler:
 
     def compile(self, input_json: str, output_pdf: str, doc_type: str = "general",
                 font_size: str = "11pt", paper_size: str = "letterpaper",
-                color_scheme: str = "default") -> Dict[str, Any]:
+                color_scheme: str = "default", title_page_style: str = "navy") -> Dict[str, Any]:
         """
         Compile JSON to PDF
 
@@ -39,6 +39,7 @@ class SnapLogicDocumentCompiler:
             font_size: LaTeX font size (10pt, 11pt, 12pt)
             paper_size: Paper size (letterpaper, a4paper)
             color_scheme: Color scheme (default, monochrome, high_contrast)
+            title_page_style: Title page style (navy=colored background with white logo, white=white background with blue logo)
 
         Returns:
             Dict with status, output_path, pages, version
@@ -53,7 +54,7 @@ class SnapLogicDocumentCompiler:
         try:
             # Generate LaTeX content
             latex_content = self._generate_latex(structure, doc_type, font_size,
-                                                 paper_size, color_scheme)
+                                                 paper_size, color_scheme, title_page_style)
 
             # Write LaTeX file
             tex_file = Path(work_dir) / "document.tex"
@@ -93,7 +94,8 @@ class SnapLogicDocumentCompiler:
             }
 
     def _generate_latex(self, structure: Dict[str, Any], doc_type: str,
-                       font_size: str, paper_size: str, color_scheme: str) -> str:
+                       font_size: str, paper_size: str, color_scheme: str,
+                       title_page_style: str) -> str:
         """Generate complete LaTeX document"""
 
         # Load template
@@ -135,7 +137,7 @@ class SnapLogicDocumentCompiler:
             conditional_packages = r"\usepackage[backend=biber,style=numeric]{biblatex}"
 
         # Generate document parts
-        title_page = self._generate_title_page(structure, doc_type)
+        title_page = self._generate_title_page(structure, doc_type, title_page_style)
         abstract = self._generate_abstract(structure)
 
         # TOC only if 3+ sections
@@ -187,8 +189,8 @@ class SnapLogicDocumentCompiler:
 
         return latex
 
-    def _generate_title_page(self, structure: Dict[str, Any], doc_type: str) -> str:
-        """Generate title page"""
+    def _generate_title_page(self, structure: Dict[str, Any], doc_type: str, title_page_style: str) -> str:
+        """Generate title page with optional navy background or white background"""
         title = self._escape_latex(structure.get('title', 'Untitled'))
         subtitle = self._escape_latex(structure.get('subtitle', ''))
         author = self._escape_latex(structure.get('author', ''))
@@ -196,35 +198,72 @@ class SnapLogicDocumentCompiler:
         version = self._escape_latex(structure.get('version', '1.0'))
         customer_name = self._escape_latex(structure.get('customer_name', ''))
 
-        content = [
-            "\\begin{titlepage}",
-            "\\centering",
-            "\\vspace*{2cm}",
-        ]
+        if title_page_style == "navy":
+            # Navy background with white text and white logo
+            content = [
+                "\\begin{titlepage}",
+                "\\pagecolor{snapNavy}",
+                "\\color{white}",
+                "\\centering",
+                "\\vspace*{2cm}",
+            ]
 
-        # Add logo if available
-        logo_path = self.assets_dir / "logos" / "snaplogic-logo-blue.png"
-        if logo_path.exists():
-            content.append("\\includegraphics[width=0.3\\textwidth]{snaplogic-logo-blue.png}\\\\[1cm]")
+            # Use white logo for navy background
+            logo_path = self.assets_dir / "logos" / "snaplogic-logo-white.png"
+            if logo_path.exists():
+                content.append("\\includegraphics[width=0.3\\textwidth]{snaplogic-logo-white.png}\\\\[1cm]")
 
-        content.extend([
-            f"{{\\Huge\\bfseries {title}}}\\\\[0.5cm]",
-        ])
+            content.extend([
+                f"{{\\Huge\\bfseries {title}}}\\\\[0.5cm]",
+            ])
 
-        if subtitle:
-            content.append(f"{{\\Large {subtitle}}}\\\\[1cm]")
+            if subtitle:
+                content.append(f"{{\\Large {subtitle}}}\\\\[1cm]")
 
-        if customer_name:
-            content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[1cm]")
+            if customer_name:
+                content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[1cm]")
 
-        content.extend([
-            "\\vspace{2cm}",
-            f"{{\\large {author}}}\\\\[0.3cm]",
-            f"{{\\large {date}}}\\\\[0.3cm]",
-            f"{{\\large Version {version}}}",
-            "\\end{titlepage}",
-            "\\newpage"
-        ])
+            content.extend([
+                "\\vspace{2cm}",
+                f"{{\\large {author}}}\\\\[0.3cm]",
+                f"{{\\large {date}}}\\\\[0.3cm]",
+                f"{{\\large Version {version}}}",
+                "\\end{titlepage}",
+                "\\nopagecolor",  # Reset page color for rest of document
+                "\\color{black}",  # Reset text color
+                "\\newpage"
+            ])
+        else:
+            # White background with blue logo (default style)
+            content = [
+                "\\begin{titlepage}",
+                "\\centering",
+                "\\vspace*{2cm}",
+            ]
+
+            # Use blue logo for white background
+            logo_path = self.assets_dir / "logos" / "snaplogic-logo-blue.png"
+            if logo_path.exists():
+                content.append("\\includegraphics[width=0.3\\textwidth]{snaplogic-logo-blue.png}\\\\[1cm]")
+
+            content.extend([
+                f"{{\\Huge\\bfseries {title}}}\\\\[0.5cm]",
+            ])
+
+            if subtitle:
+                content.append(f"{{\\Large {subtitle}}}\\\\[1cm]")
+
+            if customer_name:
+                content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[1cm]")
+
+            content.extend([
+                "\\vspace{2cm}",
+                f"{{\\large {author}}}\\\\[0.3cm]",
+                f"{{\\large {date}}}\\\\[0.3cm]",
+                f"{{\\large Version {version}}}",
+                "\\end{titlepage}",
+                "\\newpage"
+            ])
 
         return '\n'.join(content)
 
@@ -379,20 +418,20 @@ class SnapLogicDocumentCompiler:
         # Step 8: Escape LaTeX special characters (but preserve our @ markers)
         text = self._escape_latex_content(text)
 
-        # Step 9: Restore boxes
-        text = self._restore_boxes(text)
+        # Step 9: Restore markdown formatting (must be before boxes that contain bold/italic)
+        text = self._restore_markdown_formatting(text)
 
-        # Step 10: Restore tables
-        text = self._restore_tables(text)
+        # Step 10: Restore lists (must be before boxes that contain lists)
+        text = self._restore_lists(text)
 
         # Step 11: Restore markdown headers
         text = self._restore_markdown_headers(text)
 
-        # Step 12: Restore markdown formatting
-        text = self._restore_markdown_formatting(text)
+        # Step 12: Restore tables
+        text = self._restore_tables(text)
 
-        # Step 13: Restore lists
-        text = self._restore_lists(text)
+        # Step 13: Restore boxes (after lists/formatting since boxes can contain them)
+        text = self._restore_boxes(text)
 
         # Step 14: Restore images
         text = self._restore_images(text, image_map)
@@ -675,8 +714,8 @@ class SnapLogicDocumentCompiler:
         if not text or not isinstance(text, str):
             return ""
 
-        # Split on @ markers to preserve them
-        parts = re.split(r'(@[A-Z]+(?::\d+)?@|@[A-Z]+END(?::\d+)?@)', text)
+        # Split on @ markers to preserve them (match full marker syntax with multiple colons)
+        parts = re.split(r'(@[A-Z]+:[^@]+@|@[A-Z]+END:[^@]+@)', text)
 
         result = []
         for part in parts:
@@ -706,8 +745,8 @@ class SnapLogicDocumentCompiler:
 
     def _restore_boxes(self, text: str) -> str:
         """Restore box placeholders to LaTeX"""
-        # KPI boxes
-        kpi_pattern = r'@KPIBOX:([^:]+):(\d+)@([^|]+)\|([^@]+)@KPIBOXEND:\2@'
+        # KPI boxes (may contain @ markers, use .*? non-greedy)
+        kpi_pattern = r'@KPIBOX:([^:]+):(\d+)@(.*?)\|(.*?)@KPIBOXEND:\2@'
 
         def restore_kpi(match):
             color, box_id, title, value = match.groups()
@@ -716,10 +755,10 @@ class SnapLogicDocumentCompiler:
 
             return f"\\kpibox{{{latex_color}}}{{{title}}}{{{value}}}"
 
-        text = re.sub(kpi_pattern, restore_kpi, text)
+        text = re.sub(kpi_pattern, restore_kpi, text, flags=re.DOTALL)
 
-        # FEATURE boxes
-        feature_pattern = r'@FEATUREBOX:([^:]+):(\d+)@([^|]+)\|([^@]+)@FEATUREBOXEND:\2@'
+        # FEATURE boxes (may contain @ markers, use .*? non-greedy)
+        feature_pattern = r'@FEATUREBOX:([^:]+):(\d+)@(.*?)\|(.*?)@FEATUREBOXEND:\2@'
 
         def restore_feature(match):
             color, box_id, title, content = match.groups()
@@ -728,10 +767,10 @@ class SnapLogicDocumentCompiler:
 
             return f"\\featurebox{{{latex_color}}}{{{title}}}{{{content}}}"
 
-        text = re.sub(feature_pattern, restore_feature, text)
+        text = re.sub(feature_pattern, restore_feature, text, flags=re.DOTALL)
 
-        # Standard BOX
-        box_pattern = r'@BOX:([^:]+):(\d+)@([^@]+)@BOXEND:\2@'
+        # Standard BOX (use .*? non-greedy to match content that may contain other @ markers)
+        box_pattern = r'@BOX:([^:]+):(\d+)@(.*?)@BOXEND:\2@'
 
         def restore_box(match):
             box_type, box_id, content = match.groups()
@@ -742,13 +781,12 @@ class SnapLogicDocumentCompiler:
                 'note': 'notebox'
             }
             box_cmd = box_map.get(box_type, 'infobox')
-
             return f"\\{box_cmd}{{{content}}}"
 
-        text = re.sub(box_pattern, restore_box, text)
+        text = re.sub(box_pattern, restore_box, text, flags=re.DOTALL)
 
-        # BADGE boxes
-        badge_pattern = r'@BADGE:([^:]+):(\d+)@([^@]+)@BADGEEND:\2@'
+        # BADGE boxes (may contain @ markers, use .*? non-greedy)
+        badge_pattern = r'@BADGE:([^:]+):(\d+)@(.*?)@BADGEEND:\2@'
 
         def restore_badge(match):
             color, badge_id, badge_text = match.groups()
@@ -757,7 +795,7 @@ class SnapLogicDocumentCompiler:
 
             return f"\\badgebox{{{latex_color}}}{{{badge_text}}}"
 
-        text = re.sub(badge_pattern, restore_badge, text)
+        text = re.sub(badge_pattern, restore_badge, text, flags=re.DOTALL)
 
         return text
 
@@ -872,16 +910,44 @@ class SnapLogicDocumentCompiler:
 
     def _copy_assets(self, work_dir: str, structure: Dict[str, Any]):
         """Copy logo and other assets to working directory"""
-        # Copy SnapLogic logo
-        logo_src = self.assets_dir / "logos" / "snaplogic-logo-blue.png"
-        if logo_src.exists():
-            shutil.copy(logo_src, work_dir)
+        # Copy SnapLogic logos (both blue and white for different title page styles)
+        logo_blue = self.assets_dir / "logos" / "snaplogic-logo-blue.png"
+        logo_white = self.assets_dir / "logos" / "snaplogic-logo-white.png"
+        if logo_blue.exists():
+            shutil.copy(logo_blue, work_dir)
+        if logo_white.exists():
+            shutil.copy(logo_white, work_dir)
 
         # Copy customer logo if specified
         customer_logo = structure.get('customer_logo', '')
         if customer_logo and os.path.exists(customer_logo):
             dest = Path(work_dir) / Path(customer_logo).name
             shutil.copy(customer_logo, dest)
+
+        # Find and copy all content images referenced with [IMAGE:path:caption:width]
+        image_pattern = r'\[IMAGE:([^:]+):'
+        content_to_search = json.dumps(structure)  # Search entire structure
+
+        for match in re.finditer(image_pattern, content_to_search):
+            image_path = match.group(1)
+
+            # Handle both relative and absolute paths
+            if os.path.isabs(image_path):
+                source_path = Path(image_path)
+            else:
+                # Relative paths are relative to the skill directory
+                source_path = self.assets_dir.parent / image_path
+
+            if source_path.exists():
+                # Preserve directory structure in work_dir
+                # e.g., assets/citizen-integrator/image.png -> work_dir/assets/citizen-integrator/image.png
+                if not os.path.isabs(image_path):
+                    dest_path = Path(work_dir) / image_path
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                else:
+                    dest_path = Path(work_dir) / source_path.name
+
+                shutil.copy(source_path, dest_path)
 
     def _compile_latex(self, work_dir: str) -> Path:
         """Run pdflatex to compile document"""
