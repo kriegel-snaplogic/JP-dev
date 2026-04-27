@@ -904,26 +904,17 @@ class SnapLogicDocumentCompiler:
 
     def _restore_images(self, text: str, image_map: Dict) -> str:
         """Restore image placeholders with labels for cross-referencing"""
-        # Find placeholders in document order by searching the text
-        # This ensures labels match LaTeX's automatic figure numbering
-        placeholder_positions = []
-        for placeholder in image_map.keys():
-            pos = text.find(placeholder)
-            if pos != -1:
-                placeholder_positions.append((pos, placeholder))
+        # Use placeholder numbers for labels to match text references
+        # Placeholders are numbered during extraction in JSON order: @IMAGE1@, @IMAGE2@, etc.
+        # Text references like "Figure 5 shows" expect fig:5 to be the 5th image in JSON
 
-        # Sort by position in text
-        placeholder_positions.sort()
-
-        # Assign figure numbers sequentially for captioned figures only
-        figure_num = 0
-        replacements = {}
-
-        for pos, placeholder in placeholder_positions:
-            image_data = image_map[placeholder]
+        for placeholder, image_data in image_map.items():
             path = image_data['path']
             caption = image_data.get('caption', '')
             width = image_data.get('width', '0.8')
+
+            # Extract placeholder number: @IMAGE5@ -> 5
+            placeholder_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
 
             # Sanitize path - replace spaces with underscores to match copied files
             sanitized_path = path.replace(' ', '_')
@@ -934,16 +925,10 @@ class SnapLogicDocumentCompiler:
 \\includegraphics[width={width}\\textwidth]{{{sanitized_path}}}
 """
             if caption and caption != '_':
-                # Increment counter for captioned figures
-                figure_num += 1
-                # Add caption with label matching document order
-                latex += f"\\caption{{{caption}}}\\label{{fig:{figure_num}}}\n"
+                # Label matches placeholder number, which matches JSON order
+                latex += f"\\caption{{{caption}}}\\label{{fig:{placeholder_num}}}\n"
             latex += "\\end{figure}\n"
 
-            replacements[placeholder] = latex
-
-        # Apply all replacements
-        for placeholder, latex in replacements.items():
             text = text.replace(placeholder, latex)
 
         return text
