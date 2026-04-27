@@ -916,12 +916,16 @@ class SnapLogicDocumentCompiler:
             # Generate LaTeX table based on style
             num_cols = len(headers)
 
-            # Validate landscape table constraints
+            # Validate table constraints
             if is_landscape:
-                if num_cols > 10:
-                    return f"ERROR: Landscape table has {num_cols} columns (max 10 allowed)"
+                if num_cols > 8:
+                    return f"ERROR: Landscape table has {num_cols} columns (max 8 allowed)"
                 if len(rows) > 25:
                     return f"ERROR: Landscape table has {len(rows)} rows (max 25 allowed)"
+            else:
+                # Portrait mode column limit
+                if num_cols > 6:
+                    return f"ERROR: Portrait table has {num_cols} columns (max 6 allowed)"
 
             # Column specification - use full available width
             if num_cols > 0:
