@@ -1016,9 +1016,11 @@ class SnapLogicDocumentCompiler:
     def _restore_cross_references(self, text: str) -> str:
         """Restore cross-reference placeholders to LaTeX hyperlinks"""
         # Figure references: @FIGREF:X@ -> clickable "Figure X" link
+        # Use literal number from text, not \ref{}, because \ref would return
+        # LaTeX's auto-generated number which may differ from our label number
         def restore_figure_ref(match):
             fig_num = match.group(1)
-            return f"\\hyperref[fig:{fig_num}]{{Figure \\ref{{fig:{fig_num}}}}}"
+            return f"\\hyperref[fig:{fig_num}]{{Figure {fig_num}}}"
 
         text = re.sub(r'@FIGREF:(\d+)@', restore_figure_ref, text)
 
