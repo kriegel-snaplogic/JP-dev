@@ -68,6 +68,14 @@
 % Brand colors - CORRECTED 2026-04-22
 {{COLOR_DEFINITIONS}}
 
+% TOC styling - color section numbers with snapNavy
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\renewcommand{\cftsecnumwidth}{2.5em}
+\renewcommand{\cftsecpresnum}{\color{snapNavy}}
+\renewcommand{\cftsubsecpresnum}{\color{snapNavy}}
+\renewcommand{\cftsubsubsecpresnum}{\color{snapNavy}}
+
 % Highlight box styles using SnapLogic brand colors (clean design with top rule only)
 \newcommand{\infobox}[1]{%
     \par\vspace{8pt}\noindent%

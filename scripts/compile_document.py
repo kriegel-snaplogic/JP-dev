@@ -112,7 +112,7 @@ class SnapLogicDocumentCompiler:
 \definecolor{snapLightGray}{RGB}{231,245,255}  % #E7F5FF - Backgrounds / zebra rows
 \definecolor{snapDarkGray}{RGB}{14,24,48}   % #0E1830 - Body text / secondary
 """
-            primary_color = "snapBlue"
+            primary_color = "snapNavy"
             accent_color = "snapJade"
             link_color = "snapLinkBlue"
         else:
