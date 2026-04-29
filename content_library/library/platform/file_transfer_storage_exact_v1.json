@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "file_transfer_storage_exact_v1",
+    "version": "1.0",
+    "title": "FILE TRANSFER & STORAGE",
+    "category": "platform",
+    "tags": [
+      "file_transfer",
+      "storage",
+      "sftp",
+      "s3"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "FILE TRANSFER & STORAGE",
+    "content": "SnapLogic integrates with on-premises file storage servers. Supports key-based and password authentication. File pattern matching, recursive directory listing, and append mode.\n\n- **FTP / FTPS**: Unencrypted and secured-with-SSL FTP mode supported.\n\n- **SCP**: Secure file copy read/write.\n\n- **SMB/NFS**: Local and network file system read/write. SMB (Windows file shares) and NFS (Linux/Unix) both supported — Ground Plex mounts shares as local filesystems for pipeline access. Used extensively for legacy file integration scenarios.\n\n- **AWS S3 / S3-Compatible (MinIO, NetApp StorageGRID)**: Snap Pack supports AWS S3 and S3-compatible on-premises object store (MinIO, Ceph, NetApp StorageGRID, etc.). All S3 API operations (GetObject, PutObject, ListObjects, DeleteObject) supported.\n\n- **Google Drive / Google Sheets**: Read/write connector for Google Workspace — relevant for AH teams using G Suite for collaboration.",
+    "subsections": []
+  }
+}

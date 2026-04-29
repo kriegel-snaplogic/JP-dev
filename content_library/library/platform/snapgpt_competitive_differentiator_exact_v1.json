@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "snapgpt_competitive_differentiator_exact_v1",
+    "version": "1.0",
+    "title": "SNAPGPT — GENERATIVE AI FOR INTEGRATION (PRIMARY COMPETITIVE DIFFERENTIATOR)",
+    "category": "platform",
+    "tags": [
+      "snapgpt",
+      "ai",
+      "generative_ai",
+      "competitive"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "SNAPGPT — GENERATIVE AI FOR INTEGRATION (PRIMARY COMPETITIVE DIFFERENTIATOR)",
+    "content": "SnapGPT is SnapLogic's embedded generative AI assistant — the only such capability available in an on-premises-compatible enterprise integration platform. SnapGPT operates from the SnapLogic Manager (cloud component) and processes only pipeline metadata and natural language prompts. It never accesses or processes Airbus Helicopters' operational data.\n\n- **Text2Pipeline**: Describe an integration in plain English (\"read all active items from Oracle inventory, filter out obsolete records, transform to the canonical product schema, and write to SAP HANA\"). SnapGPT generates a working pipeline with appropriate Snaps, connections, and baseline configuration. For integration teams accelerate first-draft delivery by 60–80%. The generated pipeline runs within the Ground Plex. AH's data is never sent to SnapGPT.\n\n- **Auto-documentation (reverse Text2Pipeline)**: SnapGPT analyses an existing pipeline and produces a structured description of what it does, which systems it connects, what transformations are applied, and what the expected output is. Used for documentation, handover, and onboarding of new team members. Documentation is generated from pipeline metadata — no data inspection required.\n\n- **AI-assisted debugging**: On pipeline failure, SnapGPT examines the error context, analyses the pipeline structure, and proposes a specific fix. For common errors (schema mismatches, connection failures, malformed data), SnapGPT can generate corrective Snaps automatically. Reduces mean time to resolution for production incidents without requiring senior developer involvement for every failure.\n\n- **Mapper expression generation (field-level transformation assistance)**: Describe a field mapping between source and target schemas in natural language (\"extract first name from full name column, convert to uppercase\"). SnapGPT generates the complete Mapper expression from a plain-language description of the desired output. For complex transformations, SnapGPT generates the complete Mapper expression from a plain-language description of the desired output.\n\n- **Citizen Developer enablement**: Business analysts with domain expertise but no technical coding skills can use SnapGPT to describe integrations in business language. IT reviews and approves before production deployment — enabling a governed self-service model without sacrificing control. This is a qualitatively different development experience than traditional ETL platforms: business users can describe integrations in plain language, and SnapGPT translates business intent into runnable integrations from a plain-language description of business intent.\n\n- **Describe Pipelines**: SnapGPT analyses an existing pipeline and produces a structured description of what it does, which systems it connects, what transformations are applied, and what the expected output is. Used for documentation, handover, and onboarding of new team members.\n\n[BOX:info]\n**Competitive differentiator**: No other on-premises-compatible ETL/ELT vendor — Informatica, Talend, SSIS, or DataStage — offers generative AI pipeline creation within an on-premises-deployable platform. SnapGPT is unique to SnapLogic and is the most significant technical differentiator for this RFP evaluation.\n[/BOX]",
+    "subsections": []
+  }
+}

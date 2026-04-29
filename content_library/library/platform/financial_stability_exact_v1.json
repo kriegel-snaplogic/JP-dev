@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "financial_stability_exact_v1",
+    "version": "1.0",
+    "title": "Financial Stability & Corporate Structure",
+    "category": "platform",
+    "tags": [
+      "financial",
+      "stability",
+      "corporate"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 80,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": true,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": true
+    }
+  },
+  "content": {
+    "title": "Financial Stability & Corporate Structure",
+    "content": "SnapLogic is a financially stable, growth-stage enterprise software company. As a privately held organisation, SnapLogic does not publish public financial statements. However, the company is willing to provide financial information under NDA for the purposes of this evaluation.\n\n- **Revenue model**: Predictable, capacity-based subscription (Annual Recurring Revenue). Revenue is not tied to data volumes, seats, or per-pipeline fees — providing customers with cost predictability as adoption scales.\n\n- **Investor backing**: Backed by Andreessen Horowitz, Salesforce Ventures, and Capital One Ventures — institutional investors with long-term enterprise software investment mandates.\n\n- **Growth trajectory**: Consistent year-on-year ARR growth driven by enterprise expansion and AI-led new business. SnapGPT and agentic capabilities are the primary growth drivers for 2025–2026.\n\n- **Financial documentation available under NDA**: Upon execution of an NDA, SnapLogic can provide a financial summary including revenue range, growth rate, and an investor comfort letter confirming the company's financial health and runway.\n\n[BOX:info]\n**TO FILL: SEAN (AE) / FINANCE — FINANCIAL SUMMARY FOR NDA DISCLOSURE**\n\nRequest NDA-covered financial summary from SnapLogic Finance for inclusion or reference in the submission. Confirm whether Airbus procurement requires a formal financial statement or whether an investor comfort letter is acceptable.\n[/BOX]\n\n**● Sean (AE)**",
+    "subsections": []
+  }
+}

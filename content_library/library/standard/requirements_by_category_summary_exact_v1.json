@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "requirements_by_category_summary_exact_v1",
+    "version": "1.0",
+    "title": "Requirements by Category — Summary",
+    "category": "standard",
+    "tags": ["requirements", "summary", "category"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 80,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Requirements by Category — Summary",
+    "content": "The 114 technical requirements are organised across nine categories. The table below summarises SnapLogic's coverage position per category and cross-references the detailed treatment in Section 2.\n\n[TABLE]\n| Category | Requirement Area | SnapLogic Position | Section 2 | Response |\n|----------|-----------------|-------------------|-----------|----------|\n| P | **Platforms & Deployment**<br/>On-premises (OCP, VSphere), HA, scaling, network ports, autonomous deployment | Ground Plex on OpenShift fully addresses P-01 through P-06. P-01 (full on-premises) confirmed in 2.2 plus Manager handles Airbuis only and qualifies under AH Security exception. OpenShift-SCC configuration via applets. | 2.2 | [BOX:jade]<br/>**6/6**<br/>Requirements<br/>Met<br/>[/BOX] |\n| C | **Connectivity & Connectors**<br/>Databases (O/I), GRC protocols (C-02), storage (FC volumes), REST/XML Ground Plex | Full native coverage for all standard database, messaging, file, and application connectors. DuckDB-supported file access (parquet, avro) respectively via the JDBC Snap and File Snap. Proprietary specific Dassault connector: S2000M (XML-based) and STEP (ISO 10303) supported via XMSA Snap Pack to and the HTTP Snap for REST APIs. STEP specific mapping requires the AH's specific schema map. | 2.3 | [BOX:jade]<br/>**46/46**<br/>Requirements<br/>Met<br/>[/BOX] |\n| D | **Development Capabilities**<br/>Low-code designer, custom scripts, SDLC, validation, SnapGPT, triggers, error handling | Full coverage: Visual Designer, 700+ Snaps, SDLC Snap, Script Snap (Python/JavaScript), three execution modes (Scheduled, Triggered, Ultra), per-Snap error handling, retry templates, detailed execution logging. | 2.4 | [BOX:jade]<br/>**16/16**<br/>Requirements<br/>Met<br/>[/BOX] |\n| M | **Migration**<br/>Informatica PowerCenter / IICS migration, other ETL tool (Talend) migration validation. | SLM (SnapLogic Intelligent Modernizer) provides automated Informatica PowerCenter and IICS migration with specific pipeline conversion. Migration validation framework included in PS engagement. Coverage of other tools (Talend, SSIS, IBM DataStage) supported — scope depends on source version. | 2.8 | [BOX:jade]<br/>**3/3**<br/>Requirements<br/>Met<br/>[/BOX] |\n| CD | **Citizen Development**<br/>Low-code self-service, SnapGPT-enabled pipeline creation, governed templates, approval workflows | SnapGPT's primary competitive differentiator: SnapGPT Text2Pipeline enables natural language pipeline generation. Pipeline template library and no-code/low-code UI support a compliant citizen developer programme. No other vendor premises ETL vendor offers SnapGPT-level AI acceleration. | 2.4 | [BOX:jade]<br/>**6/6**<br/>Requirements<br/>Met<br/>[/BOX] |\n| O | **Observability & Monitoring**<br/>Centralized monitoring console, node resource monitoring, Dynatrace/ELK/Splunk export, API/event notifications | Full coverage: Unified Monitor for pipeline and node visibility, native OTEL/Dynatrace integration, Elasticsearch and Splunk export via Snaps, API and webhook-based event access. All observability components operate within AH's existing tooling stack. | 2.6 | [BOX:jade]<br/>**9/9**<br/>Requirements<br/>Met<br/>[/BOX] |\n| DT | **Data Trust & Quality**<br/>Inline validation, data assessment, PII/SPI protection, identity resolution, exception management, reusable validation policies | Full inline validation and profiling. Mask Snap for PII/SPI, identity resolution via Merger/Sort/Group Snap patterns, exception routing to quarantine tables, shared validation via parameterised shared child pipelines. DQ trend visualisation via existing BI tooling as the display layer. | 2.7 | [BOX:jade]<br/>**6/6**<br/>Requirements<br/>Met<br/>[/BOX] |\n| S | **Security**<br/>AAA, SSO, RBAC, AD integration, TLS, credential encryption, audit trail, environment segregation, no-inbound architecture | Full coverage across identity, authentication, encryption, and access control. RBAC with AD group mapping; SAML/SSO; MFA; AES-256 credential encryption with Enhanced Account Encryption option; immutable audit trail; SIEM export, and no-inbound-firewall hybrid architecture. Audit log native retention is 90 days — 12-month retention achieved via scheduled SIEM export. | 2.5 | [BOX:jade]<br/>**19/19**<br/>Requirements<br/>Met<br/>[/BOX] |\n| T | **Technical / Additional Requirements**<br/>GitLab v18 integration, additional technical requirements per Sections 2 & 4 of RFP. | GitLab v18 confirmed fit — backward-compatible REST API and webhook schemas. Full CI/CD pipeline promotion via Migration API. Additional technical requirements covered in the Requirements Response Matrix (see attached Excel). | 2.5 | [BOX:jade]<br/>**4/4**<br/>Requirements<br/>Met<br/>[/BOX] |\n[/TABLE]",
+    "subsections": []
+  }
+}

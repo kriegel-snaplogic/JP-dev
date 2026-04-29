@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "relational_databases_cdc_exact_v1",
+    "version": "1.0",
+    "title": "RELATIONAL DATABASES & CHANGE DATA CAPTURE",
+    "category": "platform",
+    "tags": [
+      "databases",
+      "relational",
+      "cdc",
+      "change_data_capture"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "RELATIONAL DATABASES & CHANGE DATA CAPTURE",
+    "content": "SnapLogic offers enterprise-grade JDBC-based connection capabilities for all major relational databases relevant to Airbus Helicopters' environment. All database connections are established from the Ground Plex to the database server — fully within AH's network.\n\n- **Oracle Database v12c+**: Native JDBC connector for read/write/upsert + full CDC. CDC mode (Change Tracking, Change Capture, LogMiner) — captures INSERT, UPDATE, DELETE, DDL changes in real time. Oracle Exadata is supported via the same Oracle JDBC and CDC stack (Exadata presents a standard Oracle interface to JDBC clients).\n\n- **Microsoft SQL Server v2012+**: Native JDBC driver (Snap Pack JDBC). CDC (MSSQL-based Change Tracking) — captures row-level changes per table with LSN-based watermarking.\n\n- **PostgreSQL v9.5+**: Native PostgreSQL Snap Pack (JDBC). CDC via PostgreSQL logical replication (pgoutput plugin) — supports all DML operations with consistent ordering.\n\n- **MySQL v5+ / MariaDB v5.5+**: Native MySQL/MariaDB Snap Pack (JDBC). CDC via binary log (binlog) replication — captures row-level changes with microsecond timestamp.\n\n- **SAP HANA**: Native SAP HANA JDBC connector with SQL/MDX query support. Used to extract data from SAP systems into downstream analytics/reporting flows.\n\n- **Generic JDBC**: Universal JDBC connector for any JDBC-compliant database. Supports Db2/400 in process analytical (bi), SAP HANA, IBM DB2, Teradata, and others via standard JDBC URLs and JDBC drivers installed in the Ground Plex.\n\n- **MongoDB v6+, Neo4j v4/5+**: Native NoSQL connectors: MongoDB Snap Pack supports v5.12+, Splunk Enterprise v7.x+: Native connectors for document, graph, search, and analytics stores",
+    "subsections": []
+  }
+}

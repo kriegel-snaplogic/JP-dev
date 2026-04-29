@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "network_ports_v1",
+    "version": "1.0",
+    "title": "Network & Port Documentation",
+    "category": "deployment",
+    "tags": ["network", "ports", "firewall", "connectivity", "security"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Network & Port Documentation",
+    "content": "All required network ports are documented in SnapLogic's Groundplex Configuration Guide, provided to {{customer_name}}'s network team prior to deployment. The primary connectivity requirement is a single outbound HTTPS/WSS connection (port 443) from each Ground Plex node to SnapLogic's Manager endpoint. No inbound ports are required on the {{customer_name}} network perimeter.\n\n[TABLE:simple:Required Network Ports]\n| Port | Direction | Protocol | Purpose | Priority |\n|------|-----------|----------|---------|----------|\n| **P-01 MANDATORY** | Outbound | HTTPS/WSS (443) | Ground Plex → SnapLogic Manager | Critical |\n| **P-02 (scaling)** | Internal | Custom | Ground Plex node-to-node communication (for clustered mode) | Optional |\n| **P-03 (HA)** | Internal | Custom | Health check and failover coordination | Optional |\n| **P-04 (OpenShift)** | Internal | Kubernetes API | OpenShift pod orchestration | Required |\n| **P-05 (network ports)** | Outbound/Internal | Various | Connectivity to {{customer_name}} data sources (SAP, Oracle, APIs, file systems) | Required |\n| **P-06 (autonomous deployment)** | Outbound | HTTPS (443) | CI/CD pipeline promotion via SnapLogic Migration API | Optional |\n[/TABLE]",
+    "subsections": []
+  }
+}

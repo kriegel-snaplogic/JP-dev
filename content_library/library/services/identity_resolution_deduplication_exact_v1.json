@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "identity_resolution_deduplication_exact_v1",
+    "version": "1.0",
+    "title": "IDENTITY RESOLUTION & DEDUPLICATION",
+    "category": "services",
+    "tags": [
+      "identity_resolution",
+      "deduplication",
+      "data_quality"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "IDENTITY RESOLUTION & DEDUPLICATION",
+    "content": "- **Snap-based deduplication**: Deduplication and identity resolution patterns natively through standard Snap combinations — relevant for AH's master data management and supplier data consolidation use cases.\n\n- **Key-based deduplication** (Join Snap + Sort Snap + Group by Snap + Aggregate Snap combination) for deterministic deduplication on exact key matches (part number, supplier ID, DUNS number).\n\n- **Probabilistic matching** (Python or JavaScript Snap + fuzzy match libraries: FuzzyWuzzy or Levenshtein): Snap enables probabilistic entity matching for cases where exact key deduplication is insufficient (e.g., supplier name variations, address normalisation).\n\n- **Unified view construction**: Linking Snap and Join Snap patterns merge records from multiple source systems into a unified canonical view — supporting master data hub patterns where AH ingests vendor/part data from multiple ERP systems.",
+    "subsections": []
+  }
+}

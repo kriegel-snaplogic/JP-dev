@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "log_metrics_export_observability_exact_v1",
+    "version": "1.0",
+    "title": "LOG & METRICS EXPORT TO AH'S OBSERVABILITY STACK",
+    "category": "services",
+    "tags": [
+      "logs",
+      "metrics",
+      "export",
+      "observability"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "LOG & METRICS EXPORT TO AH'S OBSERVABILITY STACK",
+    "content": "SnapLogic exports structured telemetry to AH's existing monitoring platforms — no proprietary observability tool is required.\n\n- **OpenTelemetry & Prometheus**: Ground Plex nodes export OTLP time series data emits OTEL traces (spans) and metrics into Dynatrace DataPoint and OTEL ingest endpoints. Pipeline execution traces appear in Dynatrace distributed tracing without custom instrumentation.\n\n- **Elasticsearch / ELK Stack Export**: Pipeline execution logs, completion records (success/failure/timeout), and audit logs are routed to target pipelines. Pipeline execution logs, error logs, and node metrics can be indexed in AH's Elasticsearch cluster — enabling Kibana dashboards over SnapLogic operational data.\n\n- **Splunk Enterprise or Splunk Cloud Integration**: SnapLogic Snap Pack for log-to-Splunk streaming to programmatic pipelines. Pipeline execution events, error events, and audit log entries are delivered in Splunk CIM-compatible format.\n\n- **Prometheus / Grafana**: JMX metrics endpoint exposed by Ground Plex nodes — scrapeable by Prometheus. Pre-built Grafana dashboard templates available for pipeline throughput, error rates, and node resource visualisation.",
+    "subsections": []
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "id": "high_level_architecture_exact_v1",
+    "version": "1.0",
+    "title": "High-Level Platform Architecture",
+    "category": "platform",
+    "tags": [
+      "architecture",
+      "high_level",
+      "control_plane",
+      "data_plane"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [
+        "assets/images/customer/airbus_vendor_profile/High_Level_Architecture.png"
+      ],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "High-Level Platform Architecture",
+    "content": "SnapLogic's platform architecture separates the control plane (cloud-hosted) from the data plane (on-premises). This separation is fundamental to meeting Airbus Helicopters' data sovereignty requirements. The architecture ensures that all customer data processing occurs within Airbus's data center, while metadata management and orchestration leverage SnapLogic's cloud infrastructure for operational efficiency.\n\n[IMAGE:assets/images/customer/airbus_vendor_profile/High_Level_Architecture.png:SnapLogic Deployment Architecture for Airbus Helicopters On-Premises Platform]\n\nAs shown in Figure 1, the architecture consists of two primary components:\n\n**Control Plane: SnapLogic Manager (Cloud-Hosted)**\n\nThe Manager is the cloud-hosted control plane responsible for:\n\n- Pipeline definitions and metadata (no customer data)\n- User authentication and RBAC configuration\n- Scheduling and orchestration instructions\n- Audit logs and usage analytics\n- Designer UI and development environment\n\n**Data Plane: Ground Plex (On-Premises)**\n\nThe Ground Plex is the on-premises execution engine responsible for:\n\n- All pipeline execution and data processing\n- All connector calls to SAP, databases, APIs, file systems\n- All data transformation and business logic\n- Credential storage (encrypted locally, never sent to cloud)\n- Real-time monitoring and health metrics\n\n**Key Architectural Principle for Airbus Helicopters:**\n\nNo customer data ever transits the SnapLogic cloud. All data processing occurs within Airbus Helicopters' data center. The Ground Plex communicates with the Manager over a single outbound HTTPS connection (port 443) to receive pipeline definitions and send execution status. No inbound firewall rules required. No data egress.\n\n[TABLE:accent-blue:Informatica to SnapLogic Terminology Mapping]\n| Informatica Concept | SnapLogic Equivalent | Key Difference |\n|---------------------|---------------------|----------------|\n| Mapping / Workflow | Pipeline | Visual canvas, executable as-is — no code generation step |\n| Transformation / Stage | Snap | 700+ pre-built, configured not coded |\n| Integration Service / DTM | Ground Plex | Containerised on OpenShift, scales horizontally |\n| Repository / Domain | Manager (cloud) | Metadata only — no data transits the Manager |\n| Mapplet / Reusable Mapping | Child Pipeline | Modular, reusable, called inline |\n| Folder / Repository Folder | Project / Org | RBAC-governed hierarchy: Org → Project Space → Project |\n[/TABLE]",
+    "subsections": []
+  }
+}

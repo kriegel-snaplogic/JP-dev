@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "enterprise_applications_exact_v1",
+    "version": "1.0",
+    "title": "ENTERPRISE APPLICATIONS",
+    "category": "platform",
+    "tags": [
+      "enterprise_applications",
+      "sap",
+      "servicenow",
+      "ldap"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "ENTERPRISE APPLICATIONS",
+    "content": "- **SAP HANA**: Native SAP HANA connector (JDBC-based). Read from columnar tables, execute stored procedures, and write data to HANA tables.\n\n- **ServiceNow, JIRA v7.0+**: Native connectors for ITSM/ITIL workflows. Read, create, update tickets. Use API patterns, and webhook-based event triggers.\n\n- **LDAP**: Native connector for Active Directory and OpenLDAP. Search, read, and write directory entries. Used for identity resolution and group-based access control workflows.\n\n- **Palantir Foundry**: Native connector to read/write to Foundry datasets. Relevant for AH's advanced analytics and data platform workflows.\n\n- **REST API**: Universal HTTP/REST Snap Pack supports all REST API methods (GET, POST, PUT, PATCH/DELETE). Headers, authentication (OAuth 2.0, API key, Basic Auth, Bearer), request/response body format (JSON, XML, form-data). Both outbound calls and inbound triggered endpoints (Triggered Task) are supported.\n\n- **Apache Spark v2.3+**: Native connector for distributed processing workloads. Submits Spark jobs and reads results — relevant for large-scale data processing use cases alongside an existing Spark infrastructure.\n\n- **Salesforce, ServiceNow, JIRA, and dozens more**: Pre-built Snap Packs for cloud SaaS applications (if relevant for hybrid scenarios).",
+    "subsections": []
+  }
+}

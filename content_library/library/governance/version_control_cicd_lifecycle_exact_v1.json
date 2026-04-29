@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "version_control_cicd_lifecycle_exact_v1",
+    "version": "1.0",
+    "title": "VERSION CONTROL, CI/CD & ENVIRONMENT LIFECYCLE",
+    "category": "governance",
+    "tags": [
+      "version_control",
+      "cicd",
+      "lifecycle",
+      "git"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "VERSION CONTROL, CI/CD & ENVIRONMENT LIFECYCLE",
+    "content": "- **Native pipeline versioning**: Every pipeline stores its complete version history. Developers can compare versions, restore to any previous version, and view the commit history for pipeline artefacts.\n\n- **Git integration (GitLab, GitHub, Bitbucket)**: SnapLogic integrates directly with Git as the external system of record for pipeline artefacts. Developers commit their work (via the Designer's built-in Git UI and webhook schemas; commit). Pipeline artefacts (.slpkg packages) are committed to GitLab repositories via the SnapLogic Migration REST API and webhook integration — enabling CI/CD promotion workflows from Dev → Test → Prod using Airbus Helicopters' existing Ground Plex instances.\n\n- **Multi-stage development lifecycle**: Separate Ground Plex instances for Development, Test, and Production. Each environment has independent credentials, schedules, and RBAC controls. Pipeline packages are promoted between environments via the `.slpkg` format — RBAC controls prevent developers from promoting directly to Production without passing through the defined CI/CD promotion workflow.\n\n- **Environment-level configuration separation**: Dev, Test, and Production Ground Plex instances are isolated at the infrastructure level. No shared credentials or accounts with across environments. Separate OpenShift namespaces are recommended for full network-level isolation.\n\n- **Autonomous platform configuration**: Full REST API for Org management, user provisioning, ACL configuration, and Ground Plex management — enabling Infrastructure-as-Code patterns for the SnapLogic environment itself (Ansible, Terraform, GitLab CI).\n\n[BOX:blue]\n**G-01 (RBAC)**\n[/BOX]\n[BOX:jade]\n**G-02 (AAA/LDAP)**\n[/BOX]\n[BOX:orange]\n**G-03 (keys)**\n[/BOX]\n[BOX:navy]\n**G-04 (SSO)**\n[/BOX]\n[BOX:purple]\n**G-05 (service account)**\n[/BOX]\n[BOX:blue]\n**G-06 (API keys)**\n[/BOX]\n[BOX:jade]\n**G-07 (access v1.0)**\n[/BOX]\n[BOX:orange]\n**G-08 (lifecycle)**\n[/BOX]\n[BOX:navy]\n**G-09 (versio)**\n[/BOX]\n[BOX:purple]\n**G-10 (impact analysis)**\n[/BOX]\n[BOX:blue]\n**G-11 (Git)**\n[/BOX]\n[BOX:jade]\n**G-02 (automation in env)**\n[/BOX]\n[BOX:orange]\n**G-03 (configuration mgmt)**\n[/BOX]\n[BOX:navy]\n**G-04 (pipeline metadata)**\n[/BOX]\n[BOX:purple]\n**G-07 (schema evolution)**\n[/BOX]",
+    "subsections": []
+  }
+}

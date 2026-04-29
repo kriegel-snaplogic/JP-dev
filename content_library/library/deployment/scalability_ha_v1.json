@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "scalability_ha_v1",
+    "version": "1.0",
+    "title": "Scalability — Horizontal & Vertical",
+    "category": "deployment",
+    "tags": ["scalability", "horizontal", "vertical", "performance", "capacity"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Scalability — Horizontal & Vertical",
+    "content": "The Ground Plex architecture is designed for elastic scaling within {{customer_name}}'s OpenShift cluster without requiring pipeline re-architecture or downtime.\n\n- **Horizontal node scaling**: Additional Ground Plex worker nodes are registered to the existing Snaplex (logical group of nodes) and immediately begin receiving pipeline workloads. OpenShift Horizontal Pod Autoscaler (HPA) policies can be applied to Ground Plex deployments for demand-driven scaling.\n- **Vertical scaling**: CPU and memory resources per Ground Plex pod are configurable via Helm values. Increasing node resources increases the concurrency and throughput capacity of individual pipeline executions.\n- **Autonomous pipeline deployment**: Pipelines are deployed programmatically via SnapLogic's Migration REST API or the `slpkg` CLI — enabling full CI/CD pipeline promotion (Dev → Test → Prod) without manual Designer interaction.",
+    "subsections": []
+  }
+}

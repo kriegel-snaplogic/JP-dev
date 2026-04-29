@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "ground_plex_component_v1",
+    "version": "1.0",
+    "title": "Ground Plex — On-Premises Data Plane",
+    "category": "platform",
+    "tags": ["ground_plex", "data_plane", "on_premises", "openshift", "kubernetes", "docker"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 1,
+    "reuse_score": 90,
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": ["assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.19.05.png"],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Ground Plex — On-Premises Data Plane",
+    "content": "The Ground Plex is SnapLogic's on-premises execution engine. It is the heart of the deployment for {{customer_name}} — the component that makes SnapLogic genuinely on-premises rather than cloud-first. Every pipeline execution, every data transformation, and every connector call happens inside the Ground Plex, inside {{customer_name}}'s private data center. The Ground Plex communicates with the SnapLogic Manager exclusively over a single outbound HTTPS connection (port 443). No inbound firewall rules. No data egress.\n\n[IMAGE:assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.19.05.png:Ground Plex Architecture and Deployment Model]\n\n**Deployed as Docker containers on RedHat OpenShift**, managed via SnapLogic-certified Helm charts\n\n**Each Ground Plex node runs multiple JCC (Java Cloud Connector) containers** — each capable of 100+ concurrent pipeline executions\n\n**Active-active multi-node configuration for HA** — node failure causes automatic redistribution\n\n**Stateless by design** — pipeline definitions and configuration are stored in the Manager, not on the node. New nodes are operational within minutes of deployment\n\n**All connector credentials encrypted and stored locally** within the Ground Plex; never transmitted to SnapLogic cloud\n\n**Fully streaming execution architecture** — Snaps process data as a stream rather than loading full datasets into memory, enabling high-throughput with predictable resource usage\n\n[BOX:info]\n**IMAGE: GROUND PLEX ARCHITECTURE DIAGRAM**\n\nInsert: SnapLogic official Ground Plex on OpenShift architecture diagram showing JCC containers, Ground Plex node structure, and outbound HTTPS to Manager. Source from SnapLogic product/marketing team or use the SVG diagram above.\n[/BOX]\n\n**DEPLOYMENT SPECIFICATIONS**\n\n**Container runtime**: Docker on RedHat OpenShift (Kubernetes)\n\n**Resource requirements per node**:\n- CPU: 8 cores minimum, 16 cores recommended for production\n- Memory: 32GB minimum, 64GB recommended\n- Storage: 100GB for logs and temporary processing files\n\n**Scalability**: Horizontal scaling by adding Ground Plex nodes. Each node adds execution capacity. Typical production deployments: 2-4 nodes for redundancy and capacity.\n\n**Network requirements**:\n- Outbound HTTPS (port 443) to SnapLogic Manager (*.snaplogic.com)\n- No inbound connections required\n- Internal connectivity to {{customer_name}} data sources (SAP, Oracle, file systems, APIs)\n\n**High Availability**: Active-active configuration across multiple nodes. Node failure triggers automatic redistribution of scheduled pipelines to remaining nodes. No single point of failure.\n\n**Monitoring & Observability**:\n- Real-time dashboard in SnapLogic Manager showing Ground Plex health, pipeline execution status, error rates\n- Integration with Prometheus/Grafana for custom monitoring dashboards\n- SNMP trap support for integration with {{customer_name}} enterprise monitoring tools\n- Syslog export for centralized logging",
+    "subsections": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "professional_services_v1",
+    "version": "1.0",
+    "title": "Professional Services & Implementation Capability",
+    "category": "services",
+    "tags": ["professional_services", "implementation", "consulting", "emea", "dach"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 1,
+    "reuse_score": 85,
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": ["assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.18.48.png"],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Professional Services & Implementation Capability",
+    "content": "SnapLogic's Professional Services organisation provides the delivery and enablement capability {{customer_name}} will require to deploy the platform, migrate existing pipelines, and enable the integration team. PS is a core part of the SnapLogic value proposition for complex enterprise deployments — not an afterthought.\n\n[IMAGE:assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.18.48.png:Professional Services and Implementation Capability]\n\n**Team size**: 40+ PS consultants globally across AMER and EMEA\n\n**Profiles**: Enterprise Architects, Senior Integration Consultants, Project Managers, Technical Trainers\n\n**EMEA presence**: Consultants based in Germany, UK, Netherlands, France, Italy, Sweden — DACH delivery available in German\n\n**Engagement models**: Time & Materials, Fixed-Deliverable Consulting, Managed Services (ongoing operational support)\n\n**Partner ecosystem**: Large SI partners (Cognizant, Capgemini, Infosys, Wipro, TCS) and regional specialists (Blue Altair — 50+ SnapLogic-certified consultants) extend PS capacity for large-scale programmes\n\n**Certifications**: SnapLogic Partner Certification Programme ensures consistent delivery quality across SI partners\n\n[BOX:info]\n**Prof. Services — confirm DACH PS resource availability for AH engagement**\n\nVerify that SnapLogic Professional Services has German-speaking consultants available for Airbus Helicopters engagement delivery in DACH region.\n[/BOX]\n\n**TYPICAL ENGAGEMENT PHASES**\n\n**Phase 1: Foundation** (Week 1-2)\n- Ground Plex deployment on {{customer_name}} OpenShift infrastructure\n- Connectivity validation to SAP, Oracle DW, Teamcenter PLM, and MES systems\n- RBAC configuration and SSO integration with {{customer_name}} identity provider\n- Monitoring and alerting configuration\n\n**Phase 2: Pilot Migration** (Week 3-6)\n- Select 3-5 representative Informatica mappings for conversion pilot\n- Automated conversion using SnapLogic's Informatica migration tools\n- Manual refinement and optimization of converted pipelines\n- Performance testing and validation against Informatica baselines\n\n**Phase 3: Team Enablement** (Week 4-8)\n- Technical training: SnapLogic Designer, Snap configuration, expression language, error handling\n- Best practices workshop: pipeline patterns, reusable assets, monitoring strategies\n- Citizen Integrator enablement: SnapGPT-assisted pipeline generation for business analysts\n\n**Phase 4: Production Migration** (Week 7-12)\n- Remaining Informatica mapping conversion (automated + manual)\n- User acceptance testing and production validation\n- Cutover planning and execution support\n- Hypercare period with SnapLogic PS on-site or remote support\n\n**POST-IMPLEMENTATION SUPPORT**\n\nSnapLogic offers managed services for ongoing operational support including:\n- Pipeline monitoring and incident response\n- Performance optimization and scaling guidance\n- New use case development and expansion\n- Quarterly business reviews and roadmap planning",
+    "subsections": []
+  }
+}

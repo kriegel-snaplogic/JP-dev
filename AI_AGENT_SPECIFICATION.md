@@ -2,13 +2,111 @@
 
 ## Document Overview
 
-**Purpose:** This specification defines how AI agents should prepare content for the SnapLogic LaTeX document generation skill.
+**Purpose:** This specification defines how AI agents should prepare content for the SnapLogic LaTeX document generation skill using a modular, reusable content library architecture.
 
 **Target Audience:** AI agents, automation systems, and programmatic document generators that need to produce professional PDF documents with SnapLogic branding.
 
 **Skill Location:** `/Users/konstantinriegel/.claude/skills/latex-docs/`
 
 **Compilation Script:** `scripts/compile_document.py`
+
+**Architecture:** Manifest-based modular content system with reusable section blocks
+
+---
+
+## 🆕 Recommended Approach: Modular Content Library
+
+### Overview
+
+Instead of generating monolithic JSON documents, agents should use a **manifest-based architecture** that references reusable content blocks from a centralized library.
+
+**Benefits:**
+- ✅ **Reusability**: Write "Platform Overview" once, use in 50 documents
+- ✅ **Parallel Execution**: Multiple agents prepare different sections simultaneously
+- ✅ **Consistency**: Same section = same content across all documents
+- ✅ **Discoverability**: Searchable catalog of available content blocks
+- ✅ **Version Control**: Individual section versioning, not full document versioning
+- ✅ **Reduced Context**: Agents work with small, focused content blocks
+- ✅ **Maintainability**: Update once, affects all referencing documents
+
+### How It Works
+
+1. **Create Manifest** (`manifest.json`): Blueprint defining document structure
+2. **Reference Content Blocks**: Manifest points to reusable sections in `content_library/`
+3. **Create Custom Sections**: Document-specific content stored in `documents/<project>/`
+4. **Compile**: Compiler assembles manifest + content blocks → PDF
+
+### Quick Example
+
+**manifest.json**:
+```json
+{
+  "metadata": {
+    "document_title": "Airbus RFP Response",
+    "document_type": "solution",
+    "customer": "Airbus Helicopters"
+  },
+  "variables": {
+    "customer_name": "Airbus Helicopters",
+    "deployment_type": "on-premises"
+  },
+  "sections": [
+    {
+      "id": "title",
+      "type": "title_page",
+      "source": "library/standard/title_page.json"
+    },
+    {
+      "id": "platform_overview",
+      "type": "section",
+      "source": "library/platform/platform_overview_v3.json"
+    },
+    {
+      "id": "custom_use_cases",
+      "type": "section",
+      "source": "documents/airbus_rfp/custom_use_cases.json"
+    }
+  ]
+}
+```
+
+**Content Block** (`library/platform/platform_overview_v3.json`):
+```json
+{
+  "metadata": {
+    "id": "platform_overview_v3",
+    "version": "3.0",
+    "title": "SnapLogic Platform Overview",
+    "tags": ["platform", "architecture", "reusable"],
+    "usage_count": 47
+  },
+  "content": {
+    "title": "SnapLogic Platform Overview",
+    "content": "SnapLogic is an enterprise integration platform for {{customer_name}}...",
+    "subsections": [...]
+  }
+}
+```
+
+### Schema Documentation
+
+Detailed specifications available in:
+- **Manifest Format**: `SCHEMA_MANIFEST.md`
+- **Section Block Format**: `SCHEMA_SECTION_BLOCK.md`
+- **Content Indexer**: `INDEXER_DESIGN.md`
+
+### When to Use Modular vs. Monolithic
+
+**Use Modular (Recommended):**
+- Multi-section documents (RFPs, proposals, technical docs)
+- Content that repeats across documents
+- Team collaboration (different agents/people work on different sections)
+- Long-term maintenance (content evolves, needs updates)
+
+**Use Monolithic (Legacy):**
+- Simple, one-off documents (<3 pages)
+- Highly custom content with no reusability
+- Quick prototypes or test documents
 
 ---
 
@@ -78,6 +176,180 @@ if result.returncode == 0:
 else:
     print(f"Error: {result.stdout}")
 ```
+
+---
+
+## 🔄 Modular Workflow for AI Agents
+
+### Step 1: Query the Content Library
+
+Before generating new content, check if reusable blocks exist.
+
+```python
+# Search for security-related content
+import json
+from pathlib import Path
+
+index_path = Path("/Users/konstantinriegel/.claude/skills/latex-docs/content_library/.index/catalog.json")
+with open(index_path) as f:
+    catalog = json.load(f)
+
+# Find security blocks
+security_blocks = [
+    b for b in catalog['blocks']
+    if 'security' in b['tags'] and b['status'] == 'active'
+]
+
+print(f"Found {len(security_blocks)} security content blocks:")
+for block in security_blocks:
+    print(f"  - {block['id']}: {block['title']}")
+    print(f"    Usage: {block['usage_count']} times")
+```
+
+**CLI Alternative**:
+```bash
+python3 scripts/search_library.py "security compliance" --status active
+```
+
+### Step 2: Create Document Manifest
+
+Build a manifest referencing library blocks and custom content.
+
+```python
+manifest = {
+    "metadata": {
+        "document_id": "airbus_rfp_2026_04",
+        "document_title": "Airbus Helicopters RFP Response",
+        "document_type": "solution",
+        "customer": "Airbus Helicopters",
+        "date": "2026-04-27",
+        "version": "1.0"
+    },
+    "variables": {
+        "customer_name": "Airbus Helicopters",
+        "deployment_type": "on-premises",
+        "compliance_requirements": ["SOC 2", "ISO 27001", "GDPR"]
+    },
+    "sections": [
+        {
+            "id": "title",
+            "type": "title_page",
+            "source": "library/standard/title_page.json"
+        },
+        {
+            "id": "mgmt_summary",
+            "type": "management_summary",
+            "source": "documents/airbus_rfp/mgmt_summary.json"  # Custom
+        },
+        {
+            "id": "platform",
+            "type": "section",
+            "source": "library/platform/platform_overview_v3.json"  # Reusable
+        },
+        {
+            "id": "security",
+            "type": "section",
+            "source": "library/security/security_compliance_overview_v2.json",  # Reusable
+            "variables": {
+                "certifications": ["SOC 2", "ISO 27001"]
+            }
+        }
+    ]
+}
+
+# Save manifest
+with open("documents/airbus_rfp/manifest.json", 'w') as f:
+    json.dump(manifest, f, indent=2)
+```
+
+### Step 3: Generate Custom Content Blocks
+
+For document-specific sections, create content blocks.
+
+```python
+custom_mgmt_summary = {
+    "metadata": {
+        "id": "airbus_mgmt_summary",
+        "version": "1.0",
+        "title": "Executive Summary",
+        "category": "custom",
+        "tags": ["airbus", "executive", "custom"],
+        "status": "active"
+    },
+    "content": {
+        "title": "Executive Summary",
+        "content": "SnapLogic proposes an on-premises ETL/ELT platform for {{customer_name}} that addresses all 114 requirements outlined in the RFP...",
+        "subsections": []
+    }
+}
+
+# Save custom block
+with open("documents/airbus_rfp/mgmt_summary.json", 'w') as f:
+    json.dump(custom_mgmt_summary, f, indent=2)
+```
+
+### Step 4: Compile Document
+
+```python
+result = subprocess.run([
+    sys.executable,
+    "scripts/compile_document.py",
+    "documents/airbus_rfp/manifest.json",
+    "output/airbus_rfp_response.pdf",
+    "solution"
+], capture_output=True, text=True)
+
+if result.returncode == 0:
+    output = json.load(result.stdout)
+    print(f"✅ PDF generated: {output['output_path']}")
+    print(f"   Pages: {output['pages']}")
+```
+
+### Step 5: Update Library Index
+
+After creating or modifying content blocks, regenerate the index:
+
+```bash
+python3 scripts/index_library.py
+```
+
+This updates usage statistics and makes new blocks discoverable.
+
+### Parallel Execution Pattern
+
+Multiple agents can work simultaneously on different sections:
+
+```python
+# Agent 1: Generate management summary
+agent1_task = generate_mgmt_summary(rfp_requirements)
+
+# Agent 2: Generate use cases (in parallel)
+agent2_task = generate_use_cases(customer_context)
+
+# Agent 3: Create manifest (in parallel)
+agent3_task = build_manifest(section_plan)
+
+# Wait for all agents
+await asyncio.gather(agent1_task, agent2_task, agent3_task)
+
+# Compile assembled document
+compile_document(manifest_path)
+```
+
+### Content Discovery Best Practices
+
+**DO**:
+- ✅ Query library before generating new content
+- ✅ Reuse high-usage blocks (proven, refined content)
+- ✅ Check variable requirements before selecting blocks
+- ✅ Use semantic search: "on-premises architecture security"
+- ✅ Prefer blocks with `status: "active"`
+
+**DON'T**:
+- ❌ Recreate standard sections (platform overview, security, services)
+- ❌ Use deprecated blocks
+- ❌ Ignore variable requirements (will cause compilation errors)
+- ❌ Generate content without checking library first
 
 ---
 
@@ -316,7 +588,7 @@ For wide tables (7-8 columns), use landscape orientation:
 **Parameters:**
 - `path` - Relative or absolute path to image file (PNG, JPG, PDF)
 - `caption` - Caption text (use `_` for no caption)
-- `width` - Optional width as decimal (e.g., `0.6` = 60% of text width, default `0.8`)
+- `width` - Optional width as decimal (e.g., `0.6` = 60% of text width, default `1.0` = full width)
 
 **Examples:**
 

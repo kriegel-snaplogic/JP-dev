@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "exception_management_quality_workflow_exact_v1",
+    "version": "1.0",
+    "title": "EXCEPTION MANAGEMENT & QUALITY WORKFLOW",
+    "category": "services",
+    "tags": [
+      "exception_management",
+      "quality_workflow",
+      "reprocessing"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "EXCEPTION MANAGEMENT & QUALITY WORKFLOW",
+    "content": "- **Failed record store**: Failed records (validation errors, target-system rejection) are written to configurable error targets (database table, file, message queue) with the full original record, the failed rule, the error message, and a timestamp. No valid data is lost: no processing stops.\n\n- **Authorisation-based reprocessing**: SnapLogic's Triggered Task API enables AH to build approval and reprocessing workflows — a data steward reviews quarantined records via an external application, approves corrections, and triggers a reprocessing pipeline via API. SnapLogic provides the execution substrate; the approval UI is built by AH or third-party software.\n\n- **DQ trend monitoring**: Pipeline execution statistics (error rates, record counts, rejection rates per pipeline) are tracked over time in the monitoring console and integrated dashboards. Supports trend-based alerting in observability infrastructure via Splunk dashboards or Grafana dashboards over SnapLogic's existing BI infrastructure. Note: SnapLogic does not include a dedicated DQ visualisation module — AH's existing observability tooling (Grafana, Kibana, Splunk) serves as the visualisation layer.\n\n[BOX:blue]\n**DQ-01 (Filter snap)**\n[/BOX]\n[BOX:jade]\n**DQ-02 (rule as pipeline or slexpr)**\n[/BOX]\n[BOX:orange]\n**DQ-03 (inference)**\n[/BOX]\n[BOX:navy]\n**DQ-04 (mask data)**\n[/BOX]\n[BOX:purple]\n**DQ-05 (expression)**\n[/BOX]\n[BOX:blue]\n**DQ-06 (fuzzy regexp)**\n[/BOX]\n[BOX:jade]\n**DQ-07 (reprocessing)**\n[/BOX]\n[BOX:orange]\n**DQ-08 (Splunk/Grafana)**\n[/BOX]",
+    "subsections": []
+  }
+}

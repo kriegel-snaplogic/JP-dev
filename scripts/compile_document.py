@@ -31,13 +31,13 @@ class SnapLogicDocumentCompiler:
         self.table_counter = 0
 
     def compile(self, input_json: str, output_pdf: str, doc_type: str = "general",
-                font_size: str = "11pt", paper_size: str = "letterpaper",
+                font_size: str = "10pt", paper_size: str = "a4paper",
                 color_scheme: str = "default", title_page_style: str = "navy") -> Dict[str, Any]:
         """
         Compile JSON to PDF
 
         Args:
-            input_json: Path to input JSON file
+            input_json: Path to input JSON file (monolithic JSON or manifest)
             output_pdf: Path for output PDF file
             doc_type: Document type (general, technical, internal)
             font_size: LaTeX font size (10pt, 11pt, 12pt)
@@ -50,7 +50,13 @@ class SnapLogicDocumentCompiler:
         """
         # Load JSON
         with open(input_json, 'r') as f:
-            structure = json.load(f)
+            raw_structure = json.load(f)
+
+        # Detect and resolve manifest
+        if self._is_manifest(raw_structure):
+            structure = self._resolve_manifest(input_json, raw_structure)
+        else:
+            structure = raw_structure
 
         # Create temp working directory
         work_dir = tempfile.mkdtemp(prefix='snaplogic_doc_')
@@ -101,6 +107,127 @@ class SnapLogicDocumentCompiler:
                 "error": str(e),
                 "work_dir": work_dir
             }
+
+    def _is_manifest(self, structure: Dict[str, Any]) -> bool:
+        """Check if JSON structure is a manifest (vs monolithic document)"""
+        return "structure" in structure and isinstance(structure.get("structure"), list)
+
+    def _resolve_manifest(self, manifest_path: str, manifest: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Resolve manifest by loading all referenced content blocks and merging into monolithic structure
+
+        Args:
+            manifest_path: Path to manifest file (for resolving relative paths)
+            manifest: Manifest structure with metadata, variables, and structure array
+
+        Returns:
+            Monolithic document structure ready for LaTeX compilation
+        """
+        manifest_dir = Path(manifest_path).parent
+        content_library_root = manifest_dir.parent.parent  # documents/airbus -> content_library
+
+        # Start with manifest metadata
+        resolved = {
+            "title": manifest.get("metadata", {}).get("title", "Untitled"),
+            "author": manifest.get("metadata", {}).get("author", ""),
+            "date": manifest.get("metadata", {}).get("date", ""),
+            "version": manifest.get("metadata", {}).get("version", "1.0"),
+            "sections": []
+        }
+
+        # Get variables for substitution
+        variables = manifest.get("variables", {})
+
+        # Process structure array
+        for section_ref in manifest.get("structure", []):
+            section_type = section_ref.get("section_type")
+
+            if section_type == "title_page":
+                # Title page - load from library and add to metadata
+                resolved["title_page"] = self._load_and_substitute(
+                    content_library_root, section_ref, variables
+                )
+            elif section_type == "management_summary":
+                # Management summary - becomes abstract
+                content = self._load_and_substitute(
+                    content_library_root, section_ref, variables
+                )
+                resolved["abstract"] = content.get("content", {}).get("content", "")
+            elif section_type == "section":
+                # Regular section - may have subsections
+                if "path" in section_ref:
+                    # Single content block as section
+                    section_content = self._load_and_substitute(
+                        content_library_root, section_ref, variables
+                    )
+                    resolved["sections"].append(self._convert_to_section(section_content))
+                else:
+                    # Section with subsections
+                    section = {
+                        "title": section_ref.get("title", "Untitled Section"),
+                        "subsections": []
+                    }
+                    for subsection_ref in section_ref.get("subsections", []):
+                        subsection_content = self._load_and_substitute(
+                            content_library_root, subsection_ref, variables
+                        )
+                        section["subsections"].append(self._convert_to_subsection(subsection_content))
+                    resolved["sections"].append(section)
+            elif section_type == "appendix":
+                # Appendix - load and add to sections as appendix
+                appendix_content = self._load_and_substitute(
+                    content_library_root, section_ref, variables
+                )
+                if "appendices" not in resolved:
+                    resolved["appendices"] = []
+                resolved["appendices"].append(self._convert_to_section(appendix_content))
+
+        return resolved
+
+    def _load_and_substitute(self, content_library_root: Path,
+                            section_ref: Dict[str, Any],
+                            variables: Dict[str, str]) -> Dict[str, Any]:
+        """
+        Load content block from library and perform variable substitution
+
+        Args:
+            content_library_root: Root of content library
+            section_ref: Section reference with path
+            variables: Variables for substitution
+
+        Returns:
+            Content block with variables substituted
+        """
+        if section_ref.get("source") != "library":
+            raise ValueError(f"Only 'library' source supported, got: {section_ref.get('source')}")
+
+        block_path = content_library_root / section_ref["path"]
+        with open(block_path, 'r') as f:
+            block = json.load(f)
+
+        # Perform variable substitution on content
+        block_str = json.dumps(block)
+        for var_name, var_value in variables.items():
+            block_str = block_str.replace(f"{{{{{var_name}}}}}", var_value)
+
+        return json.loads(block_str)
+
+    def _convert_to_section(self, content_block: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert content block to section format expected by compiler"""
+        content = content_block.get("content", {})
+        return {
+            "title": content.get("title", "Untitled"),
+            "content": content.get("content", ""),
+            "subsections": content.get("subsections", [])
+        }
+
+    def _convert_to_subsection(self, content_block: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert content block to subsection format expected by compiler"""
+        content = content_block.get("content", {})
+        return {
+            "title": content.get("title", "Untitled"),
+            "content": content.get("content", "")
+        }
 
     def _generate_latex(self, structure: Dict[str, Any], doc_type: str,
                        font_size: str, paper_size: str, color_scheme: str,
@@ -354,23 +481,40 @@ class SnapLogicDocumentCompiler:
         appendix_started = False
 
         for section in structure.get('sections', []):
-            section_counter += 1
+            # Check if this is the "Appendices" section
+            is_appendices_section = (section.get('title') == 'Appendices')
 
-            # Check for appendix
-            if not appendix_started and 'Appendix' in section['title']:
+            if is_appendices_section:
+                # Start appendix mode (switches to letter numbering: A, B, C...)
                 content.append('\\appendix')
+
+                # Add "Appendices" as an unnumbered TOC section header
+                # This creates visual separation in the TOC without rendering a page header
+                content.append('\\addtocontents{toc}{\\protect\\vspace{0.3cm}}')  # Add spacing before appendices
+                content.append('\\addtocontents{toc}{\\protect\\textbf{Appendices}}')  # Bold "Appendices" header
+                content.append('\\addtocontents{toc}{\\protect\\vspace{0.1cm}}')  # Small spacing after header
+
                 appendix_started = True
 
-            # Page break before each section (except first)
-            if section_counter > 1:
-                content.append("\\newpage")
+                # Process subsections directly as top-level appendix sections
+                # Skip rendering the "Appendices" header itself
+                for appendix in section.get('subsections', []):
+                    content.append("\\newpage")
+                    # Process as top-level section (level=1) so it gets letter numbering
+                    content.append(self._process_section(appendix, level=1))
+            else:
+                section_counter += 1
 
-            # Process section recursively (handles subsections)
-            content.append(self._process_section(section, level=1, section_num=section_counter))
+                # Page break before each section (except first)
+                if section_counter > 1:
+                    content.append("\\newpage")
+
+                # Process section recursively (handles subsections)
+                content.append(self._process_section(section, level=1, section_num=section_counter))
 
         return '\n\n'.join(content)
 
-    def _process_section(self, section: Dict[str, Any], level: int = 1, section_num: int = None) -> str:
+    def _process_section(self, section: Dict[str, Any], level: int = 1, section_num: int = None, parent_is_appendices: bool = False) -> str:
         """Recursively process section, subsections, and subsubsections"""
         parts = []
 
@@ -383,8 +527,16 @@ class SnapLogicDocumentCompiler:
             5: 'subparagraph'
         }
 
-        cmd = latex_commands.get(level, 'subparagraph')
-        title = self._escape_latex(section.get('title', ''))
+        title_raw = section.get('title', '')
+        title = self._escape_latex(title_raw)
+
+        # Special handling: if parent section is "Appendices", promote subsections to \section level
+        # This allows LaTeX's \appendix command to apply letter numbering properly
+        if parent_is_appendices and level == 2:
+            # Promote from subsection to section for appendices
+            cmd = 'section'
+        else:
+            cmd = latex_commands.get(level, 'subparagraph')
 
         # Add label for top-level sections
         if level == 1 and section_num:
@@ -396,13 +548,16 @@ class SnapLogicDocumentCompiler:
         if section.get('content'):
             parts.append(self._process_content(section['content']))
 
+        # Check if this section is "Appendices" to pass down to children
+        is_appendices_section = (level == 1 and 'Appendices' == title_raw)
+
         # Recursive subsections
         for subsection in section.get('subsections', []):
-            parts.append(self._process_section(subsection, level=level+1))
+            parts.append(self._process_section(subsection, level=level+1, parent_is_appendices=is_appendices_section))
 
         # Handle subsubsections
         for subsubsection in section.get('subsubsections', []):
-            parts.append(self._process_section(subsubsection, level=level+1))
+            parts.append(self._process_section(subsubsection, level=level+1, parent_is_appendices=is_appendices_section))
 
         return '\n\n'.join(parts)
 
@@ -449,6 +604,7 @@ class SnapLogicDocumentCompiler:
         Process content through complete markdown/LaTeX pipeline
 
         Order matters:
+        0. Clean HTML/markdown artifacts
         1. Extract images and boxes (preserve them)
         2. Process markdown
         3. Escape LaTeX special characters
@@ -456,6 +612,9 @@ class SnapLogicDocumentCompiler:
         """
         if not text:
             return ""
+
+        # Step 0: Clean HTML/markdown artifacts before processing
+        text = self._clean_html_artifacts(text)
 
         # Step 1: Extract images
         text, image_map = self._extract_images(text)
@@ -504,6 +663,28 @@ class SnapLogicDocumentCompiler:
 
         return text
 
+    def _clean_html_artifacts(self, text: str) -> str:
+        """
+        Clean HTML/markdown artifacts that don't translate to LaTeX.
+
+        Converts:
+        - <br/> tags to LaTeX line breaks (\\)
+        - <br> tags (without slash) to LaTeX line breaks
+        - Multiple consecutive line breaks to single LaTeX breaks
+        """
+        if not text:
+            return text
+
+        # Convert HTML line breaks to LaTeX line breaks
+        # Handle both <br/> and <br> variants
+        text = re.sub(r'<br\s*/?\s*>', r'\\\\', text, flags=re.IGNORECASE)
+
+        # Clean up multiple consecutive line breaks (max 2)
+        # This prevents things like \\\\\\\\ from <br/><br/><br/>
+        text = re.sub(r'(\\\\){3,}', r'\\\\', text)
+
+        return text
+
     def _extract_images(self, text: str) -> Tuple[str, Dict]:
         """Extract [IMAGE:path:caption:width] tags and replace with placeholders"""
         # Use global counter and map to ensure unique placeholders across all sections
@@ -517,14 +698,17 @@ class SnapLogicDocumentCompiler:
             image_data = {
                 'path': groups[0] if len(groups) > 0 else '',
                 'caption': groups[1] if len(groups) > 1 and groups[1] else '',
-                'width': groups[2] if len(groups) > 2 and groups[2] else '0.8'
+                'width': groups[2] if len(groups) > 2 and groups[2] else '1.0',
+                'label': groups[3] if len(groups) > 3 and groups[3] else None  # Optional semantic label
             }
             image_map[placeholder] = image_data
             # Also store in global map for restoration phase
             self.global_image_map[placeholder] = image_data
             return placeholder
 
-        pattern = r'\[IMAGE:([^:]+):([^:]*):?([^\]]*)\]'
+        # Pattern: [IMAGE:path:caption:width:label] where width and label are optional
+        # Groups: (path, caption, width, label)
+        pattern = r'\[IMAGE:([^:]+):([^:\]]+)(?::([^:\]]+))?(?::([^\]]+))?\]'
         text = re.sub(pattern, replace_image, text)
 
         return text, image_map
@@ -578,22 +762,56 @@ class SnapLogicDocumentCompiler:
         # Convert \\n to actual newlines for regex
         text = text.replace('\\n', '\n')
 
-        # Only process explicitly wrapped tables: [TABLE:style:caption] or [TABLE:style:caption:emphasis]
+        # Only process explicitly wrapped tables: [TABLE:style:caption:emphasis:label]
         # Unwrapped markdown tables will render as inline tables without numbering
-        # Pattern handles optional third field for emphasis options
-        table_pattern = r'\[TABLE:([^:]+):([^:\]]+)(?::([^\]]+))?\](.*?)\[/TABLE\]'
+        # Pattern handles optional third (emphasis) and fourth (label) fields
+        # Groups: (style, caption, emphasis, label, table_md)
+        # Fixed pattern: make group 4 explicitly require a colon separator
+        table_pattern = r'\[TABLE:([^:]+):([^:\]]+)(?::([^:\]]+?))?(?::([^\]]+))?\](.*?)\[/TABLE\]'
 
         def replace_table(match):
             self.table_counter += 1
-            style, caption, emphasis, table_md = match.groups()
+            style, caption, emphasis_and_maybe_label, possible_label, table_md = match.groups()
+
+            # Parse optional fields: could be emphasis, label, or both
+            # Format 1: [TABLE:style:caption]
+            # Format 2: [TABLE:style:caption:emphasis]
+            # Format 3: [TABLE:style:caption:emphasis:label]
+            # Format 4: [TABLE:style:caption::label] (no emphasis, just label)
+
+            emphasis = None
+            label = None
+
+            # Handle the case where possible_label exists (4th field)
+            if possible_label:
+                # We have 4 parts: style:caption:emphasis:label
+                # emphasis_and_maybe_label might be empty (::) or contain emphasis options
+                # possible_label might start with ':' if emphasis was empty - strip it
+                emphasis = emphasis_and_maybe_label if emphasis_and_maybe_label else None
+                label = possible_label.lstrip(':')
+            elif emphasis_and_maybe_label:
+                # Only 3 parts: style:caption:third_field
+                # Check if this looks like a label (contains hyphens/underscores) or emphasis (contains commas/equals)
+                if '=' in emphasis_and_maybe_label or ',' in emphasis_and_maybe_label:
+                    # Looks like emphasis options (widths=X or first-bold,last-jade)
+                    emphasis = emphasis_and_maybe_label
+                elif '-' in emphasis_and_maybe_label or '_' in emphasis_and_maybe_label:
+                    # Looks like a semantic label (customer-refs or pricing_table)
+                    label = emphasis_and_maybe_label
+                else:
+                    # Ambiguous - treat as emphasis for backward compatibility
+                    emphasis = emphasis_and_maybe_label
+
             # Combine style and emphasis if present
             if emphasis:
                 full_style = f"{style}:{emphasis}"
             else:
                 full_style = style
+
             table_id = abs(hash(f"{style}{caption}{table_md}")) % 100000
-            # Include table number in placeholder for labeling
-            return f"@TABLE:{full_style}:{caption}:{table_id}:{self.table_counter}@{table_md.strip()}@TABLEEND:{table_id}@"
+            # Include table number AND label in placeholder
+            label_part = f":{label}" if label else ""
+            return f"@TABLE:{full_style}:{caption}:{table_id}:{self.table_counter}{label_part}@{table_md.strip()}@TABLEEND:{table_id}@"
 
         text = re.sub(table_pattern, replace_table, text, flags=re.DOTALL)
 
@@ -868,14 +1086,14 @@ class SnapLogicDocumentCompiler:
 
     def _restore_tables(self, text: str) -> str:
         """Restore table placeholders to LaTeX tables with labels"""
-        # Updated pattern to capture table number
+        # Updated pattern to capture table number and optional semantic label
         # Style can contain colons and commas (e.g., "simple:first-bold,last-jade")
-        # Pattern: @TABLE:style:caption:id:num@content@TABLEEND:id@
-        # We need to match until we hit :digits: pattern (the id field)
-        table_pattern = r'@TABLE:(.+?):([^:]+):(\d+):(\d+)@(.*?)@TABLEEND:\3@'
+        # Pattern: @TABLE:style:caption:id:num:label@content@TABLEEND:id@
+        # OR: @TABLE:style:caption:id:num@content@TABLEEND:id@ (no label, backward compat)
+        table_pattern = r'@TABLE:(.+?):([^:]+):(\d+):(\d+)(?::([^@]+))?@(.*?)@TABLEEND:\3@'
 
         def restore_table(match):
-            style, caption, table_id, table_num, table_md = match.groups()
+            style, caption, table_id, table_num, label, table_md = match.groups()
 
             # Check for landscape prefix
             is_landscape = style.startswith('landscape-')
@@ -883,7 +1101,7 @@ class SnapLogicDocumentCompiler:
                 style = style.replace('landscape-', '', 1)
 
             # Parse style and emphasis options
-            # Format: "simple:first-bold,last-jade,total-row" or just "simple"
+            # Format: "simple:first-bold,last-jade,total-row,widths=1,2,4,1.5" or just "simple"
             style_parts = style.split(':')
             base_style = style_parts[0]
             emphasis_opts = style_parts[1].split(',') if len(style_parts) > 1 else []
@@ -891,9 +1109,14 @@ class SnapLogicDocumentCompiler:
             # Parse emphasis options
             first_bold = 'first-bold' in emphasis_opts
             last_color = None
+            manual_widths = None
             for opt in emphasis_opts:
                 if opt.startswith('last-'):
                     last_color = opt.split('-')[1]  # jade, orange, blue, navy
+                elif opt.startswith('widths='):
+                    # Parse manual column widths: widths=1,2,4,1.5
+                    width_str = opt.split('=')[1]
+                    manual_widths = [float(w.strip()) for w in width_str.split(',')]
             total_row = 'total-row' in emphasis_opts
 
             # Parse markdown table
@@ -934,32 +1157,40 @@ class SnapLogicDocumentCompiler:
                     use_tabularx = True
                     table_width = '\\linewidth'
 
-                    # Calculate actual content width needs by scanning all cells
-                    max_lengths = []
-                    for col_idx in range(num_cols):
-                        # Check header length
-                        header_len = len(headers[col_idx]) if col_idx < len(headers) else 0
-                        # Check all row cell lengths
-                        cell_lengths = [len(row[col_idx]) if col_idx < len(row) else 0 for row in rows]
-                        # Take the maximum
-                        max_len = max([header_len] + cell_lengths)
-                        max_lengths.append(max_len)
+                    # Check for manual width override
+                    if manual_widths and len(manual_widths) == num_cols:
+                        # Use manually specified widths
+                        widths = manual_widths
+                    else:
+                        # Auto-calculate widths based on TOTAL content volume per column
+                        widths = []
+                        for col_idx in range(num_cols):
+                            # Sum total characters across header + all cells in this column
+                            header_len = len(headers[col_idx]) if col_idx < len(headers) else 0
+                            total_cell_chars = sum([len(row[col_idx]) if col_idx < len(row) else 0 for row in rows])
+                            total_chars = header_len + total_cell_chars
 
-                    # Convert character counts to relative widths
-                    # Add padding multiplier since character count != visual width
-                    # (fonts, spacing, wrapping all affect real width needs)
-                    widths = []
-                    for max_len in max_lengths:
-                        if max_len < 6:
-                            widths.append(0.5)  # Minimum for very tiny (%, ID)
-                        elif max_len < 10:
-                            widths.append(0.7)  # Short content
-                        elif max_len < 14:
-                            widths.append(1.0)  # Medium
-                        elif max_len < 18:
-                            widths.append(1.4)  # Longer content needs more room
-                        else:
-                            widths.append(1.6)  # Extra width for long content
+                            # Also consider the max single cell
+                            cell_lengths = [len(row[col_idx]) if col_idx < len(row) else 0 for row in rows]
+                            max_cell_len = max(cell_lengths) if cell_lengths else 0
+                            max_len = max(header_len, max_cell_len)
+
+                            # Weight: 70% total volume, 30% max single cell
+                            weighted_score = (total_chars * 0.7) + (max_len * 0.3)
+
+                            # Convert score to relative width (landscape has more space, so tighter thresholds)
+                            if weighted_score < 80:
+                                widths.append(0.5)  # Tiny columns
+                            elif weighted_score < 150:
+                                widths.append(0.7)  # Short columns
+                            elif weighted_score < 300:
+                                widths.append(1.0)  # Medium columns
+                            elif weighted_score < 600:
+                                widths.append(1.3)  # Long columns
+                            elif weighted_score < 1000:
+                                widths.append(1.6)  # Very long columns
+                            else:
+                                widths.append(2.0)  # Massive columns
 
                     total_width = sum(widths)
                     # Normalize so they sum to num_cols (required by tabularx)
@@ -968,10 +1199,53 @@ class SnapLogicDocumentCompiler:
                     # Build column spec with proportional X columns + raggedright to prevent hyphenation
                     col_spec = ''.join([f'>{{\\hsize={n:.2f}\\hsize\\raggedright\\arraybackslash\\setlength{{\\parindent}}{{0pt}}}}X' for n in normalized])
                 else:
-                    # Portrait: use \linewidth (current text width)
-                    use_tabularx = False
-                    col_width = f'\\dimexpr\\linewidth/{num_cols}-2\\tabcolsep\\relax'
-                    col_spec = ''.join([f'>{{\\setlength{{\\parindent}}{{0pt}}}}p{{{col_width}}}' for _ in range(num_cols)])
+                    # Portrait: use proportional column widths based on content
+                    use_tabularx = True  # Enable tabularx for smart column sizing
+                    table_width = '\\linewidth'
+
+                    # Check for manual width override
+                    if manual_widths and len(manual_widths) == num_cols:
+                        # Use manually specified widths
+                        widths = manual_widths
+                    else:
+                        # Auto-calculate widths based on TOTAL content volume per column
+                        # (not just max single cell - that misses columns with lots of text across many cells)
+                        widths = []
+                        for col_idx in range(num_cols):
+                            # Sum total characters across header + all cells in this column
+                            header_len = len(headers[col_idx]) if col_idx < len(headers) else 0
+                            total_cell_chars = sum([len(row[col_idx]) for row in rows if col_idx < len(row)])
+                            total_chars = header_len + total_cell_chars
+
+                            # Also consider the max single cell (for cells with line breaks or long words)
+                            max_cell_len = max([len(row[col_idx]) for row in rows if col_idx < len(row)], default=0)
+                            max_len = max(header_len, max_cell_len)
+
+                            # Weight: 70% total volume, 30% max single cell
+                            # This balances "this column has tons of text" vs "this column has one huge cell"
+                            weighted_score = (total_chars * 0.7) + (max_len * 0.3)
+
+                            # Convert score to relative width
+                            # Scale is roughly: 0-200 = small, 200-500 = medium, 500-1000 = large, 1000+ = huge
+                            if weighted_score < 100:
+                                widths.append(0.6)  # Tiny columns (IDs, percentages)
+                            elif weighted_score < 200:
+                                widths.append(0.8)  # Short columns
+                            elif weighted_score < 400:
+                                widths.append(1.0)  # Medium columns
+                            elif weighted_score < 700:
+                                widths.append(1.5)  # Long columns
+                            elif weighted_score < 1200:
+                                widths.append(2.0)  # Very long columns
+                            else:
+                                widths.append(2.8)  # Massive text-heavy columns
+
+                    total_width = sum(widths)
+                    # Normalize so they sum to num_cols (required by tabularx)
+                    normalized = [w * num_cols / total_width for w in widths]
+
+                    # Build column spec with proportional X columns
+                    col_spec = ''.join([f'>{{\\hsize={n:.2f}\\hsize\\raggedright\\arraybackslash\\setlength{{\\parindent}}{{0pt}}}}X' for n in normalized])
             else:
                 use_tabularx = False
                 col_spec = 'l'
@@ -982,10 +1256,10 @@ class SnapLogicDocumentCompiler:
             if is_landscape:
                 latex.append('\\begin{landscape}')
                 # For landscape, use full page width with minimal margins
-                latex.append('\\begin{table}[h]')
+                latex.append('\\begin{table}[H]')
                 # No centering for landscape - use full width
             else:
-                latex.append('\\begin{table}[h]')
+                latex.append('\\begin{table}[H]')
                 latex.append('\\centering')
 
             # Caption and label
@@ -993,7 +1267,13 @@ class SnapLogicDocumentCompiler:
                 latex.append(f'\\caption{{{caption}}}')
             else:
                 latex.append(f'\\caption{{}}')
-            latex.append(f'\\label{{tab:{table_num}}}')
+
+            # Use semantic label if provided, otherwise fall back to numeric
+            if label:
+                latex.append(f'\\label{{tab:{label}}}')
+            else:
+                latex.append(f'\\label{{tab:{table_num}}}')
+
             latex.append('\\renewcommand{\\arraystretch}{1.2}')
 
             # Helper function to format cell with emphasis
@@ -1197,7 +1477,7 @@ class SnapLogicDocumentCompiler:
         for placeholder, image_data in image_map.items():
             path = image_data['path']
             caption = image_data.get('caption', '')
-            width = image_data.get('width', '0.8')
+            width = image_data.get('width', '1.0')
 
             # Sanitize path - replace spaces with underscores to match copied files
             sanitized_path = path.replace(' ', '_')
@@ -1208,14 +1488,18 @@ class SnapLogicDocumentCompiler:
 \\includegraphics[width={width}\\textwidth]{{{sanitized_path}}}
 """
             if caption and caption != '_':
-                # Get JSON number and document order for this placeholder
-                json_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
-                doc_order = json_to_doc.get(json_num, json_num)
+                # Get semantic label if provided, otherwise use numeric label
+                semantic_label = image_data.get('label')
 
-                # Use JSON number for label so text references match
-                # BUT: LaTeX will auto-number based on document order
-                # So we need label to match what text says (JSON number)
-                latex += f"\\caption{{{caption}}}\\label{{fig:{json_num}}}\n"
+                if semantic_label:
+                    # Use semantic label (e.g., "citizen-designer")
+                    # This is robust - text can say Figure~\ref{fig:citizen-designer}
+                    # and LaTeX will resolve to correct number regardless of position
+                    latex += f"\\caption{{{caption}}}\\label{{fig:{semantic_label}}}\n"
+                else:
+                    # Fallback to numeric label for backward compatibility
+                    json_num = int(placeholder.replace('@IMAGE', '').replace('@', ''))
+                    latex += f"\\caption{{{caption}}}\\label{{fig:{json_num}}}\n"
             latex += "\\end{figure}\n"
 
             text = text.replace(placeholder, latex)
@@ -1249,8 +1533,15 @@ class SnapLogicDocumentCompiler:
             if os.path.isabs(image_path):
                 source_path = Path(image_path)
             else:
-                # Relative paths are relative to the skill directory
-                source_path = self.assets_dir.parent / image_path
+                # Try multiple locations for relative paths
+                # 1. content_library (where most assets live)
+                source_path = self.assets_dir.parent / 'content_library' / image_path
+                if not source_path.exists():
+                    # 2. Skill root directory
+                    source_path = self.assets_dir.parent / image_path
+                if not source_path.exists():
+                    # 3. Already relative to assets_dir
+                    source_path = self.assets_dir / image_path
 
             if source_path.exists():
                 # Preserve directory structure in work_dir
@@ -1269,7 +1560,15 @@ class SnapLogicDocumentCompiler:
 
     def _extract_cross_references(self, text: str) -> str:
         """Extract cross-references to placeholders before LaTeX escaping"""
-        # Figure references: "Figure X" where X is a number
+        # Figure references with semantic labels: "Figure~\ref{fig:label}"
+        # Replace with placeholder @FIGREF:label@
+        def extract_semantic_figure_ref(match):
+            fig_label = match.group(1)
+            return f"@FIGREF:{fig_label}@"
+
+        text = re.sub(r'Figure~\\ref\{fig:([^}]+)\}', extract_semantic_figure_ref, text)
+
+        # Figure references: "Figure X" where X is a number (numeric fallback)
         # Replace with placeholder @FIGREF:X@
         def extract_figure_ref(match):
             fig_num = match.group(1)
@@ -1277,7 +1576,15 @@ class SnapLogicDocumentCompiler:
 
         text = re.sub(r'\bFigure\s+(\d+)\b', extract_figure_ref, text)
 
-        # Table references: "Table X" where X is a number
+        # Table references with semantic labels: "Table~\ref{tab:label}"
+        # Replace with placeholder @TABREF:label@
+        def extract_semantic_table_ref(match):
+            tab_label = match.group(1)
+            return f"@TABREF:{tab_label}@"
+
+        text = re.sub(r'Table~\\ref\{tab:([^}]+)\}', extract_semantic_table_ref, text)
+
+        # Table references: "Table X" where X is a number (numeric fallback)
         # Replace with placeholder @TABREF:X@
         def extract_table_ref(match):
             tab_num = match.group(1)
@@ -1297,22 +1604,24 @@ class SnapLogicDocumentCompiler:
 
     def _restore_cross_references(self, text: str) -> str:
         """Restore cross-reference placeholders to proper LaTeX \ref commands"""
-        # Figure references: @FIGREF:X@ -> Figure~\ref{fig:X}
+        # Figure references: @FIGREF:X@ or @FIGREF:semantic-label@ -> Figure~\ref{fig:X}
+        # Handles both numeric (backward compat) and semantic labels
         # LaTeX will auto-number based on figure order and hyperref makes it clickable
         # Using ~ for non-breaking space (standard LaTeX practice)
         def restore_figure_ref(match):
-            fig_num = match.group(1)
-            return f"Figure~\\ref{{fig:{fig_num}}}"
+            fig_ref = match.group(1)  # Can be number or semantic label
+            return f"Figure~\\ref{{fig:{fig_ref}}}"
 
-        text = re.sub(r'@FIGREF:(\d+)@', restore_figure_ref, text)
+        text = re.sub(r'@FIGREF:([^@]+)@', restore_figure_ref, text)
 
-        # Table references: @TABREF:X@ -> Table~\ref{tab:X}
+        # Table references: @TABREF:X@ or @TABREF:semantic-label@ -> Table~\ref{tab:X}
+        # Handles both numeric (backward compat) and semantic labels
         # LaTeX will auto-number based on table order and hyperref makes it clickable
         def restore_table_ref(match):
-            tab_num = match.group(1)
-            return f"Table~\\ref{{tab:{tab_num}}}"
+            tab_ref = match.group(1)  # Can be number or semantic label
+            return f"Table~\\ref{{tab:{tab_ref}}}"
 
-        text = re.sub(r'@TABREF:(\d+)@', restore_table_ref, text)
+        text = re.sub(r'@TABREF:([^@]+)@', restore_table_ref, text)
 
         # Section references: @SECREF:X.Y@ -> Section~\ref{sec:X.Y}
         # Sections get auto-labeled by our section generation code
@@ -1327,6 +1636,7 @@ class SnapLogicDocumentCompiler:
     def _compile_latex(self, work_dir: str) -> Path:
         """Run pdflatex to compile document"""
         tex_file = Path(work_dir) / "document.tex"
+        log_file = Path(work_dir) / "document.log"
 
         # Run pdflatex twice (for TOC and cross-references)
         for run in range(2):
@@ -1337,8 +1647,10 @@ class SnapLogicDocumentCompiler:
                 text=True
             )
 
-            if result.returncode != 0:
-                log_file = Path(work_dir) / "document.log"
+            # pdflatex returns non-zero even for warnings
+            # Only fail if PDF doesn't exist (fatal errors)
+            pdf_file = Path(work_dir) / "document.pdf"
+            if result.returncode != 0 and not pdf_file.exists():
                 # Print relevant error lines
                 if log_file.exists():
                     with open(log_file, 'r') as f:
@@ -1352,6 +1664,17 @@ class SnapLogicDocumentCompiler:
         pdf_file = Path(work_dir) / "document.pdf"
         if not pdf_file.exists():
             raise Exception("PDF was not generated")
+
+        # Print warnings to stderr for user awareness
+        if log_file.exists():
+            with open(log_file, 'r') as f:
+                log_content = f.read()
+                warnings = [line for line in log_content.split('\n')
+                           if 'Warning' in line or ('Error' in line and '!' not in line[:2])]
+                if warnings:
+                    print("LaTeX warnings:", file=sys.stderr)
+                    for warning in warnings[:10]:  # Show first 10 warnings
+                        print(f"  {warning}", file=sys.stderr)
 
         return pdf_file
 
@@ -1382,8 +1705,8 @@ def main():
     doc_type = sys.argv[3]
 
     # Optional arguments
-    font_size = sys.argv[4] if len(sys.argv) > 4 else "11pt"
-    paper_size = sys.argv[5] if len(sys.argv) > 5 else "letterpaper"
+    font_size = sys.argv[4] if len(sys.argv) > 4 else "10pt"
+    paper_size = sys.argv[5] if len(sys.argv) > 5 else "a4paper"
     color_scheme = sys.argv[6] if len(sys.argv) > 6 else "default"
 
     compiler = SnapLogicDocumentCompiler()

@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "observability_monitoring_error_management_exact_v1",
+    "version": "1.0",
+    "title": "Observability, Monitoring & Error Management",
+    "category": "services",
+    "tags": [
+      "observability",
+      "monitoring",
+      "error_management"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Observability, Monitoring & Error Management",
+    "content": "SnapLogic provides a unified monitoring console covering pipeline execution status, Ground Plex node resource utilisation, scheduling, and operational alerts — all data generated and accessible within Airbus Helicopters' own infrastructure. SnapLogic's observability stack integrates natively with AH's existing monitoring tooling rather than requiring a separate observability platform.",
+    "subsections": []
+  }
+}

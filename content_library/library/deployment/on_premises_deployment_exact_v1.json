@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "on_premises_deployment_exact_v1",
+    "version": "1.0",
+    "title": "On-Premises Deployment — Ground Plex on RedHat OpenShift",
+    "category": "deployment",
+    "tags": [
+      "deployment",
+      "on_premises",
+      "openshift",
+      "ground_plex"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "On-Premises Deployment — Ground Plex on RedHat OpenShift",
+    "content": "SnapLogic's execution engine — the Ground Plex — is deployed as containerised workloads within Airbus Helicopters' private data center, running on RedHat OpenShift. All pipeline execution, data transformation, and connector activity occurs entirely within AH's network boundary. No customer data is transmitted to or processed by SnapLogic's cloud infrastructure at any point in the integration lifecycle.\n\nThe SnapLogic Manager (cloud-hosted) handles only non-data metadata: pipeline definitions (stored as JSON), schedules, user accounts, and audit logs. It communicates with the Ground Plex over a single outbound HTTPS connection (port 443), requiring no inbound firewall exceptions on the AH perimeter. The Manager qualifies under the RFP's stated exception for non-data components, subject to formal AH Security approval — which SnapLogic supports with detailed network architecture documentation, data flow diagrams, and a dedicated security review process.",
+    "subsections": []
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "training_enablement_exact_v1",
+    "version": "1.0",
+    "title": "Training & Enablement",
+    "category": "standard",
+    "tags": [
+      "training",
+      "enablement",
+      "education"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Training & Enablement",
+    "content": "- SnapLogic University: self-paced online training for AH integration team\n\n- Instructor-led training sessions (3-day Developer Bootcamp) — on-site or remote\n\n- Citizen Developer workshop for business analyst community (SnapGPT focused)\n\n- Documentation: all pipelines documented via SnapGPT auto-documentation during delivery",
+    "subsections": []
+  }
+}

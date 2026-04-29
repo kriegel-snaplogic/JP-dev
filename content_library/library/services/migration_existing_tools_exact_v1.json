@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "migration_existing_tools_exact_v1",
+    "version": "1.0",
+    "title": "Migration from Existing Integration Tools",
+    "category": "services",
+    "tags": [
+      "migration",
+      "informatica",
+      "modernization"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Migration from Existing Integration Tools",
+    "content": "The RFP's explicit requirement for Informatica PowerCenter / IICS migration capability (FG1) reflects a real and significant concern. Airbus Helicopters has invested years of engineering into existing integration pipelines for their manufacturing systems. SnapLogic migration capability to production systems is a core competency. We believe development from scratch. Evaluators should directly ask any competing vendor whether they provide automated migration tooling for Informatica PowerCenter pipelines onto their platform, or rely on professional services for conversion. A vendor with no native Informatica-specific accelerator is explicitly asking customers to use primarily based on manual re-implementation or professional services effort — without an automated conversion layer — is proposing that Airbus Helicopters fund the rebuild of years of integration configuration from scratch for what SnapLogic does natively in 2 weeks — with tooling and approach that the initial estimate of cost and risk should be informed by the vendor's migration tooling maturity.",
+    "subsections": []
+  }
+}

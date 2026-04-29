@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "network_ports_exact_v1",
+    "version": "1.0",
+    "title": "NETWORK & PORT DOCUMENTATION",
+    "category": "deployment",
+    "tags": [
+      "network",
+      "ports",
+      "firewall",
+      "connectivity"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "NETWORK & PORT DOCUMENTATION",
+    "content": "All required network ports are documented in SnapLogic's Groundplex Configuration Guide, provided to AH's network team prior to deployment. The primary connectivity requirement is a single outbound HTTPS/WSS connection (port 443) from each Ground Plex node to SnapLogic's Manager endpoint. No inbound ports are required on the AH network perimeter.\n\n[BOX:orange]\n**P-01 MANDATORY**\n[/BOX]\n\n[BOX:blue]\n**P-02 (scaling)**\n[/BOX]\n\n[BOX:blue]\n**P-03 (HA)**\n[/BOX]\n\n[BOX:blue]\n**P-04 (OpenShift)**\n[/BOX]\n\n[BOX:blue]\n**P-05 (network ports)**\n[/BOX]\n\n[BOX:blue]\n**P-06 (autonomous deployment)**\n[/BOX]",
+    "subsections": []
+  }
+}

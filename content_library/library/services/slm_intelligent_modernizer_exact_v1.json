@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "slm_intelligent_modernizer_exact_v1",
+    "version": "1.0",
+    "title": "SLM — SNAPLOGIC INTELLIGENT MODERNIZER",
+    "category": "services",
+    "tags": [
+      "slm",
+      "migration",
+      "informatica",
+      "automation"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "SLM — SNAPLOGIC INTELLIGENT MODERNIZER",
+    "content": "SLM (previously called ELT-to-iPaaS Modernizer) is a specific automated migration tool that automates the conversion of existing ETL pipelines from legacy tools to SnapLogic. The name reflects the philosophy: a leaner, faster migration path that does not require full AI to carry the full weight of a ground-up rebuild.\n\n- **Analyst-led discovery** (SnapLogic Solutions Engineering): SnapLogic's migration team performs a repository scan of AH's Informatica environment — initial complexity assessment — categorizing pipelines as straightforward (automated conversion), moderate (automated with review), or complex (manual RE assessment required).\n\n- **Automated conversion**: SLM generates equivalent SnapLogic pipelines from Informatica mappings. Source field mappings, transformation logic, lookup patterns, and error handling are converted to SnapLogic Snaps. Converted SnapLogic pipeline templates are exported in `.slpkg` format ready for import into AH's SnapLogic PS will confirm exact coverage for AH's Informatica environment during the initial assessment.\n\n- **Support for legacy tooling and SIs**: SLM also supports migration from Talend, SSIS (SQL Server Integration Services), IBM DataStage, and Ab Initio — with coverage varying by tool and version.\n\n- **Pipeline lineage preservation**: Converted pipelines retain original metadata (descriptions, comments), allowing developers to correlate the new SnapLogic pipelines to the legacy reviewing generated pipelines, identifying conversion gaps, and operating with additional content. Complex business logic that cannot be auto-converted is flagged for SE review rather than silently approximated.\n\n- **Migration effort reduction**: SLM delivers up to 70% time reduction compared to manual re-implementation — with the highest savings on high-volume, structurally consistent mapping libraries. For a migration of typical enterprise scale, the difference between an automated conversion tooling approach and a manual re-implementation approach vs. manual approach is measured in months (or even years) — with experimental optimisation.",
+    "subsections": []
+  }
+}

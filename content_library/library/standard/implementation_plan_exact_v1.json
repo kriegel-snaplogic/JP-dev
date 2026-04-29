@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "implementation_plan_exact_v1",
+    "version": "1.0",
+    "title": "Implementation Plan",
+    "category": "standard",
+    "tags": ["implementation", "timeline", "plan"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 75,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Implementation Plan",
+    "content": "**3. Implementation Methodology**\n\nSnapLogic follows a proven 4-phase deployment model for enterprise on-premises implementations:\n\n- **Phase 1: Foundation and setup (est 2 weeks)**\n- **Phase 2: Informatica pilot and team enablement (est 4–6 weeks)**\n- **Phase 3: Production migration and go-live (est 8–12 weeks)**\n- **Phase 4: Hypercare and knowledge transfer (est 2–4 weeks)**\n\n**3.1 Proposed Timeline**\n\n[TABLE:simple:Project Timeline]\n| Phase | Duration | Activities | Deliverables |\n|-------|----------|------------|-------------|\n| **1. Foundation** | Week 1–2 | Ground Plex deployment on OpenShift; Connectivity validation; RBAC/SSO setup | Operational platform, connectivity sign-off |\n| **2. Pilot & Enablement** | Week 3–8 | Select 3–5 representative Informatica mappings; Automated + manual conversion; Technical training workshops; SnapGPT enablement | 5 converted pipelines validated; Team trained and productive |\n| **3. Production Migration** | Week 9–20 | Remaining mapping conversion; UAT and performance testing; Cutover planning; Production deployment | All pipelines migrated and production-ready |\n| **4. Hypercare** | Week 21–24 | On-site/remote PS support; Incident response and optimization; Knowledge transfer and handover | Stable operations, team self-sufficient |\n[/TABLE]\n\n**3.2 Proposed Enabling Steps**\n\n- Lead Solution Engineer — support for technical setup during Phase 1\n- Technical training workshops — hands-on SnapLogic Developer training (3 days)\n- SnapGPT enablement — Citizen Integrator training for business analysts (1 day)\n- PS engagement — dedicated consultant for Phases 1–3; optional for Phase 4\n- Quarterly business reviews — ongoing post-implementation\n\n**4.0 Pricing & Commercial**\n\n- Professional Services — PS pricing and fixed-deliverable options\n- Engagement duration: 20–24 weeks estimated including hypercare phase\n- Perpetual or subscription licensing options available",
+    "subsections": []
+  }
+}
