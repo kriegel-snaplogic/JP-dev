@@ -49,6 +49,9 @@ Generates professional, branded SnapLogic PDF documents from JSON structure usin
 - `scripts/compile_document.py` - Main compilation engine (1,700+ lines)
 - `scripts/brand_config.py` - SnapLogic brand configuration (colors, logos, fonts)
 
+### Templates
+- `templates/snaplogic_document.tex` - LaTeX template with SnapLogic branding (REQUIRED)
+
 ### Assets
 - `assets/logos/` - SnapLogic logos (blue, white, logomark)
 - `assets/fonts/` - Corporate fonts (if needed)
