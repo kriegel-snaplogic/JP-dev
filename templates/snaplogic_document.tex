@@ -126,28 +126,34 @@
 % KPI/Metric boxes - Small, centered, bold colored backgrounds with white text (inline, 4 per row)
 \newcommand{\kpibox}[3]{%
     % Args: color, title, value
-    \setlength{\fboxsep}{15pt}%
+    \setlength{\fboxsep}{0pt}%
     \colorbox{#1}{%
-        \begin{minipage}[c][80pt]{0.18\linewidth}%
+        \begin{minipage}[c][80pt]{0.25\linewidth}%
             \centering%
+            \vspace{10pt}%
             \textcolor{white}{\large\textbf{#2}}\\[10pt]%
             \textcolor{white}{\LARGE\textbf{#3}}%
+            \vspace{10pt}%
         \end{minipage}%
     }%
-    \hspace{0.006\linewidth}%
+    \nolinebreak%
 }
 
-% Feature card boxes - Subtle colored backgrounds with black text, 3 per row, squared
+% Feature card boxes - Subtle colored backgrounds with black text, 3 per row
 \newcommand{\featurebox}[3]{%
     % Args: color, title, content
-    \setlength{\fboxsep}{15pt}%
+    \setlength{\fboxsep}{0pt}%
     \colorbox{#1!15}{%
-        \begin{minipage}[t][130pt][t]{0.265\linewidth}%
+        \begin{minipage}[t][130pt][t]{0.333\linewidth}%
+            \vspace{10pt}%
+            \centering%
+            {\large\textbf{#2}}\\[8pt]%
             \raggedright%
-            {\large\textbf{#2}}\\[6pt]%
-            {\normalsize #3}%
+            \hspace{15pt}\parbox{\dimexpr\linewidth-30pt\relax}{\normalsize #3}%
+            \vspace{10pt}%
         \end{minipage}%
-    }\hspace{0.0065\linewidth}%
+    }%
+    \nolinebreak%
 }
 
 % Badge boxes - Small inline colored boxes with white text (for requirement tracking)
@@ -216,12 +222,12 @@
 {{HEADER_CONTENT}}
 {{FOOTER_CONTENT}}
 
-% Define plain page style for title page, TOC, and special pages
-% (no header, no footer, no rules - clean presentation)
+% Define plain page style for title page, TOC, LOF, LOT
+% No header, but include footer with page numbers
 \fancypagestyle{plain}{
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
+{{FOOTER_CONTENT}}
 }
 
 % Define landscape page style with properly rotated headers/footers
@@ -256,6 +262,10 @@
 
 % Title page
 {{TITLE_PAGE}}
+
+% Start page numbering from TOC (page 1)
+\setcounter{page}{1}
+\pagestyle{fancy}
 
 % Table of contents
 {{TOC_SECTION}}

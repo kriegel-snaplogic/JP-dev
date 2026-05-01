@@ -29,6 +29,7 @@ class SnapLogicDocumentCompiler:
         self.image_counter = 0
         self.global_image_map = {}
         self.table_counter = 0
+        self.table_registry = {}  # Maps table caption to (table_num, label)
 
     def compile(self, input_json: str, output_pdf: str, doc_type: str = "general",
                 font_size: str = "10pt", paper_size: str = "a4paper",
@@ -66,6 +67,10 @@ class SnapLogicDocumentCompiler:
             self.image_counter = 0
             self.global_image_map = {}
             self.table_counter = 0
+            self.table_registry = {}
+
+            # Pre-scan document to build table registry (for cross-references)
+            self._build_table_registry(structure)
 
             # Generate LaTeX content
             latex_content = self._generate_latex(structure, doc_type, font_size,
@@ -370,6 +375,7 @@ class SnapLogicDocumentCompiler:
         date = self._escape_latex(structure.get('date', ''))
         version = self._escape_latex(structure.get('version', '1.0'))
         customer_name = self._escape_latex(structure.get('customer_name', ''))
+        customer_logo = structure.get('customer_logo', '')
 
         if title_page_style == "navy":
             # Navy background with white text and white logo
@@ -394,7 +400,11 @@ class SnapLogicDocumentCompiler:
                 content.append(f"{{\\Large {subtitle}}}\\\\[1cm]")
 
             if customer_name:
-                content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[1cm]")
+                content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[0.5cm]")
+                # Add customer logo if provided
+                if customer_logo:
+                    logo_filename = os.path.basename(customer_logo)
+                    content.append(f"\\includegraphics[height=1.5cm]{{{logo_filename}}}\\\\[1cm]")
 
             content.extend([
                 "\\vspace{2cm}",
@@ -427,7 +437,11 @@ class SnapLogicDocumentCompiler:
                 content.append(f"{{\\Large {subtitle}}}\\\\[1cm]")
 
             if customer_name:
-                content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[1cm]")
+                content.append(f"{{\\large Prepared for: {customer_name}}}\\\\[0.5cm]")
+                # Add customer logo if provided
+                if customer_logo:
+                    logo_filename = os.path.basename(customer_logo)
+                    content.append(f"\\includegraphics[height=1.5cm]{{{logo_filename}}}\\\\[1cm]")
 
             content.extend([
                 "\\vspace{2cm}",
@@ -457,6 +471,60 @@ class SnapLogicDocumentCompiler:
         has_unwrapped = bool(re.search(r'\|[^\n]+\|', content_str))
         return has_wrapped or has_unwrapped
 
+    def _build_table_registry(self, structure: Dict[str, Any]) -> None:
+        """Pre-scan document to build table caption → label registry for cross-references"""
+        content_str = json.dumps(structure)
+
+        # Find all [TABLE:...] tags
+        table_pattern = r'\[TABLE:([^\]]+)\]'
+
+        table_num = 0
+        for match in re.finditer(table_pattern, content_str):
+            table_def = match.group(1)
+            parts = table_def.split(':')
+
+            # Parse: style:caption:emphasis:label or style:caption::label
+            # Caption can contain colons, so we need to be smart
+            if len(parts) < 2:
+                continue
+
+            style = parts[0]
+
+            # Find the label (last non-empty part that looks like a label with dashes)
+            label = None
+            label_idx = -1
+            for i in range(len(parts) - 1, 0, -1):
+                part = parts[i].strip()
+                if part and ',' not in part and ' ' not in part and ('-' in part or part.isdigit()):
+                    # Looks like a label (has dashes, no spaces, no commas)
+                    label = part
+                    label_idx = i
+                    break
+
+            # Caption is everything between style and label (or style and end if no label)
+            if label_idx > 1:
+                # We found a label, caption is parts[1] to parts[label_idx-1 or label_idx-2 if empty]
+                # Check if there's an empty part before label (:: syntax)
+                if label_idx >= 2 and parts[label_idx - 1] == '':
+                    caption_parts = parts[1:label_idx-1]
+                else:
+                    caption_parts = parts[1:label_idx]
+            else:
+                # No label, caption is everything after style
+                caption_parts = parts[1:]
+
+            caption = ':'.join(caption_parts).strip()
+
+            # Skip if caption is empty or _
+            if not caption or caption == '_':
+                continue
+
+            table_num += 1
+            actual_label = label if label else str(table_num)
+
+            # Register caption → (table_num, label)
+            self.table_registry[caption] = (table_num, actual_label)
+
     def _generate_abstract(self, structure: Dict[str, Any]) -> str:
         """Generate management summary or abstract"""
         summary = structure.get('management_summary') or structure.get('abstract')
@@ -468,6 +536,7 @@ class SnapLogicDocumentCompiler:
         content = self._process_content(summary)
 
         return f"""
+\\phantomsection
 \\section*{{Management Summary}}
 \\addcontentsline{{toc}}{{section}}{{Management Summary}}
 {content}
@@ -483,8 +552,27 @@ class SnapLogicDocumentCompiler:
         for section in structure.get('sections', []):
             # Check if this is the "Appendices" section
             is_appendices_section = (section.get('title') == 'Appendices')
+            # Check if this is Management Summary (should be unnumbered)
+            is_mgmt_summary = (section.get('title') == 'Management Summary')
 
-            if is_appendices_section:
+            if is_mgmt_summary:
+                # Management Summary - unnumbered but with TOC link and label
+                title = self._escape_latex(section.get('title', ''))
+                content.append('\\phantomsection')
+                content.append(f'\\section*{{{title}}}')
+                content.append('\\addcontentsline{toc}{section}{Management Summary}')
+                content.append('\\label{sec:mgmt-summary}')
+
+                # Add content
+                if section.get('content'):
+                    content.append(self._process_content(section['content']))
+
+                # Process subsections if any
+                for subsection in section.get('subsections', []):
+                    content.append(self._process_section(subsection, level=2))
+
+                content.append("\\newpage")
+            elif is_appendices_section:
                 # Start appendix mode (switches to letter numbering: A, B, C...)
                 content.append('\\appendix')
 
@@ -707,9 +795,82 @@ class SnapLogicDocumentCompiler:
             return placeholder
 
         # Pattern: [IMAGE:path:caption:width:label] where width and label are optional
-        # Groups: (path, caption, width, label)
-        pattern = r'\[IMAGE:([^:]+):([^:\]]+)(?::([^:\]]+))?(?::([^\]]+))?\]'
-        text = re.sub(pattern, replace_image, text)
+        # Captions can contain colons! Use .+? for caption to match minimally up to :: or :]
+        # Groups: (path, rest_of_params)
+        pattern = r'\[IMAGE:([^:]+):(.+?)\]'
+
+        def extract_image_params(match):
+            self.image_counter += 1
+            placeholder = f"@IMAGE{self.image_counter}@"
+
+            path = match.group(1)
+            rest = match.group(2)
+
+            # Parse rest: could be "caption", "caption:width", "caption:width:label", "caption::label"
+            parts = rest.split(':')
+
+            caption = None
+            width = '1.0'
+            label = None
+
+            if len(parts) == 1:
+                # Just caption
+                caption = parts[0]
+            elif len(parts) == 2:
+                # caption:X where X is width or label
+                caption = parts[0]
+                second = parts[1]
+                # Check if it looks like a width (number) or label (has dashes)
+                try:
+                    float(second)
+                    width = second
+                except:
+                    if '-' in second or '_' in second:
+                        label = second
+                    else:
+                        # Could be part of caption
+                        caption = rest
+            else:
+                # 3+ parts: could be "caption:with:colons:width:label"
+                # Look for patterns
+                last = parts[-1]
+                second_last = parts[-2] if len(parts) >= 2 else None
+
+                # Check if last part is label (has dashes)
+                if last and ('-' in last or '_' in last):
+                    label = last
+                    # Check if second-last is width
+                    if second_last:
+                        try:
+                            float(second_last)
+                            width = second_last
+                            caption = ':'.join(parts[:-2])
+                        except:
+                            # Second-last is part of caption
+                            caption = ':'.join(parts[:-1])
+                    else:
+                        caption = ':'.join(parts[:-1])
+                else:
+                    # Last part might be width
+                    try:
+                        float(last)
+                        width = last
+                        caption = ':'.join(parts[:-1])
+                    except:
+                        # All is caption
+                        caption = rest
+
+            image_data = {
+                'path': path,
+                'caption': caption if caption else '',
+                'width': width,
+                'label': label
+            }
+            image_map[placeholder] = image_data
+            self.global_image_map[placeholder] = image_data
+            return placeholder
+
+        text = re.sub(pattern, extract_image_params, text)
 
         return text, image_map
 
@@ -763,44 +924,75 @@ class SnapLogicDocumentCompiler:
         text = text.replace('\\n', '\n')
 
         # Only process explicitly wrapped tables: [TABLE:style:caption:emphasis:label]
-        # Unwrapped markdown tables will render as inline tables without numbering
-        # Pattern handles optional third (emphasis) and fourth (label) fields
-        # Groups: (style, caption, emphasis, label, table_md)
-        # Fixed pattern: make group 4 explicitly require a colon separator
-        table_pattern = r'\[TABLE:([^:]+):([^:\]]+)(?::([^:\]]+?))?(?::([^\]]+))?\](.*?)\[/TABLE\]'
+        # Captions can contain colons! Format is: [TABLE:style:caption::label] or [TABLE:style:caption:emphasis:label]
+        # The :: separates caption from label when there's no emphasis
+        # Match: [TABLE:style:<ANYTHING_INCLUDING_COLONS>:optional_more_parts]
+        # We'll parse caption vs emphasis vs label in the replace_table function
+        table_pattern = r'\[TABLE:([^:]+):(.+?)\](.*?)\[/TABLE\]'
 
         def replace_table(match):
             self.table_counter += 1
-            style, caption, emphasis_and_maybe_label, possible_label, table_md = match.groups()
+            style, rest, table_md = match.groups()
 
-            # Parse optional fields: could be emphasis, label, or both
-            # Format 1: [TABLE:style:caption]
-            # Format 2: [TABLE:style:caption:emphasis]
-            # Format 3: [TABLE:style:caption:emphasis:label]
-            # Format 4: [TABLE:style:caption::label] (no emphasis, just label)
+            # Parse rest which is: "caption" or "caption:emphasis" or "caption::label" or "caption:emphasis:label"
+            # Captions can contain colons, so we need to find where caption ends
+            # Caption ends at :: (empty emphasis before label) or at the LAST single : before a label-like string
 
+            # Split by : and work backwards to find label and emphasis
+            parts = rest.split(':')
+            caption = None
             emphasis = None
             label = None
 
-            # Handle the case where possible_label exists (4th field)
-            if possible_label:
-                # We have 4 parts: style:caption:emphasis:label
-                # emphasis_and_maybe_label might be empty (::) or contain emphasis options
-                # possible_label might start with ':' if emphasis was empty - strip it
-                emphasis = emphasis_and_maybe_label if emphasis_and_maybe_label else None
-                label = possible_label.lstrip(':')
-            elif emphasis_and_maybe_label:
-                # Only 3 parts: style:caption:third_field
-                # Check if this looks like a label (contains hyphens/underscores) or emphasis (contains commas/equals)
-                if '=' in emphasis_and_maybe_label or ',' in emphasis_and_maybe_label:
-                    # Looks like emphasis options (widths=X or first-bold,last-jade)
-                    emphasis = emphasis_and_maybe_label
-                elif '-' in emphasis_and_maybe_label or '_' in emphasis_and_maybe_label:
-                    # Looks like a semantic label (customer-refs or pricing_table)
-                    label = emphasis_and_maybe_label
+            if len(parts) == 1:
+                # Just caption
+                caption = parts[0]
+            elif len(parts) == 2:
+                # caption:X where X is either emphasis or label
+                # Check if second part looks like a label (has hyphens) or emphasis (has commas/equals)
+                if '=' in parts[1] or ',' in parts[1]:
+                    caption, emphasis = parts
+                elif parts[1] and ('-' in parts[1] or '_' in parts[1]):
+                    caption, label = parts
                 else:
-                    # Ambiguous - treat as emphasis for backward compatibility
-                    emphasis = emphasis_and_maybe_label
+                    # Ambiguous or empty - if empty, it's "caption:" which means just caption
+                    caption = parts[0]
+                    if parts[1]:
+                        emphasis = parts[1]
+            else:
+                # 3+ parts: could be "caption:with:colons::label" or "caption:emphasis:label" etc.
+                # Look for :: pattern (empty string in parts)
+                if '' in parts:
+                    # Found :: - split at that point
+                    empty_idx = parts.index('')
+                    caption = ':'.join(parts[:empty_idx])
+                    # After :: is the label
+                    label = ':'.join(parts[empty_idx+1:]) if empty_idx+1 < len(parts) else None
+                else:
+                    # No :: - assume last part is label, second-to-last is emphasis (if it looks like emphasis)
+                    # Otherwise last part is emphasis and everything else is caption
+                    last = parts[-1]
+                    if last and ('-' in last or '_' in last):
+                        # Last part looks like label
+                        label = last
+                        if len(parts) >= 3:
+                            second_last = parts[-2]
+                            if '=' in second_last or ',' in second_last:
+                                emphasis = second_last
+                                caption = ':'.join(parts[:-2])
+                            else:
+                                # Second-last is part of caption
+                                caption = ':'.join(parts[:-1])
+                        else:
+                            caption = parts[0]
+                    else:
+                        # Last part might be emphasis or part of caption
+                        if '=' in last or ',' in last:
+                            emphasis = last
+                            caption = ':'.join(parts[:-1])
+                        else:
+                            # All is caption
+                            caption = rest
 
             # Combine style and emphasis if present
             if emphasis:
@@ -810,8 +1002,9 @@ class SnapLogicDocumentCompiler:
 
             table_id = abs(hash(f"{style}{caption}{table_md}")) % 100000
             # Include table number AND label in placeholder
+            # Use || as delimiter between style and caption to avoid colon conflicts
             label_part = f":{label}" if label else ""
-            return f"@TABLE:{full_style}:{caption}:{table_id}:{self.table_counter}{label_part}@{table_md.strip()}@TABLEEND:{table_id}@"
+            return f"@TABLE:{full_style}||{caption}:{table_id}:{self.table_counter}{label_part}@{table_md.strip()}@TABLEEND:{table_id}@"
 
         text = re.sub(table_pattern, replace_table, text, flags=re.DOTALL)
 
@@ -829,9 +1022,34 @@ class SnapLogicDocumentCompiler:
         result = []
         i = 0
         list_counter = 0
+        header_counter = 0
 
         while i < len(lines):
             line = lines[i]
+
+            # Check if this line is a paragraph header
+            # Pattern: short standalone line (< 80 chars), followed by blank line(s)
+            # This catches section headers like "Certifications & Compliance", "Support Model" etc.
+            stripped = line.strip()
+            if stripped and len(stripped) < 80 and not re.match(r'^(\s*)[•\-*]\s+', line) and not re.match(r'^(\s*)\d+\.\s+', line):
+                # Check if this looks like a header (not starting with lowercase, not a long sentence)
+                # Headers typically: Title Case or ALL CAPS, and end without punctuation (except :)
+                if stripped[0].isupper() and (not stripped.endswith('.') or stripped.endswith(':')):
+                    # Look ahead: is this followed by blank line(s)?
+                    j = i + 1
+                    has_blank_after = False
+                    while j < len(lines) and not lines[j].strip():
+                        has_blank_after = True
+                        j += 1
+
+                    # If followed by blank line, treat as header
+                    if has_blank_after and j < len(lines):
+                        # This is a paragraph header! Use placeholder to protect it
+                        placeholder = f'@PARAHEADER:{header_counter}@{stripped}@PARAHEADEREND:{header_counter}@'
+                        result.append(placeholder)
+                        header_counter += 1
+                        i += 1
+                        continue
 
             # Check if this line starts a list
             if re.match(r'^(\s*)[•\-*]\s+', line) or re.match(r'^(\s*)\d+\.\s+', line):
@@ -858,9 +1076,21 @@ class SnapLogicDocumentCompiler:
         while i < len(lines):
             line = lines[i]
 
+            # Handle blank lines: only continue if next non-blank is a list item
             if not line.strip():
-                i += 1
-                continue
+                # Look ahead to see if the next non-blank line is a list item
+                j = i + 1
+                while j < len(lines) and not lines[j].strip():
+                    j += 1
+
+                if j < len(lines) and re.match(r'^(\s*)(?:[•\-*]|\d+\.)\s+', lines[j]):
+                    # Next item is a list item, include the blank line and continue
+                    list_lines.append(line)
+                    i += 1
+                    continue
+                else:
+                    # Next item is NOT a list item, stop here
+                    break
 
             indent = self._get_indent_level(line)
 
@@ -995,38 +1225,37 @@ class SnapLogicDocumentCompiler:
         return result
 
     def _escape_latex_content(self, text: str) -> str:
-        """Escape LaTeX special characters but preserve @ markers"""
+        """Escape LaTeX special characters (but not @ which we use for placeholders)"""
         if not text or not isinstance(text, str):
             return ""
 
-        # Split on @ markers to preserve them (match full marker syntax with multiple colons)
-        parts = re.split(r'(@[A-Z]+:[^@]+@|@[A-Z]+END:[^@]+@)', text)
+        # Protect LaTeX line breaks (\\) from being escaped
+        # Replace them with a placeholder first
+        LINE_BREAK_PLACEHOLDER = '@@@LINEBREAK@@@'
+        text = text.replace('\\\\', LINE_BREAK_PLACEHOLDER)
 
-        result = []
-        for part in parts:
-            if part.startswith('@') and part.endswith('@'):
-                # This is a marker, preserve it
-                result.append(part)
-            else:
-                # Escape this part
-                escaped = part
-                replacements = {
-                    '\\': r'\textbackslash{}',
-                    '{': r'\{',
-                    '}': r'\}',
-                    '&': r'\&',
-                    '%': r'\%',
-                    '$': r'\$',
-                    '#': r'\#',
-                    '_': r'\_',
-                    '~': r'\textasciitilde{}',
-                    '^': r'\textasciicircum{}',
-                }
-                for char, repl in replacements.items():
-                    escaped = escaped.replace(char, repl)
-                result.append(escaped)
+        # Escape LaTeX special characters but NOT @
+        # @ is safe in LaTeX and we use it for placeholder markers
+        escaped = text
+        replacements = {
+            '\\': r'\textbackslash{}',
+            '{': r'\{',
+            '}': r'\}',
+            '&': r'\&',
+            '%': r'\%',
+            '$': r'\$',
+            '#': r'\#',
+            '_': r'\_',
+            '~': r'\textasciitilde{}',
+            '^': r'\textasciicircum{}',
+        }
+        for char, repl in replacements.items():
+            escaped = escaped.replace(char, repl)
 
-        return ''.join(result)
+        # Restore LaTeX line breaks
+        escaped = escaped.replace(LINE_BREAK_PLACEHOLDER, '\\\\')
+
+        return escaped
 
     def _restore_boxes(self, text: str) -> str:
         """Restore box placeholders to LaTeX"""
@@ -1043,13 +1272,13 @@ class SnapLogicDocumentCompiler:
         text = re.sub(kpi_pattern, restore_kpi, text, flags=re.DOTALL)
 
         # FEATURE boxes (may contain @ markers, use .*? non-greedy)
+        # First pass: convert FEATURE placeholders to LaTeX, then add row breaks
         feature_pattern = r'@FEATUREBOX:([^:]+):(\d+)@(.*?)\|(.*?)@FEATUREBOXEND:\2@'
 
         def restore_feature(match):
             color, box_id, title, content = match.groups()
             color_map = {'navy': 'snapNavy', 'blue': 'snapBlue', 'jade': 'snapJade', 'orange': 'snapOrange'}
             latex_color = color_map.get(color, 'snapBlue')
-
             return f"\\featurebox{{{latex_color}}}{{{title}}}{{{content}}}"
 
         text = re.sub(feature_pattern, restore_feature, text, flags=re.DOTALL)
@@ -1086,11 +1315,22 @@ class SnapLogicDocumentCompiler:
 
     def _restore_tables(self, text: str) -> str:
         """Restore table placeholders to LaTeX tables with labels"""
-        # Updated pattern to capture table number and optional semantic label
-        # Style can contain colons and commas (e.g., "simple:first-bold,last-jade")
         # Pattern: @TABLE:style:caption:id:num:label@content@TABLEEND:id@
-        # OR: @TABLE:style:caption:id:num@content@TABLEEND:id@ (no label, backward compat)
-        table_pattern = r'@TABLE:(.+?):([^:]+):(\d+):(\d+)(?::([^@]+))?@(.*?)@TABLEEND:\3@'
+        # Both style and caption can contain colons!
+        # Strategy: Match from the END backwards - id and num are always \d+
+        # Pattern breakdown:
+        #   @TABLE: - literal start
+        #   (.+?) - style (non-greedy, can have colons)
+        #   : - separator
+        #   (.+?) - caption (non-greedy, can have colons)
+        #   :(\d+):(\d+) - :id:num (digits mark the boundary!)
+        #   (?::([^@]+))? - optional :label
+        #   @ - boundary before content
+        #   (.*?) - table content
+        #   @TABLEEND:\3@ - end marker with id reference
+        # Pattern: @TABLE:style||caption:id:num:label@content@TABLEEND:id@
+        # Using || as delimiter between style and caption to handle colons in both
+        table_pattern = r'@TABLE:(.+?)\|\|(.+?):(\d+):(\d+)(?::([^@]+))?@(.*?)@TABLEEND:\3@'
 
         def restore_table(match):
             style, caption, table_id, table_num, label, table_md = match.groups()
@@ -1099,6 +1339,11 @@ class SnapLogicDocumentCompiler:
             is_landscape = style.startswith('landscape-')
             if is_landscape:
                 style = style.replace('landscape-', '', 1)
+
+            # Check for multipage prefix (enables longtable for page-spanning tables)
+            is_multipage = style.startswith('multipage-')
+            if is_multipage:
+                style = style.replace('multipage-', '', 1)
 
             # Parse style and emphasis options
             # Format: "simple:first-bold,last-jade,total-row,widths=1,2,4,1.5" or just "simple"
@@ -1132,7 +1377,11 @@ class SnapLogicDocumentCompiler:
             data_lines = lines[2:] if len(lines) > 2 else []
             rows = []
             for line in data_lines:
-                cells = [c.strip() for c in line.split('|') if c.strip()]
+                # Split by | but keep empty cells (don't filter with if c.strip())
+                all_cells = [c.strip() for c in line.split('|')]
+                # Remove leading/trailing empty cells from split artifacts
+                cells = all_cells[1:-1] if len(all_cells) > 2 and all_cells[0] == '' and all_cells[-1] == '' else all_cells
+                cells = [c if c else ' ' for c in cells]  # Replace empty cells with space
                 if cells:
                     rows.append(cells)
 
@@ -1255,26 +1504,41 @@ class SnapLogicDocumentCompiler:
             # Start landscape environment if needed
             if is_landscape:
                 latex.append('\\begin{landscape}')
-                # For landscape, use full page width with minimal margins
-                latex.append('\\begin{table}[H]')
-                # No centering for landscape - use full width
-            else:
-                latex.append('\\begin{table}[H]')
-                latex.append('\\centering')
 
-            # Caption and label
-            if caption and caption != '_':
-                latex.append(f'\\caption{{{caption}}}')
+            # For multipage tables, use longtable instead of table float
+            if is_multipage:
+                # longtable doesn't use \begin{table}, caption goes after \begin{longtable}
+                latex.append('\\renewcommand{\\arraystretch}{1.2}')
+                # Caption will be added after longtable begins
             else:
-                latex.append(f'\\caption{{}}')
+                # Regular table float
+                if is_landscape:
+                    # For landscape, use full page width with minimal margins
+                    latex.append('\\begin{table}[H]')
+                    # No centering for landscape - use full width
+                else:
+                    latex.append('\\begin{table}[H]')
+                    latex.append('\\centering')
 
-            # Use semantic label if provided, otherwise fall back to numeric
-            if label:
-                latex.append(f'\\label{{tab:{label}}}')
-            else:
+                # Caption and label for regular tables
+                if caption and caption != '_':
+                    latex.append(f'\\caption{{{caption}}}')
+                else:
+                    latex.append(f'\\caption{{}}')
+
+                # Always add numeric label first, then semantic label if provided
                 latex.append(f'\\label{{tab:{table_num}}}')
+                if label:
+                    latex.append(f'\\label{{tab:{label}}}')
+                    # Register caption → label mapping for cross-references
+                    if caption and caption != '_':
+                        self.table_registry[caption] = (table_num, label)
+                else:
+                    # Register caption → table number mapping
+                    if caption and caption != '_':
+                        self.table_registry[caption] = (table_num, str(table_num))
 
-            latex.append('\\renewcommand{\\arraystretch}{1.2}')
+                latex.append('\\renewcommand{\\arraystretch}{1.2}')
 
             # Helper function to format cell with emphasis
             def format_cell(cell_text, is_first_col=False, is_last_col=False, is_total_row=False):
@@ -1309,15 +1573,100 @@ class SnapLogicDocumentCompiler:
                 color_map = {'blue': 'snapBlue', 'jade': 'snapJade', 'orange': 'snapOrange', 'navy': 'snapNavy'}
                 latex_color = color_map.get(accent_color, 'snapBlue')
 
-                if use_tabularx:
-                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                if is_multipage:
+                    # Use longtable for multi-page tables
+                    # longtable needs p{width} columns, not tabularx X columns
+                    # Calculate proper column widths for longtable
+                    if manual_widths and len(manual_widths) == num_cols:
+                        widths = manual_widths
+                    # else: widths already calculated above
+
+                    # Convert relative widths to actual cm widths (portrait: ~16cm usable width, landscape: ~25cm)
+                    total_width_cm = 25.0 if is_landscape else 16.0
+                    total_relative = sum(widths)
+                    actual_widths = [w * total_width_cm / total_relative for w in widths]
+
+                    # Build longtable column spec with left-aligned p{width} columns
+                    longtable_col_spec = ''.join([f'>{{\\raggedright\\arraybackslash}}p{{{w:.1f}cm}}' for w in actual_widths])
+
+                    latex.append(f'\\begin{{longtable}}{{{longtable_col_spec}}}')
+                    # Caption for longtable goes AFTER \begin{longtable}
+                    if caption and caption != '_':
+                        latex.append(f'\\caption{{{caption}}}')
+                        # Always add numeric label first
+                        latex.append(f'\\label{{tab:{table_num}}}')
+                        # Then semantic label if provided
+                        if label:
+                            latex.append(f'\\label{{tab:{label}}} \\\\')
+                            # Register caption → label mapping for cross-references
+                            self.table_registry[caption] = (table_num, label)
+                        else:
+                            latex.append(' \\\\')
+                            # Register caption → table number mapping
+                            self.table_registry[caption] = (table_num, str(table_num))
+                    # Header row (always use navy for consistency)
+                    white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
+                    latex.append('\\arrayrulecolor{snapNavy!30}\\midrule')
+                    latex.append('\\endfirsthead')  # End of first page header
+                    # Repeated header on continuation pages
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
+                    latex.append('\\arrayrulecolor{snapNavy!30}\\midrule')
+                    latex.append('\\endhead')  # End of continuation header
+                    # Data rows with zebra striping (but skip category headers in zebra count)
+                    zebra_counter = 0
+                    for i, row in enumerate(rows):
+                        is_total = (i == len(rows) - 1 and total_row)
+
+                        # Check if this is a category header row (ALL CAPS first cell, empty others)
+                        is_category_header = False
+                        if len(row) > 0 and row[0].strip():
+                            first_cell = row[0].strip()
+                            # Check if ALL CAPS and other cells are empty/whitespace
+                            if first_cell.isupper() and all(not cell.strip() for cell in row[1:]):
+                                is_category_header = True
+
+                        # Format cells with emphasis
+                        formatted_cells = []
+                        for j, cell in enumerate(row):
+                            is_first = (j == 0)
+                            is_last = (j == len(row) - 1)
+                            formatted = format_cell(cell, is_first, is_last, is_total)
+
+                            # Add cellcolor for last column if specified
+                            if is_last and last_color and not is_total and not is_category_header:
+                                latex_color = last_col_colors.get(last_color, 'snapBlue!20')
+                                formatted = f'\\cellcolor{{{latex_color}}}{formatted}'
+
+                            formatted_cells.append(formatted)
+
+                        # Row rendering with appropriate background
+                        if is_total:
+                            # Total row: Navy background with white text
+                            white_cells = [f'\\textcolor{{white}}{{{c}}}' for c in formatted_cells]
+                            latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_cells)} \\\\')
+                        elif is_category_header:
+                            # Category header: Lighter gray background with bold text
+                            bold_cells = [f'\\textbf{{{c}}}' if c.strip() else c for c in formatted_cells]
+                            latex.append(f'\\rowcolor{{snapBlue!10}}{" & ".join(bold_cells)} \\\\')
+                        else:
+                            # Regular rows with zebra striping
+                            if zebra_counter % 2 == 1:
+                                latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
+                            else:
+                                latex.append(f'{" & ".join(formatted_cells)} \\\\')
+                            zebra_counter += 1
                 else:
-                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
-                white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
-                latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(white_headers)} \\\\')
-                latex.append('\\arrayrulecolor{' + latex_color + '!30}\\midrule')
-                for row in rows:
-                    latex.append(f'{" & ".join(row)} \\\\')
+                    # Regular table
+                    if use_tabularx:
+                        latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                    else:
+                        latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                    white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                    latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(white_headers)} \\\\')
+                    latex.append('\\arrayrulecolor{' + latex_color + '!30}\\midrule')
+                    for row in rows:
+                        latex.append(f'{" & ".join(row)} \\\\')
 
             elif style == 'bordered':
                 # Bordered: Light gray header, all cells have borders
@@ -1363,13 +1712,50 @@ class SnapLogicDocumentCompiler:
 
             else:  # 'simple' (default)
                 # Simple: Navy header, alternating rows (white/light gray) with optional emphasis
-                if use_tabularx:
-                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                if is_multipage:
+                    # Use longtable for multi-page tables
+                    # Calculate proper column widths for longtable
+                    if manual_widths and len(manual_widths) == num_cols:
+                        widths = manual_widths
+                    # else: widths already calculated above
+
+                    # Convert relative widths to actual cm widths
+                    total_width_cm = 25.0 if is_landscape else 16.0
+                    total_relative = sum(widths)
+                    actual_widths = [w * total_width_cm / total_relative for w in widths]
+
+                    # Build longtable column spec with left-aligned p{width} columns
+                    longtable_col_spec = ''.join([f'>{{\\raggedright\\arraybackslash}}p{{{w:.1f}cm}}' for w in actual_widths])
+
+                    latex.append(f'\\begin{{longtable}}{{{longtable_col_spec}}}')
+                    # Caption for longtable goes AFTER \begin{longtable}
+                    if caption and caption != '_':
+                        latex.append(f'\\caption{{{caption}}}')
+                        latex.append(f'\\label{{tab:{table_num}}}')
+                        if label:
+                            latex.append(f'\\label{{tab:{label}}} \\\\')
+                            self.table_registry[caption] = (table_num, label)
+                        else:
+                            latex.append(' \\\\')
+                            self.table_registry[caption] = (table_num, str(table_num))
+                    # Header row
+                    white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
+                    latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
+                    latex.append('\\endfirsthead')
+                    # Repeated header on continuation pages
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
+                    latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
+                    latex.append('\\endhead')
                 else:
-                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
-                white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
-                latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
-                latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
+                    # Regular table (not multipage)
+                    if use_tabularx:
+                        latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
+                    else:
+                        latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
+                    white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
+                    latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
 
                 # Color map for last column emphasis
                 last_col_colors = {
@@ -1379,9 +1765,19 @@ class SnapLogicDocumentCompiler:
                     'navy': 'snapNavy!20'
                 }
 
+                # Track zebra striping (skip category headers in count)
+                zebra_counter = 0
                 for i, row in enumerate(rows):
                     is_last_row = (i == len(rows) - 1)
                     is_total = is_last_row and total_row
+
+                    # Check if this is a category header row (ALL CAPS first cell, empty others)
+                    is_category_header = False
+                    if len(row) > 0 and row[0].strip():
+                        first_cell = row[0].strip()
+                        # Check if ALL CAPS and other cells are empty/whitespace
+                        if first_cell.isupper() and all(not cell.strip() for cell in row[1:]):
+                            is_category_header = True
 
                     # Format cells with emphasis
                     formatted_cells = []
@@ -1391,7 +1787,7 @@ class SnapLogicDocumentCompiler:
                         formatted = format_cell(cell, is_first, is_last, is_total)
 
                         # Add cellcolor for last column if specified
-                        if is_last and last_color and not is_total:
+                        if is_last and last_color and not is_total and not is_category_header:
                             latex_color = last_col_colors.get(last_color, 'snapBlue!20')
                             formatted = f'\\cellcolor{{{latex_color}}}{formatted}'
 
@@ -1402,16 +1798,27 @@ class SnapLogicDocumentCompiler:
                         # Total row: Navy background with white text
                         white_cells = [f'\\textcolor{{white}}{{{c}}}' for c in formatted_cells]
                         latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_cells)} \\\\')
-                    elif i % 2 == 1:
-                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
+                    elif is_category_header:
+                        # Category header: Lighter gray background with bold text
+                        bold_cells = [f'\\textbf{{{c}}}' if c.strip() else c for c in formatted_cells]
+                        latex.append(f'\\rowcolor{{snapBlue!10}}{" & ".join(bold_cells)} \\\\')
                     else:
-                        latex.append(f'{" & ".join(formatted_cells)} \\\\')
+                        # Regular rows with zebra striping
+                        if zebra_counter % 2 == 1:
+                            latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
+                        else:
+                            latex.append(f'{" & ".join(formatted_cells)} \\\\')
+                        zebra_counter += 1
 
-            if use_tabularx:
-                latex.append('\\end{tabularx}')
+            # Close table environment
+            if is_multipage:
+                latex.append('\\end{longtable}')
             else:
-                latex.append('\\end{tabular}')
-            latex.append('\\end{table}')
+                if use_tabularx:
+                    latex.append('\\end{tabularx}')
+                else:
+                    latex.append('\\end{tabular}')
+                latex.append('\\end{table}')
 
             # End landscape environment if needed
             if is_landscape:
@@ -1447,6 +1854,16 @@ class SnapLogicDocumentCompiler:
             return list_latex
 
         text = re.sub(list_pattern, restore_list, text, flags=re.DOTALL)
+
+        # Restore paragraph headers (bold text before lists)
+        header_pattern = r'@PARAHEADER:(\d+)@(.+?)@PARAHEADEREND:\1@'
+
+        def restore_header(match):
+            header_id, header_text = match.groups()
+            return f'\\textbf{{{header_text}}}\n'
+
+        text = re.sub(header_pattern, restore_header, text)
+
         return text
 
     def _restore_images(self, text: str, image_map: Dict) -> str:
@@ -1584,6 +2001,19 @@ class SnapLogicDocumentCompiler:
 
         text = re.sub(r'Table~\\ref\{tab:([^}]+)\}', extract_semantic_table_ref, text)
 
+        # Table references by caption: "Table (Caption)" or "Table⁠(Caption)" (thin space U+2009)
+        # Look up caption in table_registry and replace with @TABREF:label@
+        def extract_table_caption_ref(match):
+            caption = match.group(1)
+            if caption in self.table_registry:
+                table_num, ref_label = self.table_registry[caption]
+                return f"@TABREF:{ref_label}@"
+            # If caption not found, keep as-is (user might have typo)
+            return match.group(0)
+
+        # Match both regular space and thin space (U+2009)
+        text = re.sub(r'Table[\s ]+\(([^)]+)\)', extract_table_caption_ref, text)
+
         # Table references: "Table X" where X is a number (numeric fallback)
         # Replace with placeholder @TABREF:X@
         def extract_table_ref(match):
@@ -1638,8 +2068,8 @@ class SnapLogicDocumentCompiler:
         tex_file = Path(work_dir) / "document.tex"
         log_file = Path(work_dir) / "document.log"
 
-        # Run pdflatex twice (for TOC and cross-references)
-        for run in range(2):
+        # Run pdflatex three times (for TOC, cross-references, and page numbers)
+        for run in range(3):
             result = subprocess.run(
                 ['pdflatex', '-interaction=nonstopmode', 'document.tex'],
                 cwd=work_dir,
