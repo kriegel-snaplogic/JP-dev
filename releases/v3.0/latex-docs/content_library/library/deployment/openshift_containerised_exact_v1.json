@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "openshift_containerised_exact_v1",
+    "version": "1.0",
+    "title": "OPENSHIFT CONTAINERISED DEPLOYMENT",
+    "category": "deployment",
+    "tags": [
+      "openshift",
+      "containers",
+      "helm",
+      "deployment"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "OPENSHIFT CONTAINERISED DEPLOYMENT",
+    "content": "Ground Plex nodes run as Docker containers orchestrated by OpenShift. SnapLogic provides certified Helm charts for deployment. OpenShift's native pod scheduling, resource quotas, and health monitoring apply directly to Ground Plex pods.\n\n- **Container deployment**: Each Ground Plex node is a JCC (SnapLogic Java Cloud Connector) container. Multiple JCC containers per node can be configured for increased pipeline concurrency.\n\n- **Helm charts & configuration**: SnapLogic-provided Helm charts parametrise the Ground Plex deployment. Environment-specific configuration (Org name, network settings, resource limits) is managed via values files in the customer's GitLab repository.\n\n- **OpenShift SCC note**: The Ground Plex startup script requires write access to `/etc/snaplogic` for key generation. In OpenShift environments with the default `restricted-v2` SCC, an `anyuid` SCC grant or CI/CD build-phase key pre-generation approach must be agreed with AH's OpenShift team prior to deployment. SnapLogic PS will guide this configuration.\n\n- **Network proxy support**: In environments with a corporate HTTP proxy, Ground Plex JVM arguments must be configured to exclude internal Kubernetes DNS names from proxy routing (`-Dhttp.nonProxyHosts`). SnapLogic documents this configuration explicitly for proxy-enabled OpenShift environments.",
+    "subsections": []
+  }
+}

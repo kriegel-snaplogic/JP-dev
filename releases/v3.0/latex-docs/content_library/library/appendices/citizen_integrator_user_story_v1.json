@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "id": "citizen_integrator_user_story_v1",
+    "version": "1.0",
+    "title": "Citizen Integrator User Story with SnapGPT",
+    "description": "Detailed walkthrough demonstrating how business analysts and non-developers use SnapGPT to create integration pipelines through natural language and visual configuration. Includes 7 annotated screenshots showing the complete workflow from prompt to validation.",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "Jean-Claude, Advisor to the CEO",
+    "maintainer": "solutions-team@snaplogic.com",
+    "status": "active",
+    "tags": [
+      "citizen_integrator",
+      "snapgpt",
+      "ai",
+      "low_code",
+      "user_story",
+      "reusable",
+      "appendix",
+      "demo"
+    ],
+    "category": "appendices",
+    "subcategory": "user_stories",
+    "usage_stats": {
+      "usage_count": 0,
+      "last_used": null,
+      "documents": []
+    },
+    "variables": {
+      "required": [],
+      "optional": [],
+      "defaults": {}
+    },
+    "dependencies": {
+      "images": [
+        "assets/citizen-integrator/1-Designer.png",
+        "assets/citizen-integrator/3-SnapGPT-Pipeline Preview.png",
+        "assets/citizen-integrator/4-Snap Configuration.png",
+        "assets/citizen-integrator/5-Snap-Drag and Drop.png",
+        "assets/citizen-integrator/6-Pipeline-Validation.png",
+        "assets/citizen-integrator/7-Validation-Output.png"
+      ],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "review_required": false,
+      "legal_approved": true,
+      "last_review_date": "2026-04-27",
+      "next_review_date": "2026-07-27"
+    }
+  },
+  "content": {
+    "title": "Citizen Integrator User Story",
+    "content": "**Empowering Non-Developers with SnapGPT**\n\nSnapLogic enables not only professional developers but also **Citizen Integrators** — business analysts, data specialists, and subject matter experts who build integration pipelines without extensive coding experience. This user story demonstrates how SnapGPT's AI-assisted pipeline generation empowers users to create sophisticated integrations through natural language descriptions and visual configuration.\n\n[IMAGE:assets/citizen-integrator/1-Designer.png:SnapLogic Designer with SnapGPT Sidebar:0.95:citizen-designer]\n\nFigure~\\ref{fig:citizen-designer} shows the SnapLogic Designer interface with the SnapGPT sidebar open on the right, providing access to AI-powered pipeline generation capabilities.\n\n**Step 1: Describe the Integration Requirements**\n\nThe user begins by opening the SnapGPT sidebar and selecting the **Pipeline generation** option. They then describe their integration needs in plain language. For this example, the user enters the following prompt:\n\n[BOX:info]\n**Example Prompt:**\n\n\"Generate a pipeline to select customer account data from the Snowflake table 'Handson:Customers', merge it with sales data from a CSV file, and save it to a CSV file.\"\n[/BOX]\n\nThe user can optionally select a thinking model (standard or advanced) based on complexity requirements. SnapGPT serves as an intelligent assistant, capable of generating complete pipeline architectures from these simple text descriptions.\n\n**Step 2: Review the Generated Pipeline**\n\n[IMAGE:assets/citizen-integrator/3-SnapGPT-Pipeline Preview.png:SnapGPT Generated Pipeline Preview:0.95:citizen-pipeline-preview]\n\nFigure~\\ref{fig:citizen-pipeline-preview} shows the generated pipeline preview modal, displaying the complete integration architecture that SnapGPT has designed based on the natural language description. The pipeline includes Snowflake Read, CSV Parser, Join, and CSV Formatter snaps automatically configured.\n\n**Step 3: Configure Individual Snaps**\n\nSnapGPT generates a complete pipeline with appropriate snaps (connectors and transformations) already configured. The user can now make adjustments by configuring individual snap settings.\n\n[IMAGE:assets/citizen-integrator/4-Snap Configuration.png:Individual Snap Configuration Panel:0.95:citizen-snap-config]\n\nFigure~\\ref{fig:citizen-snap-config} illustrates the snap configuration panel where users can fine-tune settings such as authentication credentials, query parameters, and data mappings.\n\n**Step 4: Enhance with Drag-and-Drop**\n\nFor additional customization, users can drag new snaps from the palette onto the canvas. SnapLogic provides intelligent recommendations based on the current pipeline context, suggesting relevant transformations and connectors.\n\n[IMAGE:assets/citizen-integrator/5-Snap-Drag and Drop.png:Pipeline Canvas with Drag-and-Drop Capabilities:0.95:citizen-drag-drop]\n\nFigure~\\ref{fig:citizen-drag-drop} demonstrates the drag-and-drop interface with snap recommendations appearing contextually based on pipeline requirements.\n\n**Step 5: Validate Throughout the Process**\n\nSnapLogic provides real-time validation throughout pipeline creation. Users can validate individual snaps or the entire pipeline, receiving immediate feedback on configuration issues, data type mismatches, or connectivity problems.\n\n[IMAGE:assets/citizen-integrator/6-Pipeline-Validation.png:Pipeline with Validation Indicators:0.95:citizen-validation]\n\nFigure~\\ref{fig:citizen-validation} shows validation icons highlighting pipeline components, with green checkmarks indicating successful validation and warning icons flagging potential issues.\n\n**Step 6: Preview Data and Confirm Results**\n\nBefore deploying to production, users can preview actual data flowing through the pipeline. The validation output displays sample records, allowing verification that transformations and mappings are working as expected.\n\n[IMAGE:assets/citizen-integrator/7-Validation-Output.png:Data Validation Output Preview:0.95:citizen-output]\n\nFigure~\\ref{fig:citizen-output} presents the validation output table showing sample data records with field mappings and transformation results.\n\n**Outcome: Accelerated Development with AI Assistance**\n\nBy leveraging SnapGPT's AI-powered pipeline generation, Citizen Integrators achieve **40-60% reduction in development time** compared to manual pipeline construction. What traditionally required days of configuration can now be accomplished in hours, with natural language input translated into production-ready integration architectures.\n\nThis democratization of integration development enables organizations to scale their data operations without proportionally scaling their technical teams, empowering domain experts to directly implement the integrations they need.",
+    "subsections": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "architecture_overview_v1",
+    "version": "1.0",
+    "title": "High-Level Platform Architecture",
+    "category": "platform",
+    "tags": ["architecture", "control_plane", "data_plane", "ground_plex", "manager", "on_premises"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 1,
+    "reuse_score": 95,
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": ["assets/images/customer/airbus_vendor_profile/High_Level_Architecture.png"],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "High-Level Platform Architecture",
+    "content": "SnapLogic's platform architecture is designed for hybrid and on-premises enterprise deployments where data sovereignty, security, and regulatory compliance are paramount. The architecture separates concerns between the control plane and data plane:\n\n[IMAGE:assets/images/customer/airbus_vendor_profile/High_Level_Architecture.png:SnapLogic Deployment Architecture for Airbus Helicopters On-Premises Platform]\n\n**Control Plane: SnapLogic Manager (Cloud-Hosted)**\n\nThe Manager is the cloud-hosted control plane responsible for:\n- Pipeline definitions and metadata (no customer data)\n- User authentication and RBAC configuration\n- Scheduling and orchestration instructions\n- Audit logs and usage analytics\n- Designer UI and development environment\n\n**Data Plane: Ground Plex (On-Premises)**\n\nThe Ground Plex is the on-premises execution engine responsible for:\n- All pipeline execution and data processing\n- All connector calls to SAP, databases, APIs, file systems\n- All data transformation and business logic\n- Credential storage (encrypted locally, never sent to cloud)\n- Real-time monitoring and health metrics\n\n**Key Architectural Principle for {{customer_name}}:**\n\nNo customer data ever transits the SnapLogic cloud. All data processing occurs within {{customer_name}}'s data center. The Ground Plex communicates with the Manager over a single outbound HTTPS connection (port 443) to receive pipeline definitions and send execution status. No inbound firewall rules required. No data egress.\n\n[TABLE:accent-blue:Informatica to SnapLogic Terminology Mapping]\n| Informatica Concept | SnapLogic Equivalent | Key Difference |\n|---------------------|---------------------|----------------|\n| Mapping / Workflow | Pipeline | Visual canvas, executable as-is — no code generation step |\n| Transformation / Stage | Snap | 700+ pre-built, configured not coded |\n| Integration Service / DTM | Ground Plex | Containerised on OpenShift, scales horizontally |\n| Repository / Domain | Manager (cloud) | Metadata only — no data transits the Manager |\n| Mapplet / Reusable Mapping | Child Pipeline | Modular, reusable, called inline |\n| Folder / Repository Folder | Project / Org | RBAC-governed hierarchy: Org → Project Space → Project |\n[/TABLE]",
+    "subsections": []
+  }
+}

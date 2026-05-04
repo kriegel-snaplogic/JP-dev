@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "monitor_exact_v1",
+    "version": "1.0",
+    "title": "COMPONENT: MONITOR — OPERATIONAL DASHBOARD",
+    "category": "platform",
+    "tags": [
+      "monitor",
+      "dashboard",
+      "operations",
+      "observability"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "COMPONENT: MONITOR — OPERATIONAL DASHBOARD",
+    "content": "The Monitor (Dashboard) provides real-time operational visibility across all pipeline executions on all Ground Plex nodes. It is accessible within the Manager UI and via the SnapLogic REST API.\n\n- Real-time pipeline execution status — running, completed, failed, queued — with drill-down to individual execution details\n\n- Throughput metrics: documents per second, records processed, execution duration, P50/P95/P99 latency for Ultra Pipelines\n\n- Ground Plex node health: CPU, memory, I/O per node updated every 20 seconds\n\n- Alerting: configurable failure, SLA breach, and performance degradation notifications via email, Slack, PagerDuty, SNMP, or webhook\n\n- Administrative actions: restart, re-trigger, cancel, and schedule management directly from the Monitor — no Designer access required for operations teams\n\n- Native export to Dynatrace (OTel), Elasticsearch, Splunk, and Prometheus — AH's existing observability tools receive SnapLogic telemetry without custom instrumentation\n\n[BOX:info]\n**IMAGE: SNAPLOGIC MONITOR / DASHBOARD SCREENSHOT**\n\nInsert: Screenshot of the SnapLogic Dashboard showing pipeline execution list, status indicators, throughput metrics, and node health tiles. Request from SnapLogic product team.\n[/BOX]",
+    "subsections": []
+  }
+}

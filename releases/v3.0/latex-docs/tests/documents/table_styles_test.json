@@ -1,0 +1,44 @@
+{
+  "title": "Table Styles Showcase",
+  "author": "SnapLogic",
+  "date": "April 27, 2026",
+  "version": "1.0",
+  "include_lof": false,
+  "include_lot": true,
+  "sections": [
+    {
+      "title": "Simple Style (Default)",
+      "content": "The **simple** style features a navy header with white text and alternating row colors (white/light gray). This is the default style, suitable for most general-purpose tables.\n\n[TABLE:simple:Platform Tier Feature Comparison]\n| Feature | Basic | Professional | Enterprise |\n|---------|-------|--------------|------------|\n| API Calls/Month | 10K | 100K | Unlimited |\n| Data Processing | 1GB | 100GB | Unlimited |\n| Support | Email | Email + Chat | 24/7 Phone |\n| SLA | 99% | 99.5% | 99.9% |\n| Custom Connectors | No | 5 | Unlimited |\n[/TABLE]\n\nAs shown in Table 1, the simple style provides clear visual hierarchy with minimal distraction."
+    },
+    {
+      "title": "Minimal Style",
+      "content": "The **minimal** style uses horizontal rules only (booktabs style) with no colored backgrounds. Ideal for technical specifications and academic-style documents where color would be distracting.\n\n[TABLE:minimal:System Requirements Specification]\n| Component | Minimum | Recommended | Maximum |\n|-----------|---------|-------------|----------|\n| CPU | 2 cores | 4 cores | 16 cores |\n| RAM | 4GB | 16GB | 128GB |\n| Storage | 50GB SSD | 250GB SSD | 2TB NVMe |\n| Network | 100Mbps | 1Gbps | 10Gbps |\n[/TABLE]\n\nTable 2 demonstrates the clean, professional appearance of the minimal style."
+    },
+    {
+      "title": "Accent Styles",
+      "content": "**Accent styles** use colored headers (blue, jade, or orange) with white backgrounds. Perfect for feature highlights, pricing tiers, and callout tables.\n\n**Blue Accent (Information):**\n\n[TABLE:accent-blue:API Endpoints Overview]\n| Endpoint | Method | Rate Limit | Auth Required |\n|----------|--------|------------|---------------|\n| /users | GET | 1000/hour | Yes |\n| /data | POST | 500/hour | Yes |\n| /status | GET | Unlimited | No |\n[/TABLE]\n\n**Jade Accent (Success/Recommended):**\n\n[TABLE:accent-jade:Recommended Configuration]\n| Setting | Value | Impact | Priority |\n|---------|-------|--------|----------|\n| Cache Size | 2GB | High | Critical |\n| Timeout | 30s | Medium | High |\n| Retries | 3 | Low | Medium |\n[/TABLE]\n\n**Orange Accent (Warning/Attention):**\n\n[TABLE:accent-orange:Critical Maintenance Windows]\n| Date | System | Duration | Impact |\n|------|--------|----------|--------|\n| May 1 | Database | 4 hours | High |\n| May 15 | API Gateway | 2 hours | Medium |\n[/TABLE]\n\nTables 3-5 show how accent colors convey semantic meaning."
+    },
+    {
+      "title": "Bordered Style",
+      "content": "The **bordered** style adds cell borders throughout, with a light gray header. Useful for reference tables, error code lookups, and complex multi-column data where clear cell boundaries aid scanning.\n\n[TABLE:bordered:HTTP Status Code Reference]\n| Code | Category | Meaning | Common Use |\n|------|----------|---------|------------|\n| 200 | Success | OK | Successful request |\n| 201 | Success | Created | Resource created |\n| 400 | Client Error | Bad Request | Invalid syntax |\n| 401 | Client Error | Unauthorized | Auth required |\n| 404 | Client Error | Not Found | Resource missing |\n| 500 | Server Error | Internal Error | Server failure |\n[/TABLE]\n\nTable 6 illustrates how borders help with dense reference data."
+    },
+    {
+      "title": "Status Style",
+      "content": "The **status** style uses row colors to indicate semantic states, with the first column bolded for row labels. Perfect for project status, timeline tables, and requirement tracking.\n\n[TABLE:status-jade,jade,orange,blue]\n| Task | Owner | Due Date | Status |\n|------|-------|----------|--------|\n| API Migration | DevOps | 2026-05-15 | Complete |\n| Security Audit | InfoSec | 2026-05-01 | Complete |\n| Documentation | Tech Writers | 2026-04-30 | In Progress |\n| Performance Test | QA Team | 2026-05-10 | Not Started |\n[/TABLE]\n\nTable 7 uses color-coded rows: jade (complete), orange (in progress), blue (not started)."
+    },
+    {
+      "title": "Financial Data Example",
+      "content": "Tables work well with financial data. The simple style provides a clean presentation:\n\n[TABLE:simple:Quarterly Financial Performance 2026]\n| Quarter | Revenue | Expenses | Profit | Growth |\n|---------|---------|----------|--------|--------|\n| Q1 2026 | $1.2M | $800K | $400K | 15% |\n| Q2 2026 | $1.5M | $900K | $600K | 25% |\n| Q3 2026 | $1.8M | $950K | $850K | 20% |\n| Q4 2026 | $2.1M | $1.1M | $1.0M | 17% |\n| **Total** | **$6.6M** | **$3.75M** | **$2.85M** | **19%** |\n[/TABLE]\n\nTable 8 shows financial data with totals row in bold."
+    },
+    {
+      "title": "Style Selection Guide",
+      "content": "**When to use each style:**\n\n[TABLE:minimal:Table Style Decision Matrix]\n| Style | Best For | Visual Weight | Use Case |\n|-------|----------|---------------|----------|\n| simple | General data | Medium | Default choice |\n| minimal | Technical specs | Low | Dense numeric data |\n| accent-blue | Information | Medium-High | Feature highlights |\n| accent-jade | Success/Recommended | Medium-High | Pricing tiers |\n| accent-orange | Warnings | Medium-High | Attention needed |\n| bordered | Reference data | High | Lookup tables |\n| status | Project tracking | Variable | Status dashboards |\n[/TABLE]\n\nTable 9 helps choose the appropriate style for your content."
+    }
+  ],
+  "next_steps": [
+    "Review all table styles in the generated PDF",
+    "Verify accent colors render correctly",
+    "Confirm List of Tables includes all 9 tables",
+    "Test table references are clickable"
+  ]
+}

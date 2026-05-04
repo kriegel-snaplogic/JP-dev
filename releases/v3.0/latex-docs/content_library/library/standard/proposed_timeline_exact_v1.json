@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "proposed_timeline_exact_v1",
+    "version": "1.0",
+    "title": "Proposed Timeline",
+    "category": "standard",
+    "tags": [
+      "timeline",
+      "phases",
+      "duration"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 75,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Proposed Timeline",
+    "content": "[BOX:lightblue]\n**Phase 0 — Setup**\n\nWeeks 1–2\n[/BOX]\n\n[BOX:lightblue]\n**Phase 1 — Pilot**\n\nWeeks 3–8 (6 weeks)\n[/BOX]\n\n[BOX:lightblue]\n**Phase 2 — Expand**\n\nWeeks 9–16\n[/BOX]\n\n[BOX:lightblue]\n**Phase 3 — Self-Service**\n\nWeeks 17–20\n[/BOX]\n\n[BOX:jade]\n**Total Duration**\n\n~20 weeks (5 months)\n[/BOX]",
+    "subsections": []
+  }
+}

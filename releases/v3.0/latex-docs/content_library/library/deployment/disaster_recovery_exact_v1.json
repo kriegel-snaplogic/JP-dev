@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "disaster_recovery_exact_v1",
+    "version": "1.0",
+    "title": "DISASTER RECOVERY",
+    "category": "deployment",
+    "tags": [
+      "disaster_recovery",
+      "backup",
+      "rpo",
+      "rto"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "DISASTER RECOVERY",
+    "content": "- **Ground Plex DR deployment**: Ground Plex nodes can be deployed across AH's primary and secondary data center sites (or across OpenShift availability zones). DR Ground Plex nodes register to the same SnapLogic Org — they are immediately active and can receive workloads if the primary site is unavailable.\n\n- **Manager cloud HA**: The SnapLogic Manager (SaaS) operates with multi-region availability (pipeline definitions/account metadata/schedules are replicated geographically). Manager RPO is a 30-day retention. In a full Manager restoration scenario, RPO is 2 hours and RTO is 48 hours. Customers can also export pipeline packages (`.slpkg`) to their own air-gapped backup system.\n\n- **Stateless Ground Plex recovery**: Ground Plex nodes are fully stateless — they hold no persistent data. A new Ground Plex node, pointed at the same SnapLogic Org, is operational within minutes of deployment. Recovery of the execution layer is independent of the Manager recovery timeline.\n\n[BOX:blue]\n**S-02 (distributed processing / scaling)**\n[/BOX]\n[BOX:jade]\n**S-03 (high availability)**\n[/BOX]\n[BOX:orange]\n**S-03 (disaster recovery)**\n[/BOX]",
+    "subsections": []
+  }
+}

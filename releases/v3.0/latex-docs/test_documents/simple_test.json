@@ -1,0 +1,20 @@
+{
+  "title": "Simple Test Document",
+  "author": "Test Suite",
+  "version": "1.0",
+  "date": "2026-05-04",
+  "sections": [
+    {
+      "title": "Introduction",
+      "content": "This is a simple test document with basic formatting.\n\n**Bold text** and *italic text* should render correctly.\n\n- Bullet point 1\n- Bullet point 2\n- Bullet point 3"
+    },
+    {
+      "title": "Simple Table Test",
+      "content": "Testing a basic simple-style table:\n\n[TABLE:simple:Test Data]\n| Name | Value |\n|------|-------|\n| Alpha | 100 |\n| Beta | 200 |\n| Gamma | 300 |\n[/TABLE]"
+    },
+    {
+      "title": "Box Test",
+      "content": "[BOX:info]This is an information box with important details.[/BOX]\n\nSome text after the box."
+    }
+  ]
+}

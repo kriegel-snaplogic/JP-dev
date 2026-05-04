@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "pipeline_execution_modes_exact_v1",
+    "version": "1.0",
+    "title": "COMPONENT: PIPELINE EXECUTION MODES",
+    "category": "platform",
+    "tags": [
+      "pipeline",
+      "execution",
+      "modes"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "COMPONENT: PIPELINE EXECUTION MODES",
+    "content": "SnapLogic supports four distinct pipeline execution modes, each optimised for different integration patterns. Understanding these modes is important for Airbus Helicopters' integration architecture design. Table~\\ref{tab:execution-modes} details the execution modes and their characteristics.\n\n[TABLE:accent-blue:Pipeline Execution Modes::execution-modes]\n| Execution Mode | How Triggered | Primary Use Case | AH Relevance |\n|----------------|---------------|------------------|-------------|\n| **Scheduled Task** | Cron schedule (fixed or dynamic) | Periodic batch extract, daily data loads, recurring reports | Nightly ERP extracts, daily CDC batch windows, periodic file transfers |\n| **Triggered Task** | REST API call, file arrival, message queue event | Event-driven integration, on-demand processing, webhook receivers | API-triggered data provisioning, file-arrival processing (SFTP drop), MES event handling |\n| **Ultra Task (Ultra Pipeline)** | REST API call with pre-loaded pipeline state | Sub-second latency API responses, real-time data lookups, high-frequency event streaming | Real-time inventory queries, CDC streaming, high-volume message bus processing |\n[/TABLE]",
+    "subsections": []
+  }
+}

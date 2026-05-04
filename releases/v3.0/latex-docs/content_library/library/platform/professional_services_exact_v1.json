@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "professional_services_exact_v1",
+    "version": "1.0",
+    "title": "Professional Services & Implementation Capability",
+    "category": "services",
+    "tags": [
+      "professional_services",
+      "implementation",
+      "ps"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Professional Services & Implementation Capability",
+    "content": "SnapLogic's Professional Services organisation provides the delivery and enablement capability Airbus Helicopters will require to deploy the platform, migrate existing pipelines, and enable the integration team. PS is a core part of the SnapLogic value proposition for complex enterprise deployments — not an afterthought.\n\n- **Team size**: 40+ PS consultants globally across AMER and EMEA\n\n- **Profiles**: Enterprise Architects, Senior Integration Consultants, Project Managers, Technical Trainers\n\n- **EMEA presence**: Consultants based in Germany, UK, Netherlands, France, Italy, Sweden — DACH delivery available in German\n\n- **Engagement models**: Time & Materials, Fixed-Deliverable Consulting, Managed Services (ongoing operational support)\n\n- **Partner ecosystem**: Large SI partners (Cognizant, Capgemini, Infosys, Wipro, TCS) and regional specialists (Blue Altair — 50+ SnapLogic-certified consultants) extend PS capacity for large-scale programmes\n\n- **Certifications**: SnapLogic Partner Certification Programme ensures consistent delivery quality across SI partners\n\n**● Prof. Services — confirm DACH PS resource availability for AH engagement**",
+    "subsections": []
+  }
+}

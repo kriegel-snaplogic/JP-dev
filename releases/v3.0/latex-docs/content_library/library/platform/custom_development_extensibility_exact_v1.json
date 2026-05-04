@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "custom_development_extensibility_exact_v1",
+    "version": "1.0",
+    "title": "CUSTOM DEVELOPMENT & EXTENSIBILITY",
+    "category": "platform",
+    "tags": [
+      "custom_development",
+      "extensibility",
+      "sdk"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "CUSTOM DEVELOPMENT & EXTENSIBILITY",
+    "content": "Where standard Snaps do not cover a specific integration requirement, SnapLogic provides multiple extensibility options — all executing within the Ground Plex.\n\n- **Custom Snaps (Java)**: Developed using the Snap core Snap SDK (Java). Custom Snaps are packaged as .slpk files and deployed in the Ground Plex. External Java libraries can be bundled. Custom Snaps appear in the Designer alongside standard Snaps.\n\n- **Script Snap: (JavaScript, Python)**: Inline code execution within a pipeline. Supports import of external Python libraries (from the Ground Plex's Python environment) and Java libraries via Jython. Configurable Python executable path supports use of specific virtualenv or system Python installations within the Ground Plex.\n\n- **Java runtime selection**: Ground Plex nodes run on a bundled JVM. Custom Snap Packs can target specific JRE compatibility versions (v7+) via the Snap SDK build toolchain — relevant for proprietary enterprise systems that require specific Java versions.\n\n- **Programmatic pipeline design via REST API**: SnapLogic's full REST API supports pipeline creation, modification, cloning, execution, and metadata retrieval. Enables Informatica-to-SnapLogic migration automation and existing toolchain API integration.",
+    "subsections": []
+  }
+}

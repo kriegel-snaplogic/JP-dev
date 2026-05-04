@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "inline_validation_data_assessment_exact_v1",
+    "version": "1.0",
+    "title": "INLINE VALIDATION & DATA ASSESSMENT",
+    "category": "services",
+    "tags": [
+      "validation",
+      "data_assessment",
+      "profiling"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "INLINE VALIDATION & DATA ASSESSMENT",
+    "content": "- **Inline data validation**: The Validate Snap and Filter Snap enforce data quality constraints within the pipeline — null checks, range validation, referential integrity, format validation, and custom expression-based rules. Invalid records are rejected; flagged with an error code, routed to an error pipeline, or quarantined to a DQ hold table based on configurable policy.\n\n- **Automated data assessment**: Schema inference during pipeline development automatically profiles source data — null patterns, data type distributions, row counts, distinct value counts, min/max values, and frequency histograms. This provides integration developers with a quality baseline before production deployment and surfaces data quality issues early in the development lifecycle.\n\n- **Centralised, reusable validation policies**: Validation logic is encapsulated in shared child pipelines — promoted through the standard Dev → Test → Prod lifecycle and reused across multiple integration projects. Changes to validation rules are deployed once and propagate to all consuming pipelines automatically.",
+    "subsections": []
+  }
+}

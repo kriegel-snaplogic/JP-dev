@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "audit_trail_compliance_exact_v1",
+    "version": "1.0",
+    "title": "AUDIT TRAIL & COMPLIANCE",
+    "category": "governance",
+    "tags": [
+      "audit",
+      "compliance",
+      "logging"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": true,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "AUDIT TRAIL & COMPLIANCE",
+    "content": "- **Immutable audit trail**: Tamper-evident log of all user actions (login/logout, pipeline execution, configuration changes, ACL modifications, user provisioning), system events, and administrative actions. Audit logs are exported as CSV on demand and can be scheduled for automated export to AH's SIEM (Splunk, Elasticsearch, QRadar).\n\n- **Retention policies**: Audit log retention is configurable. Minimum 90-day retention is achieved by scheduling daily exports to AH's long-term log storage. Syslog-forward (RFC 5424-compliant) is not a workaround.\n\n- **Data lineage graph**: The data lineage system through all transformation steps to the target system, visualised in the Manager UI as an interactive graph. Lineage metadata is exportable via the SnapLogic Metadata API for integration with AH's enterprise data catalogue.\n\n- **Impact analysis**: The SnapLogic Metadata API exposes all pipelines, child pipelines, and assets that reference a given source schema, account, or shared pipeline. When AH's source systems undergo schema changes (Oracle column addition, SAP IDOC format updates), impact analysis immediately shows which downstream pipelines are affected — enabling controlled, proactive change management.",
+    "subsections": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "id": "monitoring_management_v1",
+    "version": "1.0",
+    "title": "Monitoring & Management",
+    "category": "platform",
+    "tags": ["monitoring", "management", "observability", "alerting", "dashboard", "operations"],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 1,
+    "reuse_score": 90,
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": ["assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.20.06.png"],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+
+  "content": {
+    "title": "Monitoring & Management",
+    "content": "SnapLogic provides comprehensive monitoring and operational management capabilities:\n\n[IMAGE:assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.20.06.png:Monitoring and Management Dashboard]\n\n**Real-Time Dashboard**: Web-based dashboard showing Ground Plex health, active pipeline executions, error rates, and resource utilization\n\n**Alerting**: Configurable alerts for pipeline failures, Ground Plex node failures, and performance degradation. Alerts via email, Slack, PagerDuty, or webhook\n\n**Metrics Export**: Integration with Prometheus/Grafana for custom dashboards and long-term metric storage\n\n**SNMP Trap Support**: Integration with enterprise monitoring tools (HP OpenView, IBM Tivoli, BMC Patrol)\n\n**Syslog Export**: Centralized logging export to {{customer_name}} log aggregation platforms\n\n**Performance Monitoring**:\n- Pipeline execution duration trends\n- Data throughput (records/second, MB/second)\n- Resource utilization (CPU, memory, disk I/O per Ground Plex node)\n- Connector response times (identify slow database queries or API calls)\n\n**Capacity Planning**:\n- Historical execution metrics for trend analysis\n- Predictive alerts when approaching capacity limits\n- Recommendations for Ground Plex node scaling\n\n**Operational Dashboards**:\n- Executive view: High-level pipeline success rates, data volumes processed\n- Operations view: Active executions, error queue, scheduled pipeline status\n- Developer view: Individual pipeline execution logs, Snap-level debugging",
+    "subsections": []
+  }
+}

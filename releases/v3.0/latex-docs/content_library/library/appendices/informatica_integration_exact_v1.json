@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "informatica_integration_exact_v1",
+    "version": "1.0",
+    "title": "Citizen-Driven Application Integration",
+    "category": "appendices",
+    "tags": [
+      "informatica",
+      "integration",
+      "citizen_integrator"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 70,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Citizen-Driven Application Integration",
+    "content": "SnapLogic's low-code Designer + SnapGPT enables business analysts (Citizen Integrators) to build integrations without deep technical expertise. Informatica PowerCenter requires trained ETL developers for every mapping — a bottleneck that constrains delivery velocity and perpetuates backlog. SnapLogic democratizes integration development by enabling business users to describe integrations in plain English; SnapGPT generates working pipelines. This capability directly addresses Airbus Helicopters' stated objective of reducing IT dependency for simple integrations while maintaining governance and quality standards. IT retains oversight (approval, deployment, RBAC) — but delivery velocity is no longer constrained by developer availability.\n\n**B.4: Flexible Licensing and Deployment Options**\n\nSnapLogic supports both perpetual and subscription licensing — meeting Airbus's explicit RFP requirement for perpetual options. Ground Plex provides genuine on-premises execution with no data egress. Informatica's modern IDMC platform is cloud-first with limited on-premises capability; PowerCenter is end-of-life with declining investment. SnapLogic provides the modern platform architecture Airbus requires while maintaining on-premises data sovereignty — a combination Informatica cannot deliver.\n\n**B.5: Migration Path from PowerCenter to SnapLogic is Full Lift-and-Shift**\n\nSnapLogic was founded by Gaurav Dhillon, co-founder of Informatica. The company has institutional knowledge of PowerCenter architecture and has completed 50+ PowerCenter migration projects for enterprise customers. SnapLogic provides automated conversion tools that import PowerCenter XML mappings and generate equivalent SnapLogic pipelines. Typical conversion success rate: 70–80% fully automated, 20–30% requiring manual refinement. This automated tooling reduces migration risk and accelerates time-to-value compared to manual rewrite approaches. Parallel run capability (Informatica + SnapLogic executing simultaneously) enables gradual, risk-controlled cutover without disruptive big-bang migration events.",
+    "subsections": []
+  }
+}

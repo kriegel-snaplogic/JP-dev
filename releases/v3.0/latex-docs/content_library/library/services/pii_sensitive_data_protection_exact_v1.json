@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "pii_sensitive_data_protection_exact_v1",
+    "version": "1.0",
+    "title": "PII & SENSITIVE DATA PROTECTION",
+    "category": "services",
+    "tags": [
+      "pii",
+      "data_protection",
+      "masking",
+      "hashing"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": true,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "PII & SENSITIVE DATA PROTECTION",
+    "content": "- **Data masking**: The Mask Snap applies configurable masking strategies (full mask, partial mask, format-preserving tokenization) to sensitive fields inline in the pipeline execution flow — eliminating exposure risk in non-production systems.\n\n- **Hashing & obfuscation**: Expression-based SHA-256/MD5 hashing, pseudonymisation, and obfuscation are available for any pipeline field. Applied at the Mapper Snap level — no separate data preparation system required.\n\n- **PII field identification**: Sensitive field identification uses pattern matching (regular expressions for formats like national IDs, email addresses, IBAN, credit card numbers) applied via the Filter or Validate Snap. Identified PII fields are routed to dedicated masking or hashing rules.",
+    "subsections": []
+  }
+}

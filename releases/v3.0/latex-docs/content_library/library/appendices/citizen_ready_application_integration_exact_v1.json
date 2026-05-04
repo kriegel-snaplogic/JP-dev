@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "citizen_ready_application_integration_exact_v1",
+    "version": "1.0",
+    "title": "Citizen-Ready Application Integration",
+    "category": "appendices",
+    "tags": [
+      "citizen_developer",
+      "snapgpt",
+      "self_service"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 85,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Citizen-Ready Application Integration",
+    "content": "The current model in most large enterprises — where every integration request goes through IT, is queued, scoped, developed, and eventually delivered months later — is a structural bottleneck. Engineering teams, procurement, logistics, and quality functions all have integration needs that IT cannot keep pace with. The result is shadow IT: Excel files, manual data transfers, and point-to-point scripts.\n\nSnapLogic provides the fundamentals of governed, self-service integration at the same enterprise-grade platform, with a simplified interface and AI-assisted pipeline creation (SnapGPT) that enables non-IT users to build governed, secure integrations independently.\n\n- **Engineering-plus coordinators who currently maintain manual Excel-based BOM reconciliation processes** can instead configure a self-service SnapLogic pipeline — connecting Windchill directly to SAP — without involving IT in the development cycle.\n\n- **Quality engineers can build their own data extract pipelines** from MES/SCADA to reporting stores, governed by IT-defined templates and security policies.\n\n- **Procurement teams can self-serve supplier data feeds** from external APIs, with IT retaining oversight and audit trail visibility.\n\n- **Support enables even technically inexperienced users to describe an integration** in plain language and get a working pipeline.\n\nCitizen Development in SnapLogic does not bypass governance. IT defines the permitted Snap libraries, approved connections, and available environments. Every pipeline is subject to the same audit trail, RBAC, and version control as IT-built integrations. This is governed self-service — not uncontrolled shadow IT.",
+    "subsections": []
+  }
+}

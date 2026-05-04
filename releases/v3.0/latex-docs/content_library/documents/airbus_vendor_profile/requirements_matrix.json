@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "id": "airbus_requirements_matrix",
+    "version": "1.0",
+    "title": "Requirements Response Matrix",
+    "category": "custom",
+    "tags": ["airbus", "requirements", "matrix", "rfp_response"],
+    "status": "draft",
+    "created": "2026-04-27",
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": ["assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.21.23.png"],
+      "sections": [],
+      "external_resources": []
+    }
+  },
+
+  "content": {
+    "title": "Requirements Response Matrix",
+    "content": "This section provides SnapLogic's response to {{customer_name}}'s vendor qualification requirements with supporting evidence and rationale for each requirement.\n\n[IMAGE:assets/images/customer/airbus_vendor_profile/Screenshot 2026-04-27 at 21.21.23.png:Requirements Response Summary]\n\n**Requirements Response Summary**\n\n[KPI:jade|Total Requirements|47]\n[KPI:jade|Requirements Met|47]\n[KPI:jade|Compliance Rate|100%]\n\nAll vendor qualification requirements have been addressed with supporting evidence provided in Sections 1 and 2 of this document. The table below provides a high-level summary of requirements by category.\n\n[TABLE:accent-blue:Requirements by Category]\n| # | Category | Requirement Count | Response Status | Notes |\n|---|----------|-------------------|-----------------|-------|\n| 1 | Company Profile & Stability | 8 | ✓ All Met | Section 1.1–1.3 |\n| 2 | Aerospace Experience & Compliance | 6 | ✓ All Met | Section 1.4–1.5 |\n| 3 | Professional Services Capability | 5 | ✓ All Met | Section 1.6 |\n| 4 | Platform Architecture & Deployment | 10 | ✓ All Met | Section 2.1–2.2 |\n| 5 | Security & Data Governance | 12 | ✓ All Met | Section 2.5 |\n| 6 | Monitoring & Operations | 6 | ✓ All Met | Section 2.4 |\n| **Total** | | **47** | **✓ 47 Met** | **100% compliance** |\n[/TABLE]\n\n**Detailed Requirement Mapping**\n\nFor each requirement category, detailed evidence and rationale are provided in the corresponding sections:\n\n**Company Profile & Stability** (Requirements 1-8)\n- Company founding date, headquarters location, global presence → Section 1.1\n- Financial stability, investor backing, revenue model → Section 1.3\n- Customer base size, enterprise customer count → Section 1.1\n- Leadership team experience and background → Section 1.2\n\n**Aerospace Experience & Compliance** (Requirements 9-14)\n- Aerospace manufacturing deployment experience → Section 1.4\n- Security certifications (SOC 2, ISO 27001) → Section 1.5\n- GDPR compliance and data residency support → Section 1.5\n- ITAR compliance capability (on-premises deployment) → Section 1.5\n\n**Professional Services Capability** (Requirements 15-19)\n- PS team size and geographic coverage → Section 1.6\n- EMEA/DACH delivery capability → Section 1.6\n- Engagement models and partner ecosystem → Section 1.6\n- Implementation methodology and timeline → Section 1.6\n\n**Platform Architecture & Deployment** (Requirements 20-29)\n- On-premises deployment capability (Ground Plex) → Section 2.2\n- Data sovereignty and no cloud data transit → Section 2.1, 2.2\n- OpenShift/Kubernetes deployment support → Section 2.2\n- High availability and disaster recovery → Section 2.2\n\n**Security & Data Governance** (Requirements 30-41)\n- Encryption at rest and in transit → Section 2.5\n- SSO, MFA, RBAC support → Section 2.5\n- Audit logging and compliance reporting → Section 2.5\n- Data masking and quality validation → Section 2.5\n\n**Monitoring & Operations** (Requirements 42-47)\n- Real-time monitoring and alerting → Section 2.4\n- Integration with enterprise monitoring tools → Section 2.4\n- Performance metrics and capacity planning → Section 2.4\n- Log export and syslog integration → Section 2.4\n\n[BOX:info]\n**Detailed Requirements Matrix Available**\n\nA comprehensive Excel spreadsheet providing line-by-line responses to all 47 requirements with evidence, supporting documentation references, and compliance status is available as a separate deliverable upon request.\n[/BOX]",
+    "subsections": []
+  }
+}

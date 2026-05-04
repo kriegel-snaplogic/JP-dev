@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "id": "airbus_vendor_profile_title_page",
+    "version": "1.0",
+    "title": "Title Page",
+    "category": "custom",
+    "tags": ["airbus", "title_page"],
+    "status": "draft",
+    "created": "2026-04-27",
+    "variables": {
+      "required": ["customer_name"],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    }
+  },
+
+  "content": {
+    "title": "SnapLogic Vendor Profile & Experience",
+    "content": "Response to {{customer_name}} Vendor Qualification Requirements\n\n**Document Version**: 1.0\n\n**Date**: 2026-04-27\n\n**Prepared by**: SnapLogic Solutions Engineering — EMEA\n\n**Contact**: solutions-emea@snaplogic.com",
+    "subsections": []
+  }
+}

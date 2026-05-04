@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "implementation_methodology_exact_v1",
+    "version": "1.0",
+    "title": "Implementation Methodology",
+    "category": "standard",
+    "tags": [
+      "implementation",
+      "methodology",
+      "agile"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 80,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Implementation Methodology",
+    "content": "- SnapLogic Professional Services follows an Agile delivery model with 2-week sprint cycles\n\n- Phase 0: Environment setup, Ground Plex deployment on OpenShift, connectivity validation (Weeks 1—2)\n\n- Phase 1: Pilot integration flows prioritised with AH team based on business value and technical complexity (Weeks 3—8)\n\n- Phase 2: Expanded use case delivery and team enablement (Weeks 9—16)\n\n- Phase 3: Transition to AH-led self-service with SnapLogic support (Weeks 17—20)\n\n**TO FILL: PROPOSED PILOT USE CASES**\n\n*PS team to propose 2—3 specific pilot integration flows based on AH's stated priorities (SAP connectivity, data migration from Informatica, etc.)*",
+    "subsections": []
+  }
+}

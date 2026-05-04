@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "snaplogic_manager_exact_v1",
+    "version": "1.0",
+    "title": "COMPONENT: SNAPLOGIC MANAGER — CONTROL PLANE",
+    "category": "platform",
+    "tags": [
+      "manager",
+      "control_plane",
+      "cloud"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "COMPONENT: SNAPLOGIC MANAGER — CONTROL PLANE",
+    "content": "The SnapLogic Manager is the cloud-hosted control plane. It provides the Designer UI for pipeline development, the monitoring console, admin and user management, and the metadata repository. It stores pipeline definitions (JSON artefacts), schedules, user accounts, audit logs, and Org configuration. It does not process, store, or route customer data — it is a management and orchestration layer only.\n\n- Browser-based — no local software installation required for developers or administrators\n\n- Hosts the Designer (pipeline development IDE), Dashboard (monitoring), and Manager Settings (admin console)\n\n- Metadata repository stores pipeline artefacts as versioned JSON — exportable to Git at any time\n\n- Centralised user and group management with SAML/SSO and RBAC enforcement\n\n- REST API surface for all platform operations — Org management, pipeline CRUD, execution triggering, metrics retrieval\n\n- SnapLogic SLA: 99.95% uptime. Scheduled maintenance windows communicated with minimum 72-hour notice\n\n- Hosted on AWS (EU regions: Ireland, Frankfurt) — EU data residency for metadata at rest\n\n[BOX:info]\n**IMAGE: SNAPLOGIC MANAGER DASHBOARD SCREENSHOT**\n\nInsert: Screenshot of SnapLogic Manager showing pipeline monitoring dashboard, execution status, and project/pipeline navigator. Request from SnapLogic product team.\n[/BOX]",
+    "subsections": []
+  }
+}

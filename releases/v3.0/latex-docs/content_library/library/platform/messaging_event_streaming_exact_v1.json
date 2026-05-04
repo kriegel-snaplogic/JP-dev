@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "id": "messaging_event_streaming_exact_v1",
+    "version": "1.0",
+    "title": "MESSAGING & EVENT STREAMING",
+    "category": "platform",
+    "tags": [
+      "messaging",
+      "event_streaming",
+      "kafka",
+      "jms"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 90,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": false,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "MESSAGING & EVENT STREAMING",
+    "content": "SnapLogic supports all major on-premises messaging and event streaming platforms, operating as both producer and consumer within AH's existing message bus infrastructure.\n\n- **Apache Kafka v4.0+**: Native Kafka Snap Pack. Produces to and consumes from Kafka topics on-premises. Supports key/value serialisation (JSON, Avro, Protobuf), consumer group management, and offset commit. Kafka brokers remain within AH's network.\n\n- **RabbitMQ**: AMQP v0.9.1+ — publish to exchanges and consume from queues, both inbound and outbound. Supports durable queues, message TTL, and dead-letter exchanges. Native Snap Pack ensures persistent connections with automatic reconnection on failures.\n\n- **Solace v10.12+**: Native Snap (Solace Messaging Format) protocol support via the JMS Snap Pack. Publish to and subscribe from Solace topics and queues. Solace is a common message bus in aerospace manufacturing environments.\n\n- **JMS v1.1-1.2**: Generic JMS connector for any JMS-compliant broker (IBM MQ, ActiveMQ, Tibco EMS, etc.). Supports both publish/produce (outbound) and consumer (inbound) modes.\n\n- **MQTT v3.1.1 and v5.0**: Lightweight publish/subscribe protocol for IoT and sensor data use cases — inbound subscribe and outbound publish. A native MQTT Snap enables direct subscription to industrial control (IIoT) or on-premises message brokers.\n\n- **AWS SQS/SNS**: Native Snap Pack for Amazon Web Services queues (SQS) and topics (SNS) — can be used for hybrid integration scenarios (on-premises → cloud or cloud → on-premises). Useful for lift-and-shift strategies.",
+    "subsections": []
+  }
+}

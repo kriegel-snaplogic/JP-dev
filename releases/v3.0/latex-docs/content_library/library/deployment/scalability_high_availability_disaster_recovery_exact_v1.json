@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "id": "scalability_high_availability_disaster_recovery_exact_v1",
+    "version": "1.0",
+    "title": "Scalability, High Availability & Disaster Recovery",
+    "category": "deployment",
+    "tags": [
+      "scalability",
+      "high_availability",
+      "disaster_recovery"
+    ],
+    "status": "approved",
+    "created": "2026-04-27",
+    "last_updated": "2026-04-27",
+    "author": "SnapLogic Solutions Engineering",
+    "review_status": "approved",
+    "usage_count": 0,
+    "reuse_score": 95,
+    "variables": {
+      "required": [],
+      "optional": []
+    },
+    "dependencies": {
+      "images": [],
+      "sections": [],
+      "external_resources": []
+    },
+    "compliance": {
+      "requires_legal_review": false,
+      "requires_technical_review": true,
+      "export_controlled": false,
+      "contains_financials": false
+    }
+  },
+  "content": {
+    "title": "Scalability, High Availability & Disaster Recovery",
+    "content": "SnapLogic's Ground Plex architecture is stateless by design — pipeline definitions, schedules, and configuration are stored in the Manager, not on the Ground Plex node. This design principle makes scaling, high availability, and disaster recovery operationally straightforward — without architecture workarounds or non-standard topologies.",
+    "subsections": []
+  }
+}
