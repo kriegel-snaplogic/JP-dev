@@ -2,6 +2,8 @@
 
 This directory contains comprehensive test documents for validating the LaTeX compiler.
 
+**Post-Migration Note (2026-05-04):** These test documents were used to validate the migration from monolithic architecture to the 3-skill modular system. All tests passed with zero regressions.
+
 ## airbus_rfp_v3_test.json
 
 **Purpose:** Comprehensive integration test for professional RFP document generation

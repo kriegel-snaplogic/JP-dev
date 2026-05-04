@@ -1,0 +1,40 @@
+{
+  "title": "Table Styles Comprehensive Test",
+  "author": "Test Suite",
+  "version": "1.0",
+  "date": "2026-05-04",
+  "sections": [
+    {
+      "title": "Simple Style",
+      "content": "[TABLE:simple:Simple Table Style]\n| Column A | Column B | Column C |\n|----------|----------|----------|\n| Data 1 | Data 2 | Data 3 |\n| Data 4 | Data 5 | Data 6 |\n[/TABLE]"
+    },
+    {
+      "title": "Minimal Style",
+      "content": "[TABLE:minimal:Minimal Table Style]\n| Item | Count |\n|------|-------|\n| Alpha | 10 |\n| Beta | 20 |\n[/TABLE]"
+    },
+    {
+      "title": "Accent Blue",
+      "content": "[TABLE:accent-blue:Accent Blue Style]\n| Product | Price |\n|---------|-------|\n| Widget | $50 |\n| Gadget | $75 |\n[/TABLE]"
+    },
+    {
+      "title": "Accent Jade",
+      "content": "[TABLE:accent-jade:Accent Jade Style]\n| Metric | Value |\n|--------|-------|\n| Speed | Fast |\n| Quality | High |\n[/TABLE]"
+    },
+    {
+      "title": "Accent Orange",
+      "content": "[TABLE:accent-orange:Accent Orange Style]\n| Status | Count |\n|--------|-------|\n| Active | 15 |\n| Pending | 8 |\n[/TABLE]"
+    },
+    {
+      "title": "Bordered Style",
+      "content": "[TABLE:bordered:Bordered Table Style]\n| A | B | C |\n|---|---|---|\n| 1 | 2 | 3 |\n| 4 | 5 | 6 |\n[/TABLE]"
+    },
+    {
+      "title": "First Bold Emphasis",
+      "content": "[TABLE:simple:With First Bold:first-bold]\n| Region | Sales |\n|--------|-------|\n| North | 1000 |\n| South | 800 |\n| East | 1200 |\n[/TABLE]"
+    },
+    {
+      "title": "Total Row Emphasis",
+      "content": "[TABLE:simple:With Total Row:total-row]\n| Quarter | Revenue |\n|---------|----------|\n| Q1 | 100K |\n| Q2 | 120K |\n| Q3 | 110K |\n| TOTAL | 330K |\n[/TABLE]"
+    }
+  ]
+}
