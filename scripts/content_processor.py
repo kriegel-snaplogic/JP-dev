@@ -291,12 +291,31 @@ class ContentProcessor:
             emphasis = None
             label = None
 
+            # Known emphasis tokens — never treat these as labels
+            EMPHASIS_TOKENS = {'first-bold', 'total-row', 'last-jade', 'last-orange', 'last-blue', 'last-navy', 'status'}
+
+            def _is_emphasis(val: str) -> bool:
+                """Return True if val looks like an emphasis option, not a label."""
+                import re as _re
+                if not val:
+                    return False
+                # Contains = or , → definitely emphasis (e.g. widths=1,2,1.5 or first-bold,last-jade)
+                if '=' in val or ',' in val:
+                    return True
+                # Matches a known emphasis token
+                if val in EMPHASIS_TOKENS:
+                    return True
+                # colN-COLOR, colN-bold, or colN-status pattern e.g. col2-jade, col3-bold, col2-status
+                if _re.match(r'^col\d+-[a-z]+$', val):
+                    return True
+                return False
+
             if len(parts) == 1:
                 # Just caption
                 caption = parts[0]
             elif len(parts) == 2:
                 # caption:X where X is either emphasis or label
-                if '=' in parts[1] or ',' in parts[1]:
+                if _is_emphasis(parts[1]):
                     caption, emphasis = parts
                 elif parts[1] and ('-' in parts[1] or '_' in parts[1]):
                     caption, label = parts
@@ -314,11 +333,14 @@ class ContentProcessor:
                 else:
                     # No :: - assume last part is label, second-to-last is emphasis
                     last = parts[-1]
-                    if last and ('-' in last or '_' in last):
+                    if _is_emphasis(last):
+                        emphasis = last
+                        caption = ':'.join(parts[:-1])
+                    elif last and ('-' in last or '_' in last):
                         label = last
                         if len(parts) >= 3:
                             second_last = parts[-2]
-                            if '=' in second_last or ',' in second_last:
+                            if _is_emphasis(second_last):
                                 emphasis = second_last
                                 caption = ':'.join(parts[:-2])
                             else:
@@ -326,11 +348,7 @@ class ContentProcessor:
                         else:
                             caption = parts[0]
                     else:
-                        if '=' in last or ',' in last:
-                            emphasis = last
-                            caption = ':'.join(parts[:-1])
-                        else:
-                            caption = rest
+                        caption = rest
 
             # Combine style and emphasis if present
             if emphasis:
@@ -610,6 +628,35 @@ class ContentProcessor:
 
         text = re.sub(badge_pattern, restore_badge, text, flags=re.DOTALL)
 
+        # Grid layout for KPI (4 per row) and FEATURE (3 per row) boxes.
+        # Collect consecutive runs of the same box type, chunk them into rows,
+        # and emit each row as \noindent{box1}{box2}...{boxN}\par\vspace{6pt}
+        def make_grid(text, pattern, per_row):
+            box_re = re.compile(pattern)
+            # Find all consecutive runs and replace them with chunked rows
+            def replace_run(match):
+                run = match.group(0)
+                boxes = box_re.findall(run)
+                chunks = [boxes[i:i + per_row] for i in range(0, len(boxes), per_row)]
+                rows = []
+                for idx, chunk in enumerate(chunks):
+                    is_last = (idx == len(chunks) - 1)
+                    # Use negative spacing to pull rows together and eliminate white space
+                    tail = '\\par\\vspace{6pt}' if is_last else '\\\\[-6pt]'
+                    rows.append('\\noindent' + '%\n'.join(chunk) + tail)
+                return '\n'.join(rows)
+            # Match a run of consecutive box commands (separated only by optional whitespace)
+            run_re = re.compile(r'(?:' + pattern + r'\s*)+', re.DOTALL)
+            return run_re.sub(replace_run, text)
+
+        # kpibox: \kpibox{color}{title}{value}  — 3 brace groups, values contain no }
+        kpi_pat = r'\\kpibox\{[^}]+\}\{[^}]+\}\{[^}]+\}'
+        text = make_grid(text, kpi_pat, 4)
+
+        # featurebox: \featurebox{color}{title}{content}  — content may be empty
+        feat_pat = r'\\featurebox\{[^}]+\}\{[^}]+\}\{[^}]*\}'
+        text = make_grid(text, feat_pat, 3)
+
         return text
 
     def _restore_tables(self, text: str, context: ProcessingContext) -> str:
@@ -631,21 +678,57 @@ class ContentProcessor:
                 style = style.replace('multipage-', '', 1)
 
             # Parse style and emphasis options
+            # status-colors is an alias for simple+status (backward compatibility)
             style_parts = style.split(':')
             base_style = style_parts[0]
             emphasis_opts = style_parts[1].split(',') if len(style_parts) > 1 else []
+            if base_style == 'status-colors':
+                base_style = 'simple'
+                if 'status' not in emphasis_opts:
+                    emphasis_opts.append('status')
 
             # Parse emphasis options
-            first_bold = 'first-bold' in emphasis_opts
-            last_color = None
+            # col_colors: dict of {0-based col index -> latex color string}
+            # col_bold:   set of 0-based col indices that should be bolded
+            col_colors = {}
+            col_bold = set()
             manual_widths = None
+            COLOR_MAP_EMPHASIS = {
+                'jade': 'snapJade!20', 'orange': 'snapOrange!20',
+                'blue': 'snapBlue!20', 'navy': 'snapNavy!20',
+            }
+            col_status = set()  # 0-based col indices with status auto-colouring; -2 sentinel = all columns
             for opt in emphasis_opts:
-                if opt.startswith('last-'):
-                    last_color = opt.split('-')[1]  # jade, orange, blue, navy
+                if opt == 'first-bold':
+                    col_bold.add(0)  # shorthand for col1-bold
+                elif opt == 'status':
+                    col_status.add(-2)  # -2 sentinel = all columns
+                elif opt.startswith('last-'):
+                    color_name = opt.split('-', 1)[1]
+                    col_colors[-1] = COLOR_MAP_EMPHASIS.get(color_name, 'snapBlue!20')
+                elif opt.startswith('col') and '-' in opt:
+                    # colN-COLOR, colN-bold, or colN-status
+                    rest = opt[3:]  # strip "col"
+                    dash_idx = rest.index('-')
+                    try:
+                        col_1based = int(rest[:dash_idx])
+                        attr = rest[dash_idx + 1:]
+                        col_0based = col_1based - 1
+                        if attr == 'bold':
+                            col_bold.add(col_0based)
+                        elif attr == 'status':
+                            col_status.add(col_0based)
+                        else:
+                            col_colors[col_0based] = COLOR_MAP_EMPHASIS.get(attr, 'snapBlue!20')
+                    except ValueError:
+                        pass
                 elif opt.startswith('widths='):
                     width_str = opt.split('=')[1]
                     manual_widths = [float(w.strip()) for w in width_str.split(',')]
+            # -1 sentinel = last column (resolved at render time)
             total_row = 'total-row' in emphasis_opts
+            # first-bold is now handled via col_bold, keep legacy flag for format_cell
+            first_bold = 0 in col_bold
 
             # Parse markdown table
             lines = [l.strip() for l in table_md.strip().split('\n') if l.strip()]
@@ -671,12 +754,14 @@ class ContentProcessor:
             # Generate LaTeX table based on style
             num_cols = len(headers)
 
+            # Auto-landscape: 7+ columns switch to landscape automatically
+            if num_cols >= 7 and not is_landscape:
+                is_landscape = True
+
             # Validate table constraints
             if is_landscape:
-                if num_cols > 8:
-                    return f"ERROR: Landscape table has {num_cols} columns (max 8 allowed)"
-                if len(rows) > 25:
-                    return f"ERROR: Landscape table has {len(rows)} rows (max 25 allowed)"
+                if num_cols > 10:
+                    return f"ERROR: Landscape table has {num_cols} columns (max 10 allowed)"
             else:
                 if num_cols > 6:
                     return f"ERROR: Portrait table has {num_cols} columns (max 6 allowed)"
@@ -690,31 +775,20 @@ class ContentProcessor:
                     if manual_widths and len(manual_widths) == num_cols:
                         widths = manual_widths
                     else:
-                        # Auto-calculate widths based on content
+                        # Column width based on 90th-percentile cell length.
+                        # This allocates space proportional to where content is densest,
+                        # minimising total line breaks across the table without being
+                        # distorted by single long outliers (max) or short typical values (avg).
                         widths = []
                         for col_idx in range(num_cols):
                             header_len = len(headers[col_idx]) if col_idx < len(headers) else 0
-                            total_cell_chars = sum([len(row[col_idx]) if col_idx < len(row) else 0 for row in rows])
-                            total_chars = header_len + total_cell_chars
-
-                            cell_lengths = [len(row[col_idx]) if col_idx < len(row) else 0 for row in rows]
-                            max_cell_len = max(cell_lengths) if cell_lengths else 0
-                            max_len = max(header_len, max_cell_len)
-
-                            weighted_score = (total_chars * 0.7) + (max_len * 0.3)
-
-                            if weighted_score < 80:
-                                widths.append(0.5)
-                            elif weighted_score < 150:
-                                widths.append(0.7)
-                            elif weighted_score < 300:
-                                widths.append(1.0)
-                            elif weighted_score < 600:
-                                widths.append(1.3)
-                            elif weighted_score < 1000:
-                                widths.append(1.6)
+                            cell_lens = sorted([len(row[col_idx]) if col_idx < len(row) else 0 for row in rows])
+                            if cell_lens:
+                                p90_idx = max(0, int(len(cell_lens) * 0.9) - 1)
+                                p90_len = cell_lens[p90_idx]
                             else:
-                                widths.append(2.0)
+                                p90_len = 0
+                            widths.append(max(header_len, p90_len, 3))
 
                     total_width = sum(widths)
                     normalized = [w * num_cols / total_width for w in widths]
@@ -727,29 +801,20 @@ class ContentProcessor:
                     if manual_widths and len(manual_widths) == num_cols:
                         widths = manual_widths
                     else:
+                        # Column width based on 90th-percentile cell length.
+                        # This allocates space proportional to where content is densest,
+                        # minimising total line breaks across the table without being
+                        # distorted by single long outliers (max) or short typical values (avg).
                         widths = []
                         for col_idx in range(num_cols):
                             header_len = len(headers[col_idx]) if col_idx < len(headers) else 0
-                            total_cell_chars = sum([len(row[col_idx]) for row in rows if col_idx < len(row)])
-                            total_chars = header_len + total_cell_chars
-
-                            max_cell_len = max([len(row[col_idx]) for row in rows if col_idx < len(row)], default=0)
-                            max_len = max(header_len, max_cell_len)
-
-                            weighted_score = (total_chars * 0.7) + (max_len * 0.3)
-
-                            if weighted_score < 100:
-                                widths.append(0.6)
-                            elif weighted_score < 200:
-                                widths.append(0.8)
-                            elif weighted_score < 400:
-                                widths.append(1.0)
-                            elif weighted_score < 700:
-                                widths.append(1.5)
-                            elif weighted_score < 1200:
-                                widths.append(2.0)
+                            cell_lens = sorted([len(row[col_idx]) if col_idx < len(row) else 0 for row in rows])
+                            if cell_lens:
+                                p90_idx = max(0, int(len(cell_lens) * 0.9) - 1)
+                                p90_len = cell_lens[p90_idx]
                             else:
-                                widths.append(2.8)
+                                p90_len = 0
+                            widths.append(max(header_len, p90_len, 3))
 
                     total_width = sum(widths)
                     normalized = [w * num_cols / total_width for w in widths]
@@ -758,202 +823,191 @@ class ContentProcessor:
                 use_tabularx = False
                 col_spec = 'l'
 
+            # All landscape tables use longtable (handles any row count, single or multi-page)
+            landscape_longtable = is_landscape
+
             latex = []
 
-            # Start landscape environment if needed
+            # Landscape opener:
+            # - landscape_longtable (many rows): pdflscape directly — longtable handles page breaks
+            # - landscape single page: afterpage defers until current portrait page is full
             if is_landscape:
+                # Both landscape modes use afterpage to fill portrait page before switching
+                # landscape_longtable: afterpage wraps the full landscape+longtable block
+                latex.append('\\afterpage{')
                 latex.append('\\begin{landscape}')
+                latex.append('\\centering')
 
             # Helper function to format cell with emphasis
-            def format_cell(cell_text, is_first_col=False, is_last_col=False, is_total_row=False):
+            def format_cell(cell_text, col_index=0, is_total_row=False):
                 formatted = cell_text
-                if is_first_col and first_bold:
+                if col_index in col_bold:
                     formatted = f'\\textbf{{{formatted}}}'
                 if is_total_row:
                     formatted = f'\\textbf{{{formatted}}}'
                 return formatted
 
-            # For multipage tables, use longtable instead of table float
-            if is_multipage:
-                latex.append('\\renewcommand{\\arraystretch}{1.2}')
+            # Status cell colour helper — used when col_status is set
+            STATUS_JADE_KW = {'active', 'done', 'success', 'complete', 'completed', 'ok', 'stable', 'live', 'passed'}
+            STATUS_AMBER_KW = {'pending', 'in progress', 'in-progress', 'review', 'partial', 'draft', 'scheduled', 'planned'}
+            STATUS_ORANGE_KW = {'warning', 'degraded', 'delayed', 'at risk'}
+            STATUS_RED_KW = {'error', 'failed', 'fail', 'critical', 'blocked', 'rejected', 'down', 'broken'}
+
+            def _cell_status_color(cell_text):
+                val = cell_text.strip().lower()
+                if any(kw == val or kw in val for kw in STATUS_RED_KW): return 'snapOrange!35'
+                if any(kw == val or kw in val for kw in STATUS_ORANGE_KW): return 'snapOrange!20'
+                if any(kw == val or kw in val for kw in STATUS_AMBER_KW): return 'yellow!30'
+                if any(kw == val or kw in val for kw in STATUS_JADE_KW): return 'snapJade!25'
+                return None
+
+            def _apply_status_color(cell_text, col_index, formatted):
+                """Apply status cell colour if this column has status colouring enabled."""
+                if -2 in col_status or col_index in col_status:
+                    color = _cell_status_color(cell_text)
+                    if color:
+                        return f'\\cellcolor{{{color}}}{formatted}'
+                return formatted
+
+            # Auto-select longtable for portrait tables with >4 rows.
+            # Landscape uses sidewaystable float (not longtable) — allows LaTeX to place it near the reference.
+            use_longtable = is_landscape or is_multipage or (len(rows) > 4)
+
+            # Best practice: set arraystretch before the environment, reset after
+            latex.append('\\renewcommand{\\arraystretch}{1.2}')
+
+            if use_longtable:
+                pass  # longtable is inline — no float wrapper, caption handled separately
             else:
-                if is_landscape:
-                    latex.append('\\begin{table}[H]')
-                else:
+                if not is_landscape:
+                    # Portrait small table: standard float with \caption
                     latex.append('\\begin{table}[H]')
                     latex.append('\\centering')
-
-                if caption and caption != '_':
-                    latex.append(f'\\caption{{{caption}}}')
-                else:
-                    latex.append(f'\\caption{{}}')
-
-                latex.append(f'\\label{{tab:{table_num}}}')
-                if label:
-                    latex.append(f'\\label{{tab:{label}}}')
                     if caption and caption != '_':
-                        context.table_registry[caption] = (int(table_num), label)
+                        latex.append(f'\\caption{{{caption}}}')
+                    else:
+                        latex.append(f'\\caption{{}}')
+                    latex.append(f'\\label{{tab:{table_num}}}')
+                    if label:
+                        latex.append(f'\\label{{tab:{label}}}')
+                        if caption and caption != '_':
+                            context.table_registry[caption] = (int(table_num), label)
+                    else:
+                        if caption and caption != '_':
+                            context.table_registry[caption] = (int(table_num), str(table_num))
                 else:
+                    # Landscape inline: \captionof registers in List of Tables without a float wrapper
                     if caption and caption != '_':
-                        context.table_registry[caption] = (int(table_num), str(table_num))
+                        latex.append(f'\\captionof{{table}}{{{caption}}}')
+                        latex.append(f'\\label{{tab:{table_num}}}')
+                        if label:
+                            latex.append(f'\\label{{tab:{label}}}')
+                            context.table_registry[caption] = (int(table_num), label)
+                        else:
+                            context.table_registry[caption] = (int(table_num), str(table_num))
 
                 latex.append('\\renewcommand{\\arraystretch}{1.2}')
 
             # Style-specific rendering
-            if base_style == 'minimal':
-                if use_tabularx:
-                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
-                else:
-                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
-                latex.append('\\toprule')
-                bold_headers = [f'\\textbf{{{h}}}' for h in headers]
-                latex.append(f'{" & ".join(bold_headers)} \\\\')
-                latex.append('\\midrule')
-                for row in rows:
-                    latex.append(f'{" & ".join(row)} \\\\')
-                latex.append('\\bottomrule')
+            if base_style == 'status-colors':
+                # Auto-detect status keywords per cell and apply cellcolor only to that cell
+                STATUS_JADE = {'active', 'done', 'success', 'complete', 'completed', 'ok', 'stable', 'live', 'passed'}
+                STATUS_AMBER = {'pending', 'in progress', 'in-progress', 'review', 'partial', 'draft', 'scheduled', 'planned'}
+                STATUS_ORANGE = {'warning', 'degraded', 'delayed', 'at risk'}
+                STATUS_RED = {'error', 'failed', 'fail', 'critical', 'blocked', 'rejected', 'down', 'broken'}
 
-            elif style.startswith('accent-'):
-                accent_color = style.split('-')[1] if '-' in style else 'blue'
-                color_map = {'blue': 'snapBlue', 'jade': 'snapJade', 'orange': 'snapOrange', 'navy': 'snapNavy'}
-                latex_color = color_map.get(accent_color, 'snapBlue')
+                def _status_cell_color(cell_text):
+                    val = cell_text.strip().lower()
+                    if any(kw == val or kw in val for kw in STATUS_RED):
+                        return 'snapOrange!35'
+                    if any(kw == val or kw in val for kw in STATUS_ORANGE):
+                        return 'snapOrange!20'
+                    if any(kw == val or kw in val for kw in STATUS_AMBER):
+                        return 'yellow!30'
+                    if any(kw == val or kw in val for kw in STATUS_JADE):
+                        return 'snapJade!25'
+                    return None
 
-                if is_multipage:
-                    if manual_widths and len(manual_widths) == num_cols:
-                        widths = manual_widths
-
-                    total_width_cm = 25.0 if is_landscape else 16.0
+                if use_longtable:
+                    # Subtract tabcolsep: LaTeX adds 2*tabcolsep per column as padding (default 6pt=0.211cm)
+                    # ltablex X columns: auto-fills linewidth, page-break safe
                     total_relative = sum(widths)
-                    actual_widths = [w * total_width_cm / total_relative for w in widths]
+                    normalized = [w * num_cols / total_relative for w in widths]
+                    longtable_col_spec = ''.join([f'>{{\\hsize={n:.2f}\\hsize\\raggedright\\arraybackslash\\setlength{{\\parindent}}{{0pt}}}}X' for n in normalized])
 
-                    longtable_col_spec = ''.join([f'>{{\\raggedright\\arraybackslash}}p{{{w:.1f}cm}}' for w in actual_widths])
-
-                    latex.append(f'\\begin{{longtable}}{{{longtable_col_spec}}}')
+                    latex.append(f'\\begin{{tabularx}}{{\\linewidth}}{{{longtable_col_spec}}}')
                     if caption and caption != '_':
-                        latex.append(f'\\caption{{{caption}}}')
+
+                        # longtable: \caption{} \\ then \label on next line (best practice)
+                        latex.append(f'\\caption{{{caption}}} \\\\')
                         latex.append(f'\\label{{tab:{table_num}}}')
                         if label:
-                            latex.append(f'\\label{{tab:{label}}} \\\\')
+                            latex.append(f'\\label{{tab:{label}}}')
                             context.table_registry[caption] = (int(table_num), label)
                         else:
-                            latex.append(' \\\\')
                             context.table_registry[caption] = (int(table_num), str(table_num))
-                    white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
-                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
-                    latex.append('\\arrayrulecolor{snapNavy!30}\\midrule')
+                    white_headers_st = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers_st)} \\\\')
+                    latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
                     latex.append('\\endfirsthead')
-                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
-                    latex.append('\\arrayrulecolor{snapNavy!30}\\midrule')
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers_st)} \\\\')
+                    latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
                     latex.append('\\endhead')
-
-                    # Data rows
-                    last_col_colors = {
-                        'jade': 'snapJade!20',
-                        'orange': 'snapOrange!20',
-                        'blue': 'snapBlue!20',
-                        'navy': 'snapNavy!20'
-                    }
-                    zebra_counter = 0
-                    for i, row in enumerate(rows):
-                        is_total = (i == len(rows) - 1 and total_row)
-
-                        is_category_header = False
-                        if len(row) > 0 and row[0].strip():
-                            first_cell = row[0].strip()
-                            if first_cell.isupper() and all(not cell.strip() for cell in row[1:]):
-                                is_category_header = True
-
-                        formatted_cells = []
-                        for j, cell in enumerate(row):
-                            is_first = (j == 0)
-                            is_last = (j == len(row) - 1)
-                            formatted = format_cell(cell, is_first, is_last, is_total)
-
-                            if is_last and last_color and not is_total and not is_category_header:
-                                latex_color = last_col_colors.get(last_color, 'snapBlue!20')
-                                formatted = f'\\cellcolor{{{latex_color}}}{formatted}'
-
-                            formatted_cells.append(formatted)
-
-                        if is_total:
-                            white_cells = [f'\\textcolor{{white}}{{{c}}}' for c in formatted_cells]
-                            latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_cells)} \\\\')
-                        elif is_category_header:
-                            bold_cells = [f'\\textbf{{{c}}}' if c.strip() else c for c in formatted_cells]
-                            latex.append(f'\\rowcolor{{snapBlue!10}}{" & ".join(bold_cells)} \\\\')
-                        else:
-                            if zebra_counter % 2 == 1:
-                                latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
-                            else:
-                                latex.append(f'{" & ".join(formatted_cells)} \\\\')
-                            zebra_counter += 1
                 else:
                     if use_tabularx:
                         latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
                     else:
                         latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
-                    white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
-                    latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(white_headers)} \\\\')
-                    latex.append('\\arrayrulecolor{' + latex_color + '!30}\\midrule')
-                    for row in rows:
-                        latex.append(f'{" & ".join(row)} \\\\')
+                    white_headers_st = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
+                    latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers_st)} \\\\')
+                    latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
 
-            elif base_style == 'bordered':
-                if use_tabularx:
-                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{|{"||".join(["X" for _ in range(num_cols)])}|}}')
-                else:
-                    latex.append(f'\\begin{{tabular}}{{|{"|".join(["l" for _ in range(num_cols)])}|}}')
-                latex.append('\\hline')
-                gray_headers = [f'\\textcolor{{snapNavy}}{{\\textbf{{{h}}}}}' for h in headers]
-                latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(gray_headers)} \\\\')
-                latex.append('\\hline')
+                zebra_counter = 0
                 for row in rows:
-                    latex.append(f'{" & ".join(row)} \\\\')
-                    latex.append('\\hline')
-
-            elif base_style.startswith('status-'):
-                colors_str = base_style.split('-', 1)[1] if '-' in base_style else ''
-                row_colors = colors_str.split(',') if colors_str else []
-                color_map = {'blue': 'snapBlue!20', 'jade': 'snapJade!20', 'orange': 'snapOrange!20',
-                            'gray': 'snapLightGray', 'navy': 'snapNavy!20', 'white': 'white'}
-
-                if use_tabularx:
-                    latex.append(f'\\begin{{tabularx}}{{{table_width}}}{{{col_spec}}}')
-                else:
-                    latex.append(f'\\begin{{tabular}}{{{col_spec}}}')
-                navy_headers = [f'\\textcolor{{snapNavy}}{{\\textbf{{{h}}}}}' for h in headers]
-                latex.append(f'{" & ".join(navy_headers)} \\\\')
-                latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
-
-                for i, row in enumerate(rows):
-                    row_formatted = [f'\\textbf{{{row[0]}}}'] + row[1:] if row else row
-                    if i < len(row_colors):
-                        latex_color = color_map.get(row_colors[i], 'white')
-                        latex.append(f'\\rowcolor{{{latex_color}}}{" & ".join(row_formatted)} \\\\')
+                    # Category header: ALL CAPS first cell, rest empty
+                    is_category_header = (len(row) > 0 and row[0].strip().isupper() and
+                                          all(not cell.strip() for cell in row[1:]))
+                    formatted_cells = []
+                    for j, cell in enumerate(row):
+                        if is_category_header:
+                            formatted = f'\\textbf{{{cell}}}' if cell.strip() else cell
+                        else:
+                            cell_color = _status_cell_color(cell)
+                            formatted = f'\\textbf{{{cell}}}' if j == 0 else cell
+                            if cell_color:
+                                formatted = f'\\cellcolor{{{cell_color}}}{formatted}'
+                        formatted_cells.append(formatted)
+                    if is_category_header:
+                        white_cells_cat = [f'\\textcolor{{white}}{{\\textbf{{{c}}}}}' if c.strip() else c for c in formatted_cells]
+                        latex.append(f'\\rowcolor{{snapBlue}}{" & ".join(white_cells_cat)} \\\\')
+                    elif zebra_counter % 2 == 1:
+                        latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
                     else:
-                        latex.append(f'{" & ".join(row_formatted)} \\\\')
+                        latex.append(f'{" & ".join(formatted_cells)} \\\\')
+                    if not is_category_header:
+                        zebra_counter += 1
 
             else:  # 'simple' (default)
-                if is_multipage:
+                if use_longtable:
                     if manual_widths and len(manual_widths) == num_cols:
                         widths = manual_widths
 
-                    total_width_cm = 25.0 if is_landscape else 16.0
+                    # Subtract tabcolsep: LaTeX adds 2*tabcolsep per column as padding (default 6pt=0.211cm)
+                    # ltablex X columns: auto-fills linewidth, page-break safe
                     total_relative = sum(widths)
-                    actual_widths = [w * total_width_cm / total_relative for w in widths]
+                    normalized = [w * num_cols / total_relative for w in widths]
+                    longtable_col_spec = ''.join([f'>{{\\hsize={n:.2f}\\hsize\\raggedright\\arraybackslash\\setlength{{\\parindent}}{{0pt}}}}X' for n in normalized])
 
-                    longtable_col_spec = ''.join([f'>{{\\raggedright\\arraybackslash}}p{{{w:.1f}cm}}' for w in actual_widths])
-
-                    latex.append(f'\\begin{{longtable}}{{{longtable_col_spec}}}')
+                    # captionof registers in List of Tables without needing a table float
                     if caption and caption != '_':
-                        latex.append(f'\\caption{{{caption}}}')
+                        latex.append(f'\\captionof{{table}}{{{caption}}}')
                         latex.append(f'\\label{{tab:{table_num}}}')
                         if label:
-                            latex.append(f'\\label{{tab:{label}}} \\\\')
+                            latex.append(f'\\label{{tab:{label}}}')
                             context.table_registry[caption] = (int(table_num), label)
                         else:
-                            latex.append(' \\\\')
                             context.table_registry[caption] = (int(table_num), str(table_num))
+                    latex.append(f'\\begin{{tabularx}}{{\\linewidth}}{{{longtable_col_spec}}}')
                     white_headers = [f'\\textcolor{{white}}{{\\textbf{{{h}}}}}' for h in headers]
                     latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
                     latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
@@ -970,13 +1024,11 @@ class ContentProcessor:
                     latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_headers)} \\\\')
                     latex.append('\\arrayrulecolor{snapLightGray!30}\\midrule')
 
-                # Color map for last column emphasis
-                last_col_colors = {
-                    'jade': 'snapJade!20',
-                    'orange': 'snapOrange!20',
-                    'blue': 'snapBlue!20',
-                    'navy': 'snapNavy!20'
-                }
+                # Resolve sentinel -1 (last column) to actual last col index
+                resolved_col_colors = {}
+                for col_idx, lc in col_colors.items():
+                    resolved = (num_cols - 1) if col_idx == -1 else col_idx
+                    resolved_col_colors[resolved] = lc
 
                 zebra_counter = 0
                 for i, row in enumerate(rows):
@@ -991,13 +1043,13 @@ class ContentProcessor:
 
                     formatted_cells = []
                     for j, cell in enumerate(row):
-                        is_first = (j == 0)
-                        is_last = (j == len(row) - 1)
-                        formatted = format_cell(cell, is_first, is_last, is_total)
+                        formatted = format_cell(cell, j, is_total)
 
-                        if is_last and last_color and not is_total and not is_category_header:
-                            latex_color = last_col_colors.get(last_color, 'snapBlue!20')
-                            formatted = f'\\cellcolor{{{latex_color}}}{formatted}'
+                        if j in resolved_col_colors and not is_total and not is_category_header:
+                            formatted = f'\\cellcolor{{{resolved_col_colors[j]}}}{formatted}'
+
+                        if not is_total and not is_category_header and col_status:
+                            formatted = _apply_status_color(cell, j, formatted)
 
                         formatted_cells.append(formatted)
 
@@ -1005,8 +1057,8 @@ class ContentProcessor:
                         white_cells = [f'\\textcolor{{white}}{{{c}}}' for c in formatted_cells]
                         latex.append(f'\\rowcolor{{snapNavy}}{" & ".join(white_cells)} \\\\')
                     elif is_category_header:
-                        bold_cells = [f'\\textbf{{{c}}}' if c.strip() else c for c in formatted_cells]
-                        latex.append(f'\\rowcolor{{snapBlue!10}}{" & ".join(bold_cells)} \\\\')
+                        white_cells_cat = [f'\\textcolor{{white}}{{\\textbf{{{c}}}}}' if c.strip() else c for c in formatted_cells]
+                        latex.append(f'\\rowcolor{{snapBlue}}{" & ".join(white_cells_cat)} \\\\')
                     else:
                         if zebra_counter % 2 == 1:
                             latex.append(f'\\rowcolor{{snapLightGray}}{" & ".join(formatted_cells)} \\\\')
@@ -1014,18 +1066,26 @@ class ContentProcessor:
                             latex.append(f'{" & ".join(formatted_cells)} \\\\')
                         zebra_counter += 1
 
-            # Close table environment
-            if is_multipage:
-                latex.append('\\end{longtable}')
+            # Close table environment — add bottomrule for clean termination (best practice)
+            latex.append('\\noalign{\\global\\arrayrulecolor{black}}\\bottomrule')
+            # Close the tabular/tabularx environment
+            if use_longtable or use_tabularx or is_landscape:
+                latex.append('\\end{tabularx}')
             else:
-                if use_tabularx:
-                    latex.append('\\end{tabularx}')
-                else:
-                    latex.append('\\end{tabular}')
+                latex.append('\\end{tabular}')
+
+            # Close float wrapper
+            if is_landscape:
+                pass  # landscape closed below via afterpage
+            elif not use_longtable:
                 latex.append('\\end{table}')
+
+            # Reset arraystretch to avoid affecting subsequent content
+            latex.append('\\renewcommand{\\arraystretch}{1.0}')
 
             if is_landscape:
                 latex.append('\\end{landscape}')
+                latex.append('}')
 
             return '\n'.join(latex)
 
