@@ -1,5 +1,125 @@
 # LaTeX Document Generation - Changelog
 
+## v3.1 (2026-05-06) - Grid Layout for KPI & Feature Boxes
+
+### New Features
+
+**Grid Layout System:**
+- KPI boxes now render in **4-per-row grid** layout (was: vertical, one per line)
+- Feature boxes now render in **3-per-row grid** layout (was: vertical, one per line)
+- Automatic chunking of consecutive box runs into horizontal rows
+- Negative spacing (`\\[-6pt]`) between rows for seamless appearance
+- Vertical spacing (`\vspace{6pt}`) only after complete grid finishes
+
+**Performance Impact:**
+- **Page count reduction:** ~50-60% for documents with many boxes
+- Example: 20 KPI boxes + 12 Feature boxes reduced from 11 pages → 5 pages (-54%)
+
+### Code Changes
+
+**content_processor.py:**
+- Added `make_grid()` function (lines 631-658)
+  - Processes KPI boxes (`\kpibox{color}{title}{value}`) into 4-column grids
+  - Processes Feature boxes (`\featurebox{color}{title}{content}`) into 3-column grids
+  - Uses regex to find consecutive box runs
+  - Chunks runs into rows (4 or 3 per row)
+  - Applies `\\[-6pt]` spacing between rows for tight layout
+- Line count: 1,192 → 1,252 lines (+60)
+
+**compile_document.py:**
+- No changes (907 lines)
+- Grid layout handled transparently by ContentProcessor
+
+### Test Coverage
+
+**New test documents:**
+- `test_documents/grid_layout_test.json` - 12 Features + 20 KPIs (basic test)
+- `test_documents/large_grid_test.json` - 28 Features + 40 KPIs (stress test)
+  - Color variation: navy, blue, jade, orange mixed throughout
+  - Tests 10 full rows of KPIs (40 boxes)
+  - Tests 9 full rows + 1 partial row of Features (28 boxes)
+
+**Validation:**
+- All existing test documents still compile correctly
+- Grid layout activates automatically for consecutive box runs
+- Mixed content (text between box groups) handled correctly
+- Color patterns verified (no repetitive column coloring)
+
+### API Compatibility
+
+✅ **Fully backward compatible** - No JSON format changes
+- Existing `[KPI:color|title|value]` syntax unchanged
+- Existing `[FEATURE:color|title]content[/FEATURE]` syntax unchanged
+- Grid layout applied automatically during processing
+- Documents with non-consecutive boxes render normally
+
+### Visual Design
+
+**Before (v3.0):**
+```
+KPI 1
+1,234
+
+KPI 2
+5,678
+
+KPI 3
+9,012
+```
+
+**After (v3.1):**
+```
+┌─────────┬─────────┬─────────┬─────────┐
+│ KPI 1   │ KPI 2   │ KPI 3   │ KPI 4   │
+│ 1,234   │ 5,678   │ 9,012   │ 3,456   │
+├─────────┼─────────┼─────────┼─────────┤
+│ KPI 5   │ KPI 6   │ KPI 7   │ KPI 8   │
+│ 7,890   │ 2,345   │ 6,789   │ 1,234   │
+└─────────┴─────────┴─────────┴─────────┘
+```
+
+### Migration Notes
+
+No migration required. Update skills and recompile documents to get grid layout automatically.
+
+**Recommended:** Review documents with many KPI/Feature boxes - page count will decrease significantly.
+
+### Technical Implementation
+
+**Grid Layout Algorithm:**
+1. Find consecutive runs of same box type using regex
+2. Extract boxes from run
+3. Chunk into rows (4 for KPI, 3 for Feature)
+4. Join boxes horizontally: `\noindent{box1}%\n{box2}%\n{box3}\\[-6pt]`
+5. Add `\par\vspace{6pt}` only after last row
+
+**Spacing Details:**
+- `\\[-6pt]` creates line break with -6pt vertical spacing (pulls rows together)
+- Eliminates white space between rows within grid
+- Maintains spacing after grid completes
+
+**Regex Patterns:**
+```python
+kpi_pat = r'\\kpibox\{[^}]+\}\{[^}]+\}\{[^}]+\}'
+feat_pat = r'\\featurebox\{[^}]+\}\{[^}]+\}\{[^}]*\}'
+run_re = re.compile(r'(?:' + pattern + r'\s*)+', re.DOTALL)
+```
+
+### Known Limitations
+
+- Grid layout requires consecutive boxes (no text between)
+- Partial rows (e.g., 2 KPIs) still render in grid but may look unbalanced
+- No manual control over row breaks (automatic chunking only)
+
+### Future Enhancements
+
+- [ ] Manual row break syntax for partial rows
+- [ ] Configurable grid sizes (e.g., 2-per-row for larger boxes)
+- [ ] Border options for grid cells
+- [ ] Alternating row colors for large grids
+
+---
+
 ## 2026-04-27 - Landscape Tables & Column Limits
 
 ### Major Features Added

@@ -472,7 +472,8 @@ class SnapLogicDocumentCompiler:
         wrapped_matches = re.findall(r'\[TABLE:[^:]+:([^\]]+)\]', content_str)
         has_wrapped = any(caption and caption != '_' for caption in wrapped_matches)
         # Unwrapped markdown tables get automatic captions during processing
-        has_unwrapped = bool(re.search(r'\|[^\n]+\|', content_str))
+        # Require a separator row (|---|) to avoid false positives from code blocks / config examples
+        has_unwrapped = bool(re.search(r'\|[-: ]+\|', content_str))
         return has_wrapped or has_unwrapped
 
     def _build_table_registry(self, structure: Dict[str, Any]) -> None:
@@ -580,19 +581,22 @@ class SnapLogicDocumentCompiler:
                 # Start appendix mode (switches to letter numbering: A, B, C...)
                 content.append('\\appendix')
 
-                # Add "Appendices" as an unnumbered TOC section header
-                # This creates visual separation in the TOC without rendering a page header
-                content.append('\\addtocontents{toc}{\\protect\\vspace{0.3cm}}')  # Add spacing before appendices
-                content.append('\\addtocontents{toc}{\\protect\\textbf{Appendices}}')  # Bold "Appendices" header
-                content.append('\\addtocontents{toc}{\\protect\\vspace{0.1cm}}')  # Small spacing after header
+                # Add "Appendices" as an unnumbered TOC section header with explicit line break.
+                # \par\noindent...\par ensures it occupies its own line, not flowing into next entry.
+                content.append('\\addtocontents{toc}{\\protect\\vspace{0.3cm}}')
+                content.append('\\addtocontents{toc}{\\protect\\par\\noindent\\protect\\textbf{Appendices}\\protect\\par}')
+                content.append('\\addtocontents{toc}{\\protect\\vspace{0.1cm}}')
 
                 appendix_started = True
 
-                # Process subsections directly as top-level appendix sections
-                # Skip rendering the "Appendices" header itself
+                # Strip redundant "Appendix X: " prefix from subsection titles.
+                # After \appendix, LaTeX auto-numbers sections with letters (A, B, C...).
+                # Keeping "Appendix A:" in the title causes double-letter collision in heading and TOC.
+                import re as _re
                 for appendix in section.get('subsections', []):
                     content.append("\\newpage")
-                    # Process as top-level section (level=1) so it gets letter numbering
+                    appendix = dict(appendix)
+                    appendix['title'] = _re.sub(r'^Appendix\s+[A-Z][.:]\s*', '', appendix.get('title', ''))
                     content.append(self._process_section(appendix, level=1))
             else:
                 section_counter += 1
@@ -769,9 +773,13 @@ class SnapLogicDocumentCompiler:
 
         # Copy customer logo if specified
         customer_logo = structure.get('customer_logo', '')
-        if customer_logo and os.path.exists(customer_logo):
-            dest = Path(work_dir) / Path(customer_logo).name
-            shutil.copy(customer_logo, dest)
+        if customer_logo:
+            logo_path = Path(customer_logo)
+            if not logo_path.is_absolute() or not logo_path.exists():
+                logo_path = self.skill_dir / customer_logo
+            if logo_path.exists():
+                dest = Path(work_dir) / logo_path.name
+                shutil.copy(str(logo_path), dest)
 
         # Find and copy all content images referenced with [IMAGE:path:caption:width]
         image_pattern = r'\[IMAGE:([^:]+):'
