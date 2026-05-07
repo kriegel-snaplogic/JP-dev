@@ -102,7 +102,7 @@ Ask clarifying questions if unclear. Understanding the context helps you generat
 
 **Required components:**
 - `[TABLE:` - Opening tag (never use bare `[TABLE]`)
-- `style` - Table style: `simple`, `minimal`, `accent-blue`, `accent-jade`, `accent-orange`, `bordered`, `status-colors`
+- `style` - Table style: `simple` (the only style)
 - `caption` - Table caption text (or `_` for no caption)
 - Markdown table content with `|` separators
 - `[/TABLE]` - Closing tag
@@ -111,15 +111,15 @@ Ask clarifying questions if unclear. Understanding the context helps you generat
 ```
 [TABLE:style:caption:emphasis:label]
 ```
-- `emphasis` - Comma-separated: `first-bold`, `last-jade`, `last-orange`, `last-blue`, `total-row`, `widths=1,2,1.5`
+- `emphasis` - Comma-separated: `colN-bold`, `colN-jade`, `colN-orange`, `colN-blue`, `colN-status`, `total-row`, `status`, `widths=1,2,1.5`
 - `label` - Semantic label for cross-references (e.g., `pricing-table`, `customer-refs`)
 
 **Examples:**
 ```
 [TABLE:simple:Customer List]                           ← Basic table
-[TABLE:accent-blue:Pricing::pricing]                   ← With label, no emphasis
-[TABLE:simple:Sales Data:first-bold,last-jade]         ← With emphasis
-[TABLE:simple:Regional:first-bold,widths=1,2,3:sales]  ← Full syntax
+[TABLE:simple:Pricing::pricing]                        ← With label, no emphasis
+[TABLE:simple:Sales Data:col1-bold,col3-jade]           ← With emphasis
+[TABLE:simple:Regional:col1-bold,widths=1,2,3:sales]   ← Full syntax
 ```
 
 **❌ NEVER use:**
@@ -229,8 +229,8 @@ This skill supports:
 | Data | Data |
 [/TABLE]
 ```
-- **7 styles**: `simple` (default), `minimal`, `accent-blue`, `accent-jade`, `accent-orange`, `bordered`, `status-colors`
-- **Emphasis**: `first-bold`, `last-jade`, `last-orange`, `last-blue`, `total-row`, `widths=N,N,N`
+- *1 style*: `simple`
+- **Emphasis**: `colN-bold`, `colN-jade`, `colN-orange`, `colN-blue`, `colN-navy`, `colN-status`, `total-row`, `status`, `widths=N,N,N`
 - **Semantic labels**: Reference with `Table~\ref{tab:label}`
 - See `REFERENCE.md` for all styles and examples
 
@@ -243,14 +243,64 @@ This skill supports:
 - Semantic labels: Reference with `Figure~\ref{fig:label}`
 
 ### Highlight Boxes
+
+Three distinct box types — pick the right one for the content, not for aesthetic variety.
+
+#### Quick Decision Guide
+
+| Content type | Box to use |
+|---|---|
+| Single metric / number / stat | `[KPI:]` |
+| 2–4 sentence feature/benefit pitch | `[FEATURE:]` |
+| Callout, warning, note, explanation | `[BOX:]` |
+
+#### 1. Standard Boxes — `[BOX:type]`
+Full-width callout blocks. Use for anything requiring careful reading: warnings, notes, technical explanations, investment cases.
 ```
-[BOX:type]content[/BOX]
-[KPI:color|title|value]
-[FEATURE:color|title]content[/FEATURE]
+[BOX:info]**Title**: Informational content — facts, context, references.[/BOX]
+[BOX:success]**Outcome**: Positive result or completion status.[/BOX]
+[BOX:warning]**Warning**: Important caution that must not be missed.[/BOX]
+[BOX:note]**Note**: Side reference or supplementary detail.[/BOX]
 ```
-- Types: `info`, `success`, `warning`, `note`
-- Colors: `navy`, `blue`, `jade`, `orange`
-- See `REFERENCE.md` for detailed styling options
+- Types: `info` (blue), `success` (jade), `warning` (orange), `note` (navy)
+- Full-width, subtle tinted background, coloured top rule
+- No content length limit — suitable for multi-paragraph text
+- Use 3–5 per page max
+
+#### 2. KPI Metric Boxes — `[KPI:color|title|value]`
+Dashboard-style metric tiles. Use ONLY for single numbers or very short values.
+```
+[KPI:navy|Requirements Met|114/114]
+[KPI:blue|ROI|181%]
+[KPI:jade|Time to Value|6 months]
+[KPI:orange|Effort Saving|40–70%]
+```
+- 4 boxes per row, colours auto-cycle (Navy→Blue→Jade→Orange, offset +1 per row) — colour in JSON is overridden
+- **Title**: 1–3 words, max 15 chars
+- **Value**: max 10 chars — numbers/percentages/short phrases only
+- Fixed 80pt height — longer content WILL overflow
+- Groups of 4, 8, or 12 work best
+
+#### 3. Feature Card Boxes — `[FEATURE:color|title]content[/FEATURE]`
+Marketing-style value proposition cards. Use for benefits, capabilities, differentiators — content that needs to be read but should feel visual and structured.
+```
+[FEATURE:navy|Lower TCO]Predictable subscription. Forrester confirms 181% ROI over 3 years.[/FEATURE]
+[FEATURE:jade|Faster Delivery]AI-generated pipelines reduce integration time by 60–80%.[/FEATURE]
+[FEATURE:blue|Rapid Onboarding]New developers productive within days using familiar IDE.[/FEATURE]
+```
+- 3 boxes per row, subtle tinted background (15% opacity), black body text
+- **Title**: 2–4 words, max 25 chars
+- **Content**: 2–3 sentences, max ~200 chars — fixed 130pt height, content WILL overflow if too long
+- Do NOT put `<br/>` between feature box groups — the processor handles row breaks automatically
+- Groups of 3 or 6 work best; avoid odd numbers that leave partial rows
+
+#### ⚠️ Common Mistakes
+- Using `[KPI:]` for sentences → overflow. Use `[FEATURE:]` or `[BOX:]` instead.
+- Using `[FEATURE:]` for a single number → wasted space. Use `[KPI:]`.
+- Putting `<br/>` between box groups → breaks the grid parser, adds extra whitespace.
+- Specifying colour in `[KPI:]` and expecting it to stick → colours are auto-cycled by position.
+
+See `REFERENCE.md` for complete styling details and layout mathematics.
 
 ### Lists and Headers
 - Multi-level lists (4 levels deep, 3-space indent)

@@ -109,7 +109,9 @@ class SnapLogicDocumentCompiler:
 
         except Exception as e:
             # Preserve work_dir on error for debugging
+            import traceback
             print(f"Error: {str(e)}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
             print(f"Working directory preserved: {work_dir}", file=sys.stderr)
             return {
                 "status": "error",
@@ -700,7 +702,7 @@ class SnapLogicDocumentCompiler:
         Process content through complete markdown/LaTeX pipeline using ContentProcessor.
 
         Delegates to latex-content-processor skill which handles:
-        - Table rendering (7 styles, 6 emphasis options)
+        - Table rendering (simple style, with emphasis options)
         - Image extraction and figure generation
         - Highlight boxes (info, success, warning, note, KPI, feature)
         - List processing (bullet/numbered, 4 levels deep)
@@ -801,6 +803,12 @@ class SnapLogicDocumentCompiler:
                 if not source_path.exists():
                     # 3. Already relative to assets_dir
                     source_path = self.assets_dir / image_path
+                if not source_path.exists():
+                    # 4. Recursive search in assets/images subdirectories (e.g. assets/images/airbus_rfp/)
+                    filename = Path(image_path).name
+                    found = list((self.assets_dir / 'images').rglob(filename)) if (self.assets_dir / 'images').exists() else []
+                    if found:
+                        source_path = found[0]
 
             if source_path.exists():
                 # Preserve directory structure in work_dir
@@ -828,7 +836,9 @@ class SnapLogicDocumentCompiler:
                 ['pdflatex', '-interaction=nonstopmode', 'document.tex'],
                 cwd=work_dir,
                 capture_output=True,
-                text=True
+                text=True,
+                encoding='utf-8',
+                errors='replace'
             )
 
             # pdflatex returns non-zero even for warnings
@@ -837,7 +847,7 @@ class SnapLogicDocumentCompiler:
             if result.returncode != 0 and not pdf_file.exists():
                 # Print relevant error lines
                 if log_file.exists():
-                    with open(log_file, 'r') as f:
+                    with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
                         log_content = f.read()
                         # Find error lines
                         for line in log_content.split('\n'):
@@ -851,7 +861,7 @@ class SnapLogicDocumentCompiler:
 
         # Print warnings to stderr for user awareness
         if log_file.exists():
-            with open(log_file, 'r') as f:
+            with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
                 log_content = f.read()
                 warnings = [line for line in log_content.split('\n')
                            if 'Warning' in line or ('Error' in line and '!' not in line[:2])]

@@ -4,59 +4,6 @@ This directory contains comprehensive test documents for validating the LaTeX co
 
 **Post-Migration Note (2026-05-04):** These test documents were used to validate the migration from monolithic architecture to the 3-skill modular system. All tests passed with zero regressions.
 
-**v3.1 Note (2026-05-06):** Added grid layout test documents to validate KPI and Feature box grid rendering.
-
-## grid_layout_test.json
-
-**Purpose:** Basic validation of grid layout system for KPI and Feature boxes
-
-**Document specifications:**
-- **Pages:** 5 (was 11 without grid layout - 54% reduction)
-- **Feature boxes:** 12 (3-per-row grid, 4 complete rows)
-- **KPI boxes:** 20 (4-per-row grid, 5 complete rows)
-- **Colors:** Navy, blue, jade, orange (varied patterns)
-
-**Features tested:**
-1. **Feature grid:** 3 boxes per row with tight spacing
-2. **KPI grid:** 4 boxes per row with tight spacing
-3. **Mixed content:** Text between box groups handled correctly
-4. **Color variation:** No repetitive column patterns
-5. **Row spacing:** Negative spacing (`\\[-6pt]`) for seamless rows
-
-**Validation checklist:**
-- [ ] 12 feature boxes render in 4 rows of 3
-- [ ] 20 KPI boxes render in 5 rows of 4
-- [ ] No white space between rows within grids
-- [ ] Text between grids renders normally
-- [ ] Page count reduced from 11 → 5 pages
-
----
-
-## large_grid_test.json
-
-**Purpose:** Stress test for grid layout with production-scale box counts
-
-**Document specifications:**
-- **Pages:** 6
-- **Feature boxes:** 28 (9 complete rows + 1 partial row with 1 box)
-- **KPI boxes:** 40 (10 complete rows of 4)
-- **Colors:** Navy, blue, jade, orange (highly varied to avoid patterns)
-
-**Features tested:**
-1. **Large grids:** Validates layout with many rows
-2. **Color diversity:** Mixed colors throughout (no repetitive patterns)
-3. **Partial rows:** Tests rendering when last row not full (28 features = 9 full + 1 partial)
-4. **Content variety:** Realistic feature descriptions and KPI metrics
-
-**Validation checklist:**
-- [ ] 28 feature boxes render correctly (9 full rows + 1 box)
-- [ ] 40 KPI boxes render in 10 complete rows
-- [ ] Color patterns varied (not just navy-blue-jade-orange repeating)
-- [ ] Partial row (1 feature box) renders without issues
-- [ ] Page count reasonable for content volume
-
----
-
 ## airbus_rfp_v3_test.json
 
 **Purpose:** Comprehensive integration test for professional RFP document generation

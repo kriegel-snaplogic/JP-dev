@@ -1,0 +1,40 @@
+{
+  "title": "Box Types Comprehensive Test",
+  "author": "Test Suite",
+  "version": "1.0",
+  "date": "2026-05-05",
+  "sections": [
+    {
+      "title": "Info Box",
+      "content": "The info box is used for neutral informational callouts.\n\n[BOX:info]This is an info box. Use it to highlight contextual information that helps the reader understand background details without implying urgency or caution.[/BOX]"
+    },
+    {
+      "title": "Success Box",
+      "content": "The success box is used for positive outcomes, confirmations, or recommendations.\n\n[BOX:success]This is a success box. Use it to highlight completed actions, positive results, or recommended approaches.[/BOX]"
+    },
+    {
+      "title": "Warning Box",
+      "content": "The warning box draws attention to important caveats or potential issues.\n\n[BOX:warning]This is a warning box. Use it when the reader should exercise caution or be aware of a limitation or prerequisite.[/BOX]"
+    },
+    {
+      "title": "Note Box",
+      "content": "The note box is used for supplementary information that is relevant but not critical.\n\n[BOX:note]This is a note box. Use it to provide additional context, technical details, or references that complement the main content.[/BOX]"
+    },
+    {
+      "title": "KPI Blocks",
+      "content": "KPI blocks display key metrics in a visually prominent format. Four colour variants are available.\n\n[KPI:navy|Total Pipelines|14,293]\n\n[KPI:blue|Active Users|847]\n\n[KPI:jade|Uptime|99.97%]\n\n[KPI:orange|Open Issues|12]"
+    },
+    {
+      "title": "Feature Blocks",
+      "content": "Feature blocks highlight product capabilities or key differentiators. Four colour variants are available.\n\n[FEATURE:navy|Enterprise Security]\nFull SSO integration, role-based access control, and audit logging across all platform actions.\n[/FEATURE]\n\n[FEATURE:blue|AI-Powered Integration]\nSnapGPT generates pipelines from natural language descriptions, reducing build time by up to 80%.\n[/FEATURE]\n\n[FEATURE:jade|Real-Time Monitoring]\nLive dashboards and alerting for all pipeline executions, with drill-down into individual snap performance.\n[/FEATURE]\n\n[FEATURE:orange|Hybrid Deployment]\nRun Snaplexes on-premises, in the cloud, or at the edge — managed from a single control plane.\n[/FEATURE]"
+    },
+    {
+      "title": "Boxes with Surrounding Content",
+      "content": "Boxes should integrate cleanly with surrounding paragraphs and lists.\n\nHere is a paragraph before a box. It should render at normal body text size with correct spacing.\n\n[BOX:info]This box appears between two paragraphs. The spacing above and below should be consistent.\n\nIt also contains multiple paragraphs inside the box itself to verify internal spacing.[/BOX]\n\nHere is a paragraph after the box. Formatting should resume normally here with no residual indentation or spacing issues.\n\n- List item one\n- List item two\n- List item three\n\n[BOX:warning]This warning appears after a list. Verify that list spacing does not bleed into the box.[/BOX]\n\nFinal paragraph confirming clean termination."
+    },
+    {
+      "title": "All Boxes in Sequence",
+      "content": "All four box types displayed consecutively to verify visual consistency and spacing.\n\n[BOX:info]Info: Platform supports 700+ pre-built connectors across SaaS, cloud, and on-premises systems.[/BOX]\n\n[BOX:success]Success: All regression tests passed. Zero critical issues found in the latest release.[/BOX]\n\n[BOX:warning]Warning: The legacy REST API endpoint is deprecated and will be removed in version 5.0.[/BOX]\n\n[BOX:note]Note: Documentation for the new streaming pipeline feature is available in the developer portal.[/BOX]"
+    }
+  ]
+}

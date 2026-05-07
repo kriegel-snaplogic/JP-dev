@@ -29,17 +29,17 @@
 ```
 
 **Syntax:** `[TABLE:style:caption:emphasis:label]`
-- **style** (REQUIRED): `simple`, `minimal`, `accent-blue`, `accent-jade`, `accent-orange`, `bordered`
+- **style** (REQUIRED): `simple` (the only style)
 - **caption** (REQUIRED): Text or `_` for no caption
-- **emphasis** (optional): `first-bold`, `last-jade`, `last-orange`, `total-row`, `widths=1,2,3`
+- **emphasis** (optional): `colN-bold`, `colN-jade`, `colN-orange`, `colN-blue`, `colN-status`, `total-row`, `status`, `widths=1,2,3`
 - **label** (optional): Semantic cross-reference label
 
 **Examples:**
 ```
 [TABLE:simple:Customer References]
-[TABLE:accent-blue:Pricing Tiers::pricing]
-[TABLE:simple:Regional Sales:first-bold,last-jade:sales]
-[TABLE:minimal:System Requirements:widths=2,1,1,3]
+[TABLE:simple:Pricing Tiers::pricing]
+[TABLE:simple:Regional Sales:col1-bold,col4-jade:sales]
+[TABLE:simple:System Requirements:widths=2,1,1,3]
 ```
 
 ---
@@ -233,7 +233,7 @@ python3 scripts/strip_section_numbers.py input.json output.json
 
 | Element | Syntax | Example |
 |---------|--------|---------|
-| **Table** | `[TABLE:style:caption]...[/TABLE]` | `[TABLE:simple:Pricing]\|A\|B\|\n\|--\|--\|\n\|1\|2\|\n[/TABLE]` |
+| **Table** | `[TABLE:simple:caption]...[/TABLE]` | `[TABLE:simple:Pricing]\|A\|B\|\n\|--\|--\|\n\|1\|2\|\n[/TABLE]` |
 | **Image** | `[IMAGE:path:caption:width:label]` | `[IMAGE:logo.png:Logo:0.5:logo]` |
 | **Bold** | `**text**` | `**Important**` |
 | **Italic** | `*text*` | `*emphasis*` |

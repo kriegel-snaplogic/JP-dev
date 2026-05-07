@@ -26,6 +26,7 @@ This document covers:
 
 ### Cross-References (Auto-Generated) ✅
 
+
 The skill provides two cross-reference systems: **automatic numeric** (backward compatible) and **semantic labels** (recommended for reusable content).
 
 #### Automatic Numeric References (Simple)
@@ -66,7 +67,7 @@ Figure~\ref{fig:system-architecture} shows the high-level design.
 ```
 Table~\ref{tab:customer-refs} summarizes our aerospace customers.
 
-[TABLE:accent-blue:Customer References::customer-refs]
+[TABLE:simple:Customer References::customer-refs]
 | Customer | Industry | Status |
 |----------|----------|--------|
 | Airbus   | Aerospace | Active |
@@ -201,240 +202,120 @@ Support for nested lists up to 4 levels deep with proper LaTeX rendering:
 
 ### Tables (Professional Formatting) ✅
 
-Support for professional tables with automatic numbering, captions, and cross-references:
+> **Last updated:** 2026-05-05 — reflects table renderer v3 (ltablex, afterpage, placeins, captionof)
+
+Support for professional tables with automatic type selection, numbering, captions, and cross-references.
 
 **Syntax:**
 ```
-[TABLE:style:caption:emphasis:label]
+[TABLE:simple:caption:emphasis:label]
 | Header 1 | Header 2 | Header 3 |
 |----------|----------|----------|
 | Data 1   | Data 2   | Data 3   |
-| More     | Data     | Here     |
 [/TABLE]
 ```
 
-- **style**: Table style (simple, minimal, accent-blue, etc.)
-- **caption**: Table caption text (appears above table)
-- **emphasis**: Optional emphasis options (`first-bold`, `last-jade`, `widths=1,2,3`, etc.)
-- **label**: Optional semantic label for cross-references (e.g., `customer-refs`, `pricing-table`)
+- **style**: `simple` — always `simple`, no other styles exist
+- **caption**: Caption text (appears above table, registered in List of Tables)
+- **emphasis**: Optional comma-separated emphasis options (see below)
+- **label**: Optional semantic label for cross-references
 
-**Key Features:**
-- **Automatic numbering**: Tables numbered sequentially (Table 1, Table 2, etc.)
-- **Caption placement**: Appears ABOVE table (professional standard per Chicago/IEEE)
-- **Caption spacing**: 10pt space below caption (prevents cramped appearance)
-- **List of Tables**: Automatically generated when document contains tables (configurable)
-- **Semantic labels**: Reference tables by meaningful names, not numbers
-- **Smart column widths**: Analyzes total content volume per column (70% weight) + max cell length (30% weight)
-- **Text wrapping**: Multi-line text supported in cells with proper alignment
-- **Multiple styles**: 7 different table styles for different purposes
+**Auto-selection — the correct table type is chosen automatically:**
 
-**Caption and Label Examples:**
-- Basic: `[TABLE:simple:Platform Tier Comparison]`
-- With emphasis: `[TABLE:simple:Regional Sales:first-bold,last-jade]`
-- With label: `[TABLE:simple:Customer References::customer-refs]` (empty emphasis, semantic label)
-- Full syntax: `[TABLE:simple:Pricing:first-bold,widths=1,2,1.5:pricing-table]`
+| Condition | Type | Behaviour |
+|-----------|------|-----------|
+| Portrait, ≤4 data rows | `tabularx` float | Compact float near reference |
+| Portrait, >4 data rows | `longtable` inline | Page-spanning, repeating header |
+| 7–10 columns (any rows) | Landscape longtable | Deferred via `afterpage`, rotated, multi-page capable |
 
-**Cross-Referencing Tables:**
-Use `Table~\ref{tab:label}` to reference tables with semantic labels. LaTeX will automatically resolve to the correct table number.
+You never specify the type. Write the table content and the renderer chooses.
 
-```
-Table~\ref{tab:customer-refs} summarizes our aerospace manufacturing customers.
+**Table Style:**
 
-[TABLE:accent-blue:Aerospace Customer References::customer-refs]
-| Customer | Industry | Use Case | Status |
-|----------|----------|----------|--------|
-| Airbus   | Aerospace | Supply Chain | Active |
-[/TABLE]
-```
+One style: `simple`
+- Navy header with white text
+- Alternating light-grey (`#E7F5FF`) zebra stripes
+- Full emphasis option support including `status` colouring
 
-This renders as: "Table 3 summarizes our aerospace manufacturing customers." (clickable link to the table)
+**Emphasis Options:**
 
-**Table Styles:**
+All options compose freely with commas:
 
-1. **simple** (default)
-   - Navy header with white text
-   - Alternating row colors (white/light gray)
-   - Use: General-purpose tables, comparison tables, data tables
-   - 80% of use cases
+| Option | Effect |
+|--------|--------|
+| `colN-bold` | Bold text in column N (1-based) |
+| `colN-jade` | Jade (#2CA392) background on column N |
+| `colN-orange` | Orange background on column N |
+| `colN-blue` | Blue background on column N |
+| `colN-navy` | Navy background on column N |
+| `col3-bold,col3-jade` | Bold AND coloured background on same column |
+| `total-row` | Last row: navy background, white bold text |
+| `widths=1,2,1.5` | Manual column width proportions |
+| `status` | Status keyword colouring on ALL columns |
+| `colN-status` | Status keyword colouring on column N only |
 
-2. **minimal**
-   - Horizontal rules only (booktabs style: toprule, midrule, bottomrule)
-   - No colored backgrounds
-   - Bold headers only
-   - Use: Technical specifications, academic docs, dense numeric data
-   - When: Color would be distracting
+**Status keyword mapping** (applied per cell when `status` or `colN-status` emphasis is used):
+- Jade: `Active`, `Done`, `Success`, `Stable`, `Passed`, `Complete`
+- Amber: `Pending`, `In Progress`, `Review`, `Draft`, `Scheduled`, `Planned`
+- Orange: `Warning`, `Degraded`, `Delayed`, `At Risk`
+- Red-orange: `Error`, `Failed`, `Critical`, `Blocked`, `Down`, `Broken`
 
-3. **accent-blue**
-   - Blue header with white text
-   - White background rows
-   - Use: Informational tables, API endpoints, feature highlights
-   - Semantic: Information/neutral emphasis
+**Grouping Rows:**
 
-4. **accent-jade**
-   - Jade (green) header with white text
-   - White background rows
-   - Use: Recommended configurations, success metrics, best practices
-   - Semantic: Success/positive/recommended
-
-5. **accent-orange**
-   - Orange header with white text
-   - White background rows
-   - Use: Warning tables, critical maintenance, attention-needed items
-   - Semantic: Warning/urgent/cost data
-
-6. **bordered**
-   - Light gray header with navy text
-   - All cells have visible borders
-   - White background
-   - Use: Reference tables, error code lookups, API specs
-   - When: Clear cell boundaries aid scanning
-
-7. **status-[colors]**
-   - White header with navy text
-   - Row colors indicate semantic state
-   - First column bold for row labels
-   - Syntax: `status-jade,orange,blue` (comma-separated colors for each row)
-   - Colors: jade (success), orange (warning), blue (info), gray (neutral), white (default)
-   - Use: Project status, timeline tables, requirement tracking
-   - When: Each row has a semantic meaning
-
-**Style Selection Guide:**
-```
-| Need | Use Style | Example |
-|------|-----------|---------|
-| Default/general | simple | Feature comparison |
-| Technical specs | minimal | System requirements |
-| Information | accent-blue | API endpoints |
-| Recommended | accent-jade | Best practices |
-| Warnings | accent-orange | Maintenance windows |
-| Reference/lookup | bordered | Error codes |
-| Status tracking | status-[colors] | Task progress |
-```
-
-**Table Emphasis Options:**
-
-Add optional emphasis to any table style using colon-separated syntax:
+First cell ALL CAPS + all other cells empty → rendered as a section divider row:
+- Background: `#2F8DFE` (snapBlue) with white bold text
+- Zebra counter resets after each grouping row
+- Works in all table types
 
 ```
-[TABLE:style:caption:emphasis-options]
+| EMEA REGION | | | |
+| Opp 001 | Acme Corp | S4 | Alice |
+| AMER REGION | | | |
+| Opp 002 | Beta Inc | S3 | Bob |
 ```
-
-Available emphasis options:
-- **first-bold**: Makes first column text bold (for row labels/identifiers)
-- **last-jade**: Highlights last column with jade/green background (success/recommended)
-- **last-orange**: Highlights last column with orange background (warning/urgent)
-- **last-blue**: Highlights last column with blue background (information)
-- **last-navy**: Highlights last column with navy background (emphasis)
-- **total-row**: Styles the last row as a total/summary (bold + light background)
-
-Combine multiple options with commas:
-```
-[TABLE:simple:Regional Performance:first-bold,last-jade,total-row]
-```
-
-**Use Cases:**
-- `first-bold`: Region names, product SKUs, task names, person names
-- `last-jade`: Recommended options, success metrics, owner columns
-- `last-orange`: Priority levels, warning indicators, cost columns
-- `last-blue`: Status indicators, information columns
-- `total-row`: Sum rows, aggregate rows, summary rows
-
-**Example:**
-```json
-{
-  "content": "[TABLE:simple:Sales by Region:first-bold,last-jade,total-row]\n| Region | Q1 | Q2 | Q3 | Q4 | Owner |\n|--------|----|----|----|----|-------|\n| North America | $2.1M | $2.4M | $2.8M | $3.1M | Alice |\n| EMEA | $1.5M | $1.7M | $1.9M | $2.2M | Bob |\n| Total | $3.6M | $4.1M | $4.7M | $5.3M | - |\n[/TABLE]"
-}
-```
-
-**Cell Text Formatting:**
-- Top-aligned cells (standard for professional documents)
-- Left-aligned text with no indentation on wrapped lines
-- LaTeX column spec: `>{\setlength{\parindent}{0pt}}p{width}`
-- Proper text wrapping without offset/indentation issues
-
-**Best Practices:**
-- Always provide descriptive captions (aids accessibility and navigation)
-- Reference every table in the text ("As shown in Table 2...")
-- Place reference near the table (same section preferred)
-- **Portrait tables:** Max 6 columns for optimal readability
-- **Landscape tables:** Use for 7-8 column tables (see Landscape Tables section below)
-- Use bold for header row emphasis (automatic)
-
-**Example:**
-```json
-{
-  "sections": [
-    {
-      "title": "Pricing Comparison",
-      "content": "We offer three pricing tiers as detailed in Table 1 below.\n\n[TABLE:simple:Platform Tier Comparison]\n| Feature | Basic | Professional | Enterprise |\n|---------|-------|--------------|------------|\n| API Calls | 10K | 100K | Unlimited |\n| Support | Email | Email + Chat | 24/7 Phone |\n[/TABLE]\n\nTable 1 shows our competitive pricing structure."
-    }
-  ]
-}
-```
-
-### Landscape Tables (Wide Data) ✅
-
-For tables with 7-8 columns, use landscape orientation to maximize horizontal space. Landscape tables rotate the **entire page** (table + headers + footers) following professional documentation best practices.
-
-**Syntax:**
-```
-[TABLE:landscape-<style>:Caption:emphasis-options]
-```
-
-**Key Features:**
-- **Page rotation**: Entire page rotates 90° (headers/footers included)
-- **Full width**: Uses complete page width (~10 inches instead of ~6.5 inches)
-- **Smart column widths**: Analyzes cell content and assigns proportional column widths
-- **All styles supported**: Works with `simple`, `minimal`, `accent-*`, `bordered`, `zebra-*`
-- **Column limits**: Max 8 columns, max 25 rows
-- **Emphasis options**: Supports `first-bold`, `last-[color]`, `total-row`
-
-**When to Use Landscape:**
-- ✅ Tables with 7-8 columns (portrait limit is 6)
-- ✅ Integration matrices, system comparisons, detailed specifications
-- ✅ Data that requires many attributes per row
-- ✅ When column headers are descriptive (not cramped abbreviations)
-
-**Why Full-Page Rotation:**
-- Standard for professional technical documentation (Microsoft, AWS, Salesforce)
-- Maintains consistent page geometry and visual hierarchy
-- Headers/footers remain in proper position relative to page edges
-- Better for printed documents and physical presentations
-- Clearer signal to reader: "turn page to read"
-
-**Validation:**
-- **Portrait tables**: Max 6 columns (ERROR if exceeded)
-- **Landscape tables**: Max 8 columns, max 25 rows (ERROR if exceeded)
 
 **Column Width Algorithm:**
-1. Scans all headers and cell content to find longest text per column
-2. Assigns relative widths based on content length:
-   - Very short (< 6 chars): 0.5x width (IDs, percentages)
-   - Short (6-10 chars): 0.7x width
-   - Medium (10-14 chars): 1.0x width
-   - Long (14-18 chars): 1.4x width
-   - Very long (18+ chars): 1.6x width
-3. Normalizes widths to sum to page width using `tabularx` X columns
-4. Prevents hyphenation with `\raggedright\arraybackslash`
 
-**Example:**
+90th-percentile cell length per column:
+- Sorts all cell values by character length
+- Uses the P90 value (ignores rare long outliers)
+- Normalises proportionally to fill `\linewidth` exactly via `X` columns (ltablex)
+- Row-count independent — consistent for 3 rows or 100 rows
+
+**Landscape Tables:**
+
+Tables with 7–10 columns are automatically placed in landscape orientation. No syntax change required.
+
+- Portrait max: 6 columns
+- Landscape auto-triggers at 7 columns; `landscape-` prefix forces it for any table
+- Deferred via `\afterpage{}` — portrait page fills before landscape starts (no whitespace gap)
+- Multi-page: longtable handles page breaks within landscape pages; header repeats
+- Section boundary: `placeins[section]` prevents landscape tables from drifting into the next section
+
+**Caption / List of Tables:**
+
+All table types register in the List of Tables:
+- Small float (≤4 rows): `\caption{}` inside `\begin{table}` float ✓
+- Longtable: `\captionof{table}{}` before `\begin{tabularx}` ✓
+- Landscape: `\captionof{table}{}` inside `\afterpage{\begin{landscape}...}` ✓
+
+**Required LaTeX packages (for production deployment):**
+```
+\usepackage{ltablex}          % X columns + page-spanning longtable
+\keepXColumns                  % preserve tabularx X column behaviour
+\usepackage{rotating}         % sidewaystable (in template, available)
+\usepackage{afterpage}        % defer landscape until portrait page is full
+\usepackage[section]{placeins} % flush floats before section boundaries
+\usepackage{caption}          % \captionof for non-float table captions
+```
+All are part of `texlive-latex-extra`. Install: `apt-get install texlive-latex-extra`
+
+**Full Example:**
 ```json
 {
-  "sections": [
-    {
-      "title": "System Integration Matrix",
-      "content": "The following table shows all active integrations:\n\n[TABLE:landscape-simple:Complete Integration Matrix:first-bold,last-jade]\n| Source System | Target System | Protocol | Frequency | Volume/Day | Error % | Status | Owner |\n|--------------|---------------|----------|-----------|------------|---------|--------|-------|\n| Salesforce | SAP | REST API | Real-time | 2.5GB | 0.02% | Active | IT Ops |\n| SAP | Snowflake | JDBC | Hourly | 15GB | 0.01% | Active | Data Team |\n| Workday | Active Directory | LDAP | Daily | 500MB | 0.05% | Active | HR Tech |\n[/TABLE]\n\nTable 1 demonstrates landscape orientation for wide data matrices."
-    }
-  ]
+  "content": "[TABLE:simple:Regional Pipeline by Segment:col1-bold,col4-jade,total-row]\n| Region | Q1 | Q2 | Score |\n|--------|-----|-----|-------|\n| EMEA REGION | | | |\n| North | 100 | 120 | Good |\n| South | 80 | 90 | Fair |\n| AMER REGION | | | |\n| East | 110 | 130 | Good |\n| TOTAL | 290 | 340 | — |\n[/TABLE]"
 }
 ```
-
-**Technical Implementation:**
-- Uses LaTeX `pdflscape` package for page rotation
-- Wraps table in `\begin{landscape}...\end{landscape}` environment
-- Uses `tabularx` instead of `tabular` for proportional column widths
-- Column spec: `>{\hsize=N\hsize\raggedright\arraybackslash}X` for each column
-- Works seamlessly with all existing table styles and emphasis options
 
 ### Professional Headers and Footers ✅
 
@@ -575,6 +456,17 @@ The skill provides three distinct types of highlight boxes, each optimized for d
 - Total width including padding: 0.18\linewidth + 30pt (15pt padding × 2)
 - Spacing: 0.006\linewidth between boxes
 - 4 boxes fit per row: 4(0.18 + padding) + 3(spacing) ≈ 0.95\linewidth
+
+**Colour Cycling (Default Behaviour):**
+The processor automatically overrides the colour specified in the JSON with a rotating palette so that no two adjacent boxes — horizontal or vertical — share the same colour. The cycle is: Navy → Blue → Jade → Orange, offset by +1 per row.
+
+| Row | Col 1 | Col 2 | Col 3 | Col 4 |
+|-----|-------|-------|-------|-------|
+| 1 | Navy | Blue | Jade | Orange |
+| 2 | Blue | Jade | Orange | Navy |
+| 3 | Jade | Orange | Navy | Blue |
+
+This means the colour specified per box in the JSON is **ignored at grid-render time** — only the position in the grid determines the colour. This is intentional: it guarantees a visually consistent, non-repetitive layout regardless of how the author tagged the boxes.
 
 **Best Practices:**
 - Use for single numbers/metrics ONLY (not sentences or phrases)
